@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useCartStore } from '../store/cartStore';
+import { mockCategories } from '../data/mockCategories';
 import { 
   Plus, 
   Minus, 
@@ -15,7 +16,7 @@ import {
 
 export default function POS() {
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(mockCategories);
   const [selectedTableId] = useState(1); 
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -53,7 +54,7 @@ export default function POS() {
         setProducts(prodRes.data);
         setCategories(catRes.data);
       } catch (err) {
-        console.error("Failed to fetch POS data", err);
+        console.error("Failed to fetch POS data, using mock categories", err);
       }
     };
     fetchData();

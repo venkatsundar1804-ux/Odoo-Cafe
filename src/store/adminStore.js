@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import axios from 'axios';
+import { mockCategories } from '../data/mockCategories';
 
 export const useAdminStore = create((set) => ({
-  categories: [],
+  categories: mockCategories,
   products: [],
   isLoading: false,
 
@@ -12,8 +13,8 @@ export const useAdminStore = create((set) => ({
       const response = await axios.get('http://localhost:8000/api/categories');
       set({ categories: response.data, isLoading: false });
     } catch (error) {
-      console.error('Error fetching categories:', error);
-      set({ isLoading: false });
+      console.error('Error fetching categories, using fallback mock data:', error);
+      set({ categories: mockCategories, isLoading: false });
     }
   },
 }));
