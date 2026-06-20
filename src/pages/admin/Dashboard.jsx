@@ -1,0 +1,418 @@
+import { useState, useEffect } from 'react';
+import { 
+  IndianRupee, 
+  ShoppingBag, 
+  Percent, 
+  Sparkles, 
+  Calendar, 
+  User, 
+  Coffee, 
+  Download, 
+  FileSpreadsheet, 
+  FileText 
+} from 'lucide-react';
+import { useAdminStore } from '../../store/adminStore';
+import { useOrderSyncStore } from '../../store/orderSyncStore';
+import api from '../../api';
+
+export default function Dashboard() {
+  const { 
+    summary, 
+    aiSummary, 
+    isLoading, 
+    fetchDashboardSummary, 
+    fetchAiSummary,
+    products,
+    fetchProducts
+  } = useAdminStore();
+
+  // Filters State
+  const [period, setPeriod] = useState('Today');
+  const [employee, setEmployee] = useState('');
+  const [session, setSession] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  // Local state for mock listings that depend on filters
+  const [topOrders, setTopOrders] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
+  const [salesTrendData, setSalesTrendData] = useState([]);
+  const [categoryData, setCategoryData] = useState([]);
+
+  // Fetch initial products for filter dropdown
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  const { orders } = useOrderSyncStore();
+
+  // Fetch summary and AI summary when filters change
+  useEffect(() => {
+    const filters = {
+      period,
+      employee_id: employee,
+      session_id: session,
+      product_id: selectedProduct,
+      start_date: period === 'Custom' ? startDate : '',
+      end_date: period === 'Custom' ? endDate : ''
+    };
+    
+    fetchDashboardSummary(filters);
+    fetchAiSummary();
+    
+    generateMockDataForFilters(period);
+  }, [period, employee, session, selectedProduct, startDate, endDate, fetchDashboardSummary, fetchAiSummary, orders]);
+
+  const generateMockDataForFilters = (selectedPeriod) => {
+    let multiplier = 1;
+    if (selectedPeriod === 'This Week') multiplier = 5.2;
+    if (selectedPeriod === 'This Month') multiplier = 22.4;
+
+    setTopOrders([
+      { id: 1205, customer: 'Alice Smith', items: 3, total: 24.50 * multiplier, time: '10:45 AM' },
+      { id: 1206, customer: 'Bob Jones', items: 1, total: 8.00 * multiplier, time: '11:15 AM' },
+      { id: 1207, customer: 'Walk-in', items: 2, total: 15.75 * multiplier, time: '11:40 AM' },
+      { id: 1208, customer: 'Charlie Brown', items: 4, total: 32.20 * multiplier, time: '12:05 PM' }
+    ]);
+
+    setTopProducts([
+      { name: 'Espresso', sold: Math.round(48 * multiplier), revenue: 144.00 * multiplier },
+      { name: 'Croissant', sold: Math.round(35 * multiplier), revenue: 122.50 * multiplier },
+      { name: 'Iced Latte', sold: Math.round(30 * multiplier), revenue: 135.00 * multiplier },
+      { name: 'Blueberry Muffin', sold: Math.round(22 * multiplier), revenue: 77.00 * multiplier }
+    ]);
+
+    // Trend points (relative heights for custom SVG graph)
+    setSalesTrendData([
+      { label: '08:00', value: 120 * multiplier },
+      { label: '10:00', value: 340 * multiplier },
+      { label: '12:00', value: 520 * multiplier },
+      { label: '14:00', value: 410 * multiplier },
+      { label: '16:00', value: 290 * multiplier },
+      { label: '18:00', value: 610 * multiplier }
+    ]);
+
+    setCategoryData([
+      { name: 'Hot Coffee', value: 45 },
+      { name: 'Cold Brews', value: 25 },
+      { name: 'Pastries', value: 20 },
+      { name: 'Food Items', value: 10 }
+    ]);
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      const response = await api.get('/reports/export', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Sales_Report_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert("Failed to export sales data.");
+    }
+  };
+
+  return (
+    <div className="p-8 space-y-8 text-slate-800 font-sans animate-fade-in">
+      
+      {/* Title & Actions */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/60 pb-6 shrink-0">
+        <div>
+          <h1 className="text-3xl font-light tracking-tight text-slate-900">
+            Executive <span className="font-semibold text-indigo-950">Analytics</span>
+          </h1>
+          <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Real-time cafe operations & forecasting</p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition-all hover:scale-105 shadow-sm cursor-pointer"
+          >
+            <FileSpreadsheet size={14} className="text-emerald-600" /> Export CSV
+          </button>
+          <button
+            onClick={() => alert("PDF report layout building via print preview...")}
+            className="flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition-all hover:scale-105 shadow-sm cursor-pointer"
+          >
+            <FileText size={14} className="text-indigo-600" /> Export PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Global Filter Dashboard (Glassmorphic) */}
+      <div className="bg-white/60 backdrop-blur-md border border-slate-200/80 rounded-3xl p-6 grid grid-cols-1 md:grid-cols-4 gap-5 shadow-sm">
+        {/* Period Filter */}
+        <div>
+          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold block mb-2">Period</label>
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value)}
+            className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-colors shadow-sm"
+          >
+            <option value="Today">Today</option>
+            <option value="This Week">This Week</option>
+            <option value="This Month">This Month</option>
+            <option value="Custom">Custom Date Range</option>
+          </select>
+        </div>
+
+        {/* Employee Filter */}
+        <div>
+          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold block mb-2">Employee</label>
+          <select
+            value={employee}
+            onChange={(e) => setEmployee(e.target.value)}
+            className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-colors shadow-sm"
+          >
+            <option value="">All Employees</option>
+            <option value="1">John Doe (Cashier)</option>
+            <option value="2">Jane Smith (Manager)</option>
+          </select>
+        </div>
+
+        {/* Session Filter */}
+        <div>
+          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold block mb-2">POS Session</label>
+          <select
+            value={session}
+            onChange={(e) => setSession(e.target.value)}
+            className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-colors shadow-sm"
+          >
+            <option value="">All Sessions</option>
+            <option value="1">Session #001 (Morning)</option>
+            <option value="2">Session #002 (Evening)</option>
+          </select>
+        </div>
+
+        {/* Product Filter */}
+        <div>
+          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold block mb-2">Product Filter</label>
+          <select
+            value={selectedProduct}
+            onChange={(e) => setSelectedProduct(e.target.value)}
+            className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-colors shadow-sm"
+          >
+            <option value="">All Products</option>
+            {products.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Custom Date Pickers */}
+        {period === 'Custom' && (
+          <div className="md:col-span-4 grid grid-cols-2 gap-4 border-t border-slate-200/50 pt-4 mt-2">
+            <div>
+              <label className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold block mb-2">Start Date</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-colors shadow-sm"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold block mb-2">End Date</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-colors shadow-sm"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Summary Metrics Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Total Revenue */}
+        <div className="bg-gradient-to-br from-indigo-650 to-indigo-500 text-white p-6 rounded-3xl flex items-center justify-between shadow-xl shadow-indigo-100">
+          <div>
+            <p className="text-[10px] text-indigo-100 uppercase font-extrabold tracking-widest opacity-80">Total Revenue</p>
+            <p className="text-3xl font-light font-mono mt-2.5">
+              ₹<span className="font-semibold">{(summary.revenue || 0).toFixed(2)}</span>
+            </p>
+          </div>
+          <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
+            <IndianRupee className="w-6 h-6 text-white" />
+          </div>
+        </div>
+
+        {/* Total Orders */}
+        <div className="bg-gradient-to-br from-amber-500 to-orange-500 text-white p-6 rounded-3xl flex items-center justify-between shadow-xl shadow-amber-100">
+          <div>
+            <p className="text-[10px] text-amber-100 uppercase font-extrabold tracking-widest opacity-80">Total Orders</p>
+            <p className="text-3xl font-light font-mono mt-2.5">
+              <span className="font-semibold">{summary.total_orders || 0}</span>
+            </p>
+          </div>
+          <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
+            <ShoppingBag className="w-6 h-6 text-white" />
+          </div>
+        </div>
+
+        {/* Average Order Value */}
+        <div className="bg-gradient-to-br from-emerald-500 to-teal-650 text-white p-6 rounded-3xl flex items-center justify-between shadow-xl shadow-emerald-100">
+          <div>
+            <p className="text-[10px] text-emerald-100 uppercase font-extrabold tracking-widest opacity-80">Avg Order Value</p>
+            <p className="text-3xl font-light font-mono mt-2.5">
+              ₹<span className="font-semibold">{(summary.average_order_value || 0).toFixed(2)}</span>
+            </p>
+          </div>
+          <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
+            <Percent className="w-6 h-6 text-white" />
+          </div>
+        </div>
+      </div>
+
+      {/* AI daily summary briefing (Glow layout) */}
+      <div className="bg-white border border-indigo-100 shadow-[0_0_20px_rgba(99,102,241,0.08)] rounded-3xl p-6 relative overflow-hidden transition-all duration-300 hover:shadow-[0_0_25px_rgba(99,102,241,0.18)]">
+        <div className="absolute right-6 top-6 text-indigo-500 opacity-[0.03]">
+          <Sparkles size={120} />
+        </div>
+        <div className="flex items-center gap-2 mb-3 text-indigo-650 font-bold text-xs uppercase tracking-wider">
+          <Sparkles size={14} className="text-indigo-500 animate-pulse" />
+          <span>AI Business Insights</span>
+        </div>
+        <p className="text-slate-600 text-xs leading-relaxed max-w-4xl font-medium">
+          {aiSummary}
+        </p>
+      </div>
+
+      {/* Visual Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Sales Trend (Clean responsive SVG layout) */}
+        <div className="bg-white/80 backdrop-blur-lg border border-slate-200/80 rounded-3xl p-6 flex flex-col justify-between h-[340px] shadow-sm">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+              Sales Trend
+            </h2>
+            <span className="text-[10px] text-slate-400 font-mono font-bold uppercase">Revenue Intervals</span>
+          </div>
+
+          <div className="flex-1 flex items-end justify-between relative h-40 border-b border-l border-slate-200/60 pb-1 pl-4">
+            {salesTrendData.map((d, index) => {
+              const maxHeight = 160;
+              const values = salesTrendData.map(v => v.value);
+              const maxVal = Math.max(...values) || 1;
+              const height = (d.value / maxVal) * maxHeight;
+
+              return (
+                <div key={index} className="flex flex-col items-center group flex-1">
+                  <span className="opacity-0 group-hover:opacity-100 transition-all duration-200 bg-slate-900 text-[10px] text-white px-2 py-0.5 rounded absolute -top-4 font-mono font-bold">
+                    ₹{d.value.toFixed(2)}
+                  </span>
+                  <div
+                    style={{ height: `${height}px` }}
+                    className="w-7 md:w-10 bg-gradient-to-t from-indigo-50 to-indigo-500 border-t border-x border-indigo-200 rounded-t-lg transition-all duration-300 group-hover:from-indigo-100 group-hover:to-indigo-600"
+                  ></div>
+                  <span className="text-[9px] text-slate-400 font-extrabold font-mono mt-2.5">{d.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Sales Distribution (Proportional progress lines) */}
+        <div className="bg-white/80 backdrop-blur-lg border border-slate-200/80 rounded-3xl p-6 flex flex-col justify-between h-[340px] shadow-sm">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+              Sales Distribution
+            </h2>
+            <span className="text-[10px] text-slate-400 font-mono font-bold uppercase">Category Share</span>
+          </div>
+
+          <div className="flex-1 space-y-4 justify-center flex flex-col">
+            {categoryData.map((cat, index) => {
+              const colors = ['bg-indigo-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-500'];
+              return (
+                <div key={index} className="space-y-1.5">
+                  <div className="flex justify-between text-xs font-bold text-slate-600">
+                    <span>{cat.name}</span>
+                    <span className="text-slate-400 font-mono">{cat.value}%</span>
+                  </div>
+                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200/20">
+                    <div
+                      style={{ width: `${cat.value}%` }}
+                      className={`h-full rounded-full transition-all duration-700 ${colors[index % colors.length]}`}
+                    ></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Top Tables Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Table 1: Top Orders */}
+        <div className="bg-white/80 backdrop-blur-lg border border-slate-200/80 rounded-3xl p-6 shadow-sm">
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-6">
+            Top Orders
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-100 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
+                  <th className="py-3 px-3">Order ID</th>
+                  <th className="py-3 px-3">Customer</th>
+                  <th className="py-3 px-3">Items Count</th>
+                  <th className="py-3 px-3 text-right">Bill Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100/50">
+                {topOrders.map((ord) => (
+                  <tr key={ord.id} className="hover:bg-slate-50/50 transition-colors text-xs text-slate-600">
+                    <td className="py-3.5 px-3 font-mono font-bold text-slate-900">#{ord.id}</td>
+                    <td className="py-3.5 px-3 font-bold">{ord.customer}</td>
+                    <td className="py-3.5 px-3 font-mono text-slate-400">{ord.items} items</td>
+                    <td className="py-3.5 px-3 text-right font-mono font-bold text-indigo-600">₹{ord.total.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Table 2: Top Products */}
+        <div className="bg-white/80 backdrop-blur-lg border border-slate-200/80 rounded-3xl p-6 shadow-sm">
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-6">
+            Top Products
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-100 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
+                  <th className="py-3 px-3">Product Name</th>
+                  <th className="py-3 px-3">Units Sold</th>
+                  <th className="py-3 px-3 text-right">Total Sales</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100/50">
+                {topProducts.map((prod, idx) => (
+                  <tr key={idx} className="hover:bg-slate-50/50 transition-colors text-xs text-slate-600">
+                    <td className="py-3.5 px-3 font-bold text-slate-900">{prod.name}</td>
+                    <td className="py-3.5 px-3 font-mono text-slate-400">{prod.sold} sold</td>
+                    <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-600">₹{prod.revenue.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
