@@ -1,23 +1,48 @@
 import { create } from 'zustand';
 import api from '../api';
 
-export const useAdminStore = create((set) => ({
-  categories: [],
-  products: [],
-  summary: { total_orders: 0, revenue: 0, average_order_value: 0 },
-  aiSummary: "Loading AI daily brief...",
-  isLoading: false,
+const adminChannel = new BroadcastChannel('odoo-cafe-admin-sync');
 
-  fetchCategories: async () => {
-    set({ isLoading: true });
-    try {
-      const response = await api.get('/categories');
-      set({ categories: response.data, isLoading: false });
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      set({ isLoading: false });
+export const useAdminStore = create((set, get) => {
+  adminChannel.onmessage = (event) => {
+    if (event.data && event.data.type === 'SYNC_ADMIN') {
+      if (event.data.categories) set({ categories: event.data.categories });
+      if (event.data.products) set({ products: event.data.products });
     }
-  },
+  };
+
+  const syncAdmin = (payload) => {
+    adminChannel.postMessage({ type: 'SYNC_ADMIN', ...payload });
+  };
+
+  return {
+    categories: [],
+    products: [],
+    summary: { total_orders: 0, revenue: 0, average_order_value: 0 },
+    aiSummary: "Loading AI daily brief...",
+    isLoading: false,
+
+    syncCategories: (newCategories) => {
+      set({ categories: newCategories });
+      syncAdmin({ categories: newCategories });
+    },
+
+    syncProducts: (newProducts) => {
+      set({ products: newProducts });
+      syncAdmin({ products: newProducts });
+    },
+
+    fetchCategories: async () => {
+      set({ isLoading: true });
+      try {
+        const response = await api.get('/categories');
+        set({ categories: response.data, isLoading: false });
+        syncAdmin({ categories: response.data });
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        set({ isLoading: false });
+      }
+    },
 
   fetchProducts: async () => {
     set({ isLoading: true });

@@ -33,10 +33,8 @@ export default function Products() {
       name: newCategoryName.trim()
     };
 
-    // Update the Zustand state (simulate local addition for now)
-    useAdminStore.setState({
-      categories: [...categories, newCategory]
-    });
+    const newCategories = [...categories, newCategory];
+    useAdminStore.getState().syncCategories(newCategories);
 
     setNewCategoryName('');
     setIsCategoryModalOpen(false);

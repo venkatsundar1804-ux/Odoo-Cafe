@@ -1,38 +1,26 @@
 import { useState } from 'react';
 import { Plus, Trash2, Tag, Percent, Calendar } from 'lucide-react';
 import Modal from '../../components/Modal';
+import { usePromoStore } from '../../store/promoStore';
 
 export default function Coupons() {
-  const [coupons, setCoupons] = useState([
-    { id: 1, code: 'WELCOME10', discount: 10, expiry: '2026-12-31' },
-    { id: 2, code: 'CAFEWEEKEND', discount: 15, expiry: '2026-08-15' },
-    { id: 3, code: 'FESTIVE20', discount: 20, expiry: '2026-10-01' },
-  ]);
+  const { promos, addPromo, removePromo } = usePromoStore();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCouponCode, setNewCouponCode] = useState('');
   const [newCouponDiscount, setNewCouponDiscount] = useState('');
   const [newCouponExpiry, setNewCouponExpiry] = useState('');
 
-  const deleteCoupon = (id) => {
-    setCoupons(coupons.filter(c => c.id !== id));
+  const deleteCoupon = (code) => {
+    removePromo(code);
   };
 
   const handleAddCoupon = (e) => {
     e.preventDefault();
-    if (!newCouponCode.trim() || !newCouponDiscount || !newCouponExpiry) return;
+    if (!newCouponCode.trim() || !newCouponDiscount) return;
 
-    // TODO: Connect to API
-    // Make a POST request to create coupon here.
+    addPromo(newCouponCode.trim(), newCouponDiscount, `Expires ${newCouponExpiry || 'Soon'}`);
 
-    const newCoupon = {
-      id: Date.now(),
-      code: newCouponCode.toUpperCase().trim(),
-      discount: parseInt(newCouponDiscount, 10),
-      expiry: newCouponExpiry
-    };
-
-    setCoupons([...coupons, newCoupon]);
     setNewCouponCode('');
     setNewCouponDiscount('');
     setNewCouponExpiry('');
@@ -66,8 +54,8 @@ export default function Coupons() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {coupons.map((coupon) => (
-              <tr key={coupon.id} className="hover:bg-slate-55/50 transition-colors">
+            {promos.map((coupon) => (
+              <tr key={coupon.code} className="hover:bg-slate-55/50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
@@ -81,18 +69,18 @@ export default function Coupons() {
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-1.5 text-slate-900 font-semibold">
                     <Percent className="w-4 h-4 text-slate-500" />
-                    <span>{coupon.discount}%</span>
+                    <span>{coupon.discountPercent}%</span>
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-1.5 text-slate-650 text-sm">
                     <Calendar className="w-4 h-4 text-slate-400" />
-                    <span>{coupon.expiry}</span>
+                    <span>{coupon.description}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">
                   <button 
-                    onClick={() => deleteCoupon(coupon.id)}
+                    onClick={() => deleteCoupon(coupon.code)}
                     className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-4.5 h-4.5" />

@@ -12,6 +12,7 @@ import {
   FileText 
 } from 'lucide-react';
 import { useAdminStore } from '../../store/adminStore';
+import { useOrderSyncStore } from '../../store/orderSyncStore';
 import api from '../../api';
 
 export default function Dashboard() {
@@ -44,6 +45,8 @@ export default function Dashboard() {
     fetchProducts();
   }, [fetchProducts]);
 
+  const { orders } = useOrderSyncStore();
+
   // Fetch summary and AI summary when filters change
   useEffect(() => {
     const filters = {
@@ -59,7 +62,7 @@ export default function Dashboard() {
     fetchAiSummary();
     
     generateMockDataForFilters(period);
-  }, [period, employee, session, selectedProduct, startDate, endDate, fetchDashboardSummary, fetchAiSummary]);
+  }, [period, employee, session, selectedProduct, startDate, endDate, fetchDashboardSummary, fetchAiSummary, orders]);
 
   const generateMockDataForFilters = (selectedPeriod) => {
     let multiplier = 1;
