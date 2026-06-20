@@ -1,61 +1,117 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+
+const tabs = ['All', 'To Cook', 'Preparing', 'Completed'];
+
+const menuCatalog = [
+    { name: 'Masala Tea', category: 'Drink' },
+    { name: 'Lassi', category: 'Drink' },
+    { name: 'Coffee', category: 'Drink' },
+    { name: 'Water', category: 'Drink' },
+    { name: 'Burger', category: 'Quick Bites' },
+    { name: 'Pizza', category: 'Quick Bites' },
+    { name: 'Desert', category: 'Desert' }
+];
+
+const categoriesList = ['Desert', 'Quick Bites', 'Drink'];
+
+const initialOrders = [
+    {
+        id: '#2205',
+        items: [
+            { name: 'Masala Tea', qty: 3, done: false },
+            { name: 'Lassi', qty: 3, done: false },
+            { name: 'Coffee', qty: 3, done: false },
+            { name: 'Water', qty: 3, done: true }
+        ]
+    }
+];
 
 export default function KitchenDisplaySystem() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('To Cook');
-
-    // Accordion visibility states
+    const [searchQuery, setSearchQuery] = useState('');
+    const [paginationText] = useState('1-3');
     const [showProducts, setShowProducts] = useState(true);
     const [showCategories, setShowCategories] = useState(true);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [orders, setOrders] = useState(initialOrders);
 
-    // Filter Tracking States
-    const [selectedCategory, setSelectedCategory] = useState(null); // Tracks if a category is selected
-    const [selectedProduct, setSelectedProduct] = useState(null);  // Tracks if a specific item is selected
+    const displayedProducts = useMemo(() => {
+        if (!selectedCategory) return menuCatalog;
+        return menuCatalog.filter(item => item.category === selectedCategory);
+    }, [selectedCategory]);
 
-    // Master list of available items and their categories
-    const menuCatalog = [
-        { name: 'Burger', category: 'Quick Bites' },
-        { name: 'Pizza', category: 'Quick Bites' },
-        { name: 'coffee', category: 'Drink' },
-        { name: 'water', category: 'Drink' },
-        { name: 'Desert', category: 'Desert' }
-    ];
-
-    const categoriesList = ['Desert', 'Quick Bites', 'Drink'];
-
-    // Hardcoded order data
-    const [orders, setOrders] = useState([
-        { id: '#2205', items: [{ name: 'Masala Tea', qty: 3, done: false }, { name: 'Lassi', qty: 3, done: false }, { name: 'Coffee', qty: 3, done: false }, { name: 'Water', qty: 3, done: true }], status: 'To Cook' }
-    ]);
-
-    const toggleItemStrike = (orderId, itemIndex) => {
-        setOrders(orders.map(order => {
-            if (order.id !== orderId) return order;
-            const newItems = [...order.items];
-            newItems[itemIndex].done = !newItems[itemIndex].done;
-            return { ...order, items: newItems };
-        }));
-    };
-
-    // Reset filters handler
     const clearFilters = () => {
         setSelectedCategory(null);
         setSelectedProduct(null);
     };
 
-    // Filter products dynamically based on category selection
-    const displayedProducts = selectedCategory
-        ? menuCatalog.filter(item => item.category === selectedCategory)
-        : menuCatalog;
+    const toggleItemStrike = (orderId, itemIndex) => {
+        setOrders(currentOrders =>
+            currentOrders.map(order => {
+                if (order.id !== orderId) return order;
+
+                return {
+                    ...order,
+                    items: order.items.map((item, index) =>
+                        index === itemIndex ? { ...item, done: !item.done } : item
+                    )
+                };
+            })
+        );
+    };
+
+    const itemMatchesTab = (item, tab) => {
+        if (tab === 'To Cook' || tab === 'Preparing') return !item.done;
+        if (tab === 'Completed') return item.done;
+        return true;
+    };
+
+    const itemMatchesSidebarFilters = (item) => {
+        if (selectedProduct && item.name !== selectedProduct) return false;
+
+        if (selectedCategory) {
+            const catalogItem = menuCatalog.find(product => product.name === item.name);
+            if (!catalogItem || catalogItem.category !== selectedCategory) return false;
+        }
+
+        return true;
+    };
+
+    const itemMatchesSearch = (item, orderId) => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return true;
+
+        return item.name.toLowerCase().includes(query) || orderId.toLowerCase().includes(query);
+    };
+
+    const getTabCount = (tab) => {
+        return orders.reduce((count, order) => {
+            return count + order.items.filter(item => itemMatchesTab(item, tab)).length;
+        }, 0);
+    };
+
+    const visibleOrders = orders
+        .map(order => ({
+            ...order,
+            visibleItems: order.items
+                .map((item, index) => ({ ...item, originalIndex: index }))
+                .filter(item => itemMatchesTab(item, activeTab))
+                .filter(itemMatchesSidebarFilters)
+                .filter(item => itemMatchesSearch(item, order.id))
+        }))
+        .filter(order => order.visibleItems.length > 0);
 
     return (
         <div className="min-h-screen bg-neutral-900 text-white font-sans flex flex-col">
-            {/* Header */}
-            <div className="flex justify-between items-center border-b border-neutral-700 p-6 bg-neutral-900 z-10">
-                <div className="flex items-center gap-4">
+            <div className="flex items-center gap-5 border-b border-neutral-700 px-6 py-4 bg-neutral-900 z-10">
+                <div className="flex items-center gap-5 min-w-0 flex-1">
                     <button
+                        type="button"
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="text-white hover:text-orange-400 focus:outline-none p-1 rounded transition active:scale-95 cursor-pointer"
+                        className="text-white hover:text-orange-400 focus:outline-none p-1 rounded transition active:scale-95 cursor-pointer shrink-0"
+                        aria-label="Toggle filters"
                     >
                         <div className="space-y-1.5 w-6">
                             <span className="block h-0.5 bg-current rounded"></span>
@@ -64,104 +120,158 @@ export default function KitchenDisplaySystem() {
                         </div>
                     </button>
 
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <span className="bg-orange-600 px-3 py-1 rounded text-sm">Logo</span> KDS
-                    </h1>
+                    <div className="flex items-center gap-2 shrink-0">
+                        {tabs.map((tab, index) => (
+                            <React.Fragment key={tab}>
+                                {index > 0 && <span className="text-neutral-600 font-semibold">|</span>}
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTab(tab)}
+                                    className={`px-3 py-1.5 rounded-md font-semibold transition cursor-pointer flex items-center gap-2 ${
+                                        activeTab === tab
+                                            ? 'bg-red-950/70 text-orange-100 border border-red-900'
+                                            : 'text-neutral-200 hover:bg-neutral-800'
+                                    }`}
+                                >
+                                    <span>{tab}</span>
+                                    <span
+                                        className={`text-xs px-1.5 py-0.5 rounded-md font-bold ${
+                                            activeTab === tab
+                                                ? 'bg-red-900/80 text-orange-100'
+                                                : 'bg-neutral-800 text-neutral-300'
+                                        }`}
+                                    >
+                                        {getTabCount(tab)}
+                                    </span>
+                                </button>
+                            </React.Fragment>
+                        ))}
+                    </div>
+
+                    <div className="relative w-full max-w-sm min-w-48">
+                        <input
+                            type="search"
+                            value={searchQuery}
+                            onChange={(event) => setSearchQuery(event.target.value)}
+                            placeholder="Search....."
+                            className="w-full rounded-full bg-neutral-800 border border-neutral-700 py-2 pl-4 pr-11 text-sm text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:border-orange-700"
+                        />
+                        <svg
+                            aria-hidden="true"
+                            viewBox="0 0 24 24"
+                            className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <path d="m16 16 4 4"></path>
+                        </svg>
+                    </div>
                 </div>
 
-                <div className="flex gap-4">
-                    {['All', 'To Cook', 'Preparing', 'Completed'].map(tab => (
+                <div className="ml-auto flex items-center gap-3 rounded-md bg-neutral-800 border border-neutral-700 px-3 py-2 shrink-0">
+                    <span className="text-sm font-semibold text-neutral-200">{paginationText}</span>
+                    <div className="flex items-center gap-1">
                         <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
-                            className={`px-4 py-2 rounded font-semibold transition cursor-pointer ${activeTab === tab ? 'bg-orange-700' : 'bg-neutral-800 hover:bg-neutral-700'}`}
+                            type="button"
+                            className="h-6 w-6 rounded bg-neutral-900 text-neutral-300 hover:text-white hover:bg-red-950/70 transition"
+                            aria-label="Previous page"
                         >
-                            {tab}
+                            &lt;
                         </button>
-                    ))}
+                        <button
+                            type="button"
+                            className="h-6 w-6 rounded bg-neutral-900 text-neutral-300 hover:text-white hover:bg-red-950/70 transition"
+                            aria-label="Next page"
+                        >
+                            &gt;
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {/* Main Screen Content Split */}
             <div className="flex flex-1 overflow-hidden">
-
-                {/* Interactive Sidebar Panel Component */}
                 {isSidebarOpen && (
                     <div className="w-64 border-r border-neutral-800 bg-neutral-950 flex flex-col shrink-0 overflow-y-auto">
-                        {/* Top row: Clear Filter Header */}
                         <div className="flex items-center justify-between p-4 border-b border-neutral-900">
-                            <span
+                            <button
+                                type="button"
                                 onClick={clearFilters}
                                 className="text-orange-700/90 font-semibold text-lg tracking-wide cursor-pointer hover:text-orange-600 select-none"
                             >
                                 Clear Filter
-                            </span>
+                            </button>
                             <button
+                                type="button"
                                 onClick={() => setIsSidebarOpen(false)}
                                 className="text-orange-700/90 font-bold hover:text-orange-600 text-lg px-2 cursor-pointer"
+                                aria-label="Close filters"
                             >
-                                ✕
+                                x
                             </button>
                         </div>
 
-                        {/* Section 1: Product list (Clicking title collapses/expands list) */}
                         <div>
-                            <div
+                            <button
+                                type="button"
                                 onClick={() => setShowProducts(!showProducts)}
-                                className="bg-amber-800/40 px-4 py-2 text-amber-200 font-bold text-sm tracking-wide flex justify-between items-center cursor-pointer select-none hover:bg-amber-800/50"
+                                className="w-full bg-amber-800/40 px-4 py-2 text-amber-200 font-bold text-sm tracking-wide flex justify-between items-center cursor-pointer select-none hover:bg-amber-800/50"
                             >
                                 <span>Product</span>
-                                <span className="text-xs">{showProducts ? '▲' : '▼'}</span>
-                            </div>
+                                <span className="text-xs">{showProducts ? 'Up' : 'Down'}</span>
+                            </button>
 
                             {showProducts && (
                                 <div className="flex flex-col font-medium">
-                                    {displayedProducts.map((item) => (
-                                        <span
+                                    {displayedProducts.map(item => (
+                                        <button
                                             key={item.name}
+                                            type="button"
                                             onClick={() => setSelectedProduct(selectedProduct === item.name ? null : item.name)}
-                                            className={`px-4 py-2.5 text-sm transition cursor-pointer border-l-2 ${selectedProduct === item.name
+                                            className={`px-4 py-2.5 text-left text-sm transition cursor-pointer border-l-2 ${
+                                                selectedProduct === item.name
                                                     ? 'bg-red-950/40 text-red-300 border-red-700 font-bold'
                                                     : 'text-neutral-300 border-transparent hover:bg-neutral-900'
-                                                }`}
+                                            }`}
                                         >
                                             {item.name}
-                                        </span>
+                                        </button>
                                     ))}
-                                    {displayedProducts.length === 0 && (
-                                        <span className="px-4 py-2.5 text-xs text-neutral-500 italic">No matching products</span>
-                                    )}
                                 </div>
                             )}
                         </div>
 
-                        {/* Section 2: Category list (Clicking category filters products above) */}
                         <div className="mt-2">
-                            <div
+                            <button
+                                type="button"
                                 onClick={() => setShowCategories(!showCategories)}
-                                className="bg-amber-800/40 px-4 py-2 text-amber-200 font-bold text-sm tracking-wide flex justify-between items-center cursor-pointer select-none hover:bg-amber-800/50"
+                                className="w-full bg-amber-800/40 px-4 py-2 text-amber-200 font-bold text-sm tracking-wide flex justify-between items-center cursor-pointer select-none hover:bg-amber-800/50"
                             >
                                 <span>Category</span>
-                                <span className="text-xs">{showCategories ? '▲' : '▼'}</span>
-                            </div>
+                                <span className="text-xs">{showCategories ? 'Up' : 'Down'}</span>
+                            </button>
 
                             {showCategories && (
                                 <div className="flex flex-col font-medium">
-                                    {categoriesList.map((category) => (
-                                        <span
+                                    {categoriesList.map(category => (
+                                        <button
                                             key={category}
+                                            type="button"
                                             onClick={() => {
-                                                // If clicked again, deselect it. Otherwise select it.
                                                 setSelectedCategory(selectedCategory === category ? null : category);
-                                                setSelectedProduct(null); // Clear selected single product when category changes
+                                                setSelectedProduct(null);
                                             }}
-                                            className={`px-4 py-2.5 text-sm transition cursor-pointer border-l-2 ${selectedCategory === category
+                                            className={`px-4 py-2.5 text-left text-sm transition cursor-pointer border-l-2 ${
+                                                selectedCategory === category
                                                     ? 'bg-red-950/40 text-red-300 border-red-700 font-bold'
                                                     : 'text-neutral-300 border-transparent hover:bg-neutral-900'
-                                                }`}
+                                            }`}
                                         >
                                             {category}
-                                        </span>
+                                        </button>
                                     ))}
                                 </div>
                             )}
@@ -169,20 +279,28 @@ export default function KitchenDisplaySystem() {
                     </div>
                 )}
 
-                {/* Main Ticket Grid Container */}
                 <div className="flex-1 p-6 overflow-y-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {orders.filter(o => activeTab === 'All' || o.status === activeTab).map(order => (
-                            <div key={order.id} className="bg-neutral-800 rounded-lg p-5 border border-neutral-700 shadow-xl h-fit">
-                                <h2 className="text-xl font-bold border-b border-neutral-700 pb-2 mb-4 text-orange-400">{order.id}</h2>
+                        {visibleOrders.map(order => (
+                            <div
+                                key={order.id}
+                                className="bg-neutral-800 rounded-lg p-5 border border-neutral-700 shadow-xl h-fit"
+                            >
+                                <h2 className="text-xl font-bold border-b border-neutral-700 pb-2 mb-4 text-orange-400">
+                                    {order.id}
+                                </h2>
                                 <ul className="space-y-3">
-                                    {order.items.map((item, idx) => (
+                                    {order.visibleItems.map(item => (
                                         <li
-                                            key={idx}
-                                            onClick={() => toggleItemStrike(order.id, idx)}
-                                            className={`text-lg cursor-pointer transition select-none ${item.done ? 'line-through text-neutral-500' : 'text-neutral-200 hover:text-orange-300'}`}
+                                            key={`${order.id}-${item.originalIndex}`}
+                                            onClick={() => toggleItemStrike(order.id, item.originalIndex)}
+                                            className={`text-lg cursor-pointer transition select-none ${
+                                                item.done
+                                                    ? 'line-through text-neutral-500'
+                                                    : 'text-neutral-200 hover:text-orange-300'
+                                            }`}
                                         >
-                                            {item.qty} × {item.name}
+                                            {item.qty} x {item.name}
                                         </li>
                                     ))}
                                 </ul>
@@ -190,7 +308,6 @@ export default function KitchenDisplaySystem() {
                         ))}
                     </div>
                 </div>
-
             </div>
         </div>
     );
