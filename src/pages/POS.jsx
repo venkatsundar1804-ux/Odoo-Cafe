@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCartStore } from '../store/cartStore';
 import { mockCategories } from '../data/mockCategories';
@@ -17,7 +17,8 @@ import {
   User,
   Mic,
   Star,
-  Play
+  Play,
+  ShoppingBag
 } from 'lucide-react';
 
 export default function POS() {
@@ -33,7 +34,9 @@ export default function POS() {
   const [direction, setDirection] = useState(1);
   const [isScrolling, setIsScrolling] = useState(false);
 
-  const { addToCart } = useCartStore();
+  const navigate = useNavigate();
+  const { addToCart, cart } = useCartStore();
+  const cartItemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -161,8 +164,16 @@ export default function POS() {
           <button className="p-3 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-white transition cursor-pointer">
             <Search className="w-5 h-5 text-slate-700" />
           </button>
-          <button className="p-3 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-white transition cursor-pointer">
-            <Menu className="w-5 h-5 text-slate-700" />
+          <button 
+            onClick={() => navigate('/checkout')}
+            className="p-3 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-white transition cursor-pointer relative"
+          >
+            <ShoppingBag className="w-5 h-5 text-slate-700" />
+            {cartItemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-slate-800 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                {cartItemCount}
+              </span>
+            )}
           </button>
         </header>
 

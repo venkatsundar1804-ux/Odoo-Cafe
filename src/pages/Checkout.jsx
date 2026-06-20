@@ -2,12 +2,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ShoppingBag, Plus, Minus, X } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
+import { useTableStore } from '../store/tableStore';
 import { resolveImage } from '../utils/imageResolver';
+import { ordersService } from '../services/ordersService';
+import PaymentModal from '../components/OrderView/PaymentModal';
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { cart, addToCart, removeFromCart, getTotals, clearCart } = useCartStore();
   const [promoCode, setPromoCode] = useState('');
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [currentOrderId, setCurrentOrderId] = useState(null);
   
   const { subtotal } = getTotals();
   const shippingCost = cart.length > 0 ? 4.99 : 0;
@@ -18,14 +23,27 @@ export default function Checkout() {
     alert("Promo logic not implemented yet.");
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (cart.length === 0) {
       alert("Your cart is empty!");
       return;
     }
-    alert("Checkout successful! Generating receipt...");
-    clearCart();
-    navigate(-1);
+    
+    try {
+      const orderPayload = {
+        table_id: useTableStore.getState().currentTableId || 1,
+        customer_id: null,
+        items: cart.map(i => ({ product_id: i.id, quantity: i.quantity })),
+        coupon_code: promoCode || null
+      };
+      
+      const newOrder = await ordersService.createOrder(orderPayload);
+      setCurrentOrderId(newOrder.id);
+      setIsPaymentOpen(true);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create order on backend. Check console.");
+    }
   };
 
   return (
@@ -167,7 +185,6 @@ export default function Checkout() {
           </div>
         </div>
 
-        {/* Checkout Button */}
         <button 
           onClick={handleCheckout}
           className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-base py-5 rounded-[1.5rem] transition shadow-[0_15px_30px_rgba(15,23,42,0.2)] cursor-pointer tracking-wide"
@@ -176,6 +193,19 @@ export default function Checkout() {
         </button>
 
       </div>
+
+      <PaymentModal
+        isOpen={isPaymentOpen}
+        onClose={() => setIsPaymentOpen(false)}
+        totalAmount={total}
+        orderId={currentOrderId}
+        onPaymentSuccess={() => {
+          clearCart();
+          setIsPaymentOpen(false);
+          // Return to POS or floor when completed!
+          navigate('/floor');
+        }}
+      />
     </div>
   );
 }
