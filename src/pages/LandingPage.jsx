@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Armchair, CheckCircle2, AlertTriangle, Coffee, Quote, Settings, LogIn } from 'lucide-react';
 import { useTableStore } from '../store/tableStore';
+import { useAuthStore } from '../store/authStore';
 import { motion } from 'framer-motion';
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const { tables, isLoading, fetchTables, setTableId } = useTableStore();
+  const { role } = useAuthStore();
 
   useEffect(() => {
     fetchTables();
@@ -52,19 +54,29 @@ export default function LandingPage() {
         </div>
         <div className="flex gap-4">
           <button 
-            onClick={() => navigate('/admin')}
+            onClick={() => {
+              if (!role) {
+                navigate('/login');
+              } else if (role === 'customer') {
+                navigate('/admin/customer');
+              } else {
+                navigate('/admin');
+              }
+            }}
             className="flex items-center gap-2 bg-black/20 hover:bg-black/40 backdrop-blur-md text-white px-5 py-2.5 rounded-xl transition font-semibold text-sm border border-white/20 cursor-pointer"
           >
             <Settings className="w-4 h-4" />
             <span className="hidden sm:inline">Dashboard</span>
           </button>
-          <button 
-            onClick={() => navigate('/login')}
-            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-2.5 rounded-xl transition font-bold text-sm shadow-[0_4px_14px_rgba(245,158,11,0.4)] cursor-pointer"
-          >
-            <LogIn className="w-4 h-4" />
-            <span>Login / Sign Up</span>
-          </button>
+          {!role && (
+            <button 
+              onClick={() => navigate('/login')}
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-2.5 rounded-xl transition font-bold text-sm shadow-[0_4px_14px_rgba(245,158,11,0.4)] cursor-pointer"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Login / Sign Up</span>
+            </button>
+          )}
         </div>
       </motion.nav>
 

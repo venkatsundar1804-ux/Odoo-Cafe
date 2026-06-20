@@ -9,11 +9,7 @@ export default function AuthPage() {
 
   const handleLogin = (role) => {
     login(role);
-    if (role === 'customer') {
-      navigate('/admin/customer');
-    } else {
-      navigate('/admin');
-    }
+    navigate('/floor');
   };
 
   return (
