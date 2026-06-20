@@ -2,6 +2,12 @@ import { create } from 'zustand';
 
 export const useAuthStore = create((set) => ({
   role: null, // 'customer' | 'employee' | null
-  login: (role) => set({ role }),
-  logout: () => set({ role: null })
+  user: null, // { name: string }
+  login: (role) => {
+    let user = null;
+    if (role === 'customer') user = { name: 'Alex Johnson' };
+    if (role === 'employee') user = { name: 'Sarah (Barista)' };
+    set({ role, user });
+  },
+  logout: () => set({ role: null, user: null })
 }));

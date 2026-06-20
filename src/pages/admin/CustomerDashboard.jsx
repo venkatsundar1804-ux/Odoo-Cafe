@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CreditCard, Tag, Clock, Plus, Trash2, MapPin, CheckCircle2, ChevronRight, Award, ShoppingBag } from 'lucide-react';
+import { CreditCard, Tag, Clock, Plus, Trash2, MapPin, CheckCircle2, ChevronRight, Award, ShoppingBag, ChefHat, Send } from 'lucide-react';
 import { useOrderSyncStore } from '../../store/orderSyncStore';
 
 export default function CustomerDashboard() {
@@ -85,9 +84,28 @@ export default function CustomerDashboard() {
                   </div>
                   <div className="text-right flex flex-col items-end">
                     <p className="font-black text-slate-900 font-mono text-xl">${order.total.toFixed(2)}</p>
-                    <div className="flex items-center gap-1 mt-1 text-[10px] uppercase font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md">
-                      <CheckCircle2 className="w-3 h-3" /> {order.status}
-                    </div>
+                    
+                    {order.status === 'pending' && (
+                      <div className="flex items-center gap-1 mt-1 text-[10px] uppercase font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
+                        <Clock className="w-3 h-3" /> Awaiting Confirmation
+                      </div>
+                    )}
+                    {order.status === 'sent' && (
+                      <div className="flex items-center gap-1 mt-1 text-[10px] uppercase font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                        <Send className="w-3 h-3" /> Sent to Kitchen
+                      </div>
+                    )}
+                    {order.status === 'Preparing' && (
+                      <div className="flex items-center gap-1 mt-1 text-[10px] uppercase font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded-md border border-rose-200 animate-pulse">
+                        <ChefHat className="w-3.5 h-3.5" /> Preparing Order...
+                      </div>
+                    )}
+                    {order.status === 'Completed' && (
+                      <div className="flex items-center gap-1 mt-1 text-[10px] uppercase font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                        <CheckCircle2 className="w-3 h-3" /> Completed
+                      </div>
+                    )}
+
                   </div>
                 </motion.div>
               ))}
