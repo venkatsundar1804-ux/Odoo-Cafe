@@ -48,6 +48,10 @@ function ProductCard({ product, onSelect, onAddToCart }) {
   return (
     <motion.div 
       layoutId={`product-${product.id}`}
+      layout
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
       onClick={() => onSelect(product)}
       className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden flex flex-col justify-between hover:shadow-lg transition-all duration-300 cursor-pointer group"
       whileHover={{ y: -4 }}
@@ -151,7 +155,7 @@ function ProductDetailOverlay({ product, onClose, onAddToCart }) {
 export default function POS() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState(mockCategories);
-  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedTableId] = useState(1); 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -200,10 +204,20 @@ export default function POS() {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategoryId === null || 
-      Number(product.categoryId) === Number(selectedCategoryId) || 
-      Number(product.category_id) === Number(selectedCategoryId) ||
-      (product.category && Number(product.category.id) === Number(selectedCategoryId));
+    
+    let matchesCategory = selectedCategory === 'All';
+    if (!matchesCategory) {
+      if (typeof product.category === 'string') {
+        matchesCategory = product.category === selectedCategory;
+      } else if (product.category && typeof product.category.name === 'string') {
+        matchesCategory = product.category.name === selectedCategory;
+      } else {
+        const catId = product.categoryId || product.category_id;
+        const matchedCat = categories.find(c => Number(c.id) === Number(catId));
+        matchesCategory = matchedCat && matchedCat.name === selectedCategory;
+      }
+    }
+    
     return matchesSearch && matchesCategory;
   });
 
@@ -266,9 +280,9 @@ export default function POS() {
         {/* Col 1: Categories */}
         <aside className="border-r border-slate-200 p-4 space-y-2 overflow-y-auto bg-white">
           <button 
-            onClick={() => setSelectedCategoryId(null)}
-            className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-colors cursor-pointer ${
-              selectedCategoryId === null 
+            onClick={() => setSelectedCategory('All')}
+            className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-all cursor-pointer ${
+              selectedCategory === 'All' 
                 ? 'bg-amber-600 border-amber-600 text-white shadow-sm shadow-amber-900/10' 
                 : 'bg-slate-50 hover:bg-slate-100 hover:text-slate-900 border-slate-200/60 text-slate-700'
             }`}
@@ -278,11 +292,11 @@ export default function POS() {
           {categories.map(cat => (
             <button 
               key={cat.id} 
-              onClick={() => setSelectedCategoryId(cat.id)}
-              className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-colors cursor-pointer ${
-                selectedCategoryId === cat.id 
+              onClick={() => setSelectedCategory(cat.name)}
+              className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-all cursor-pointer ${
+                selectedCategory === cat.name 
                   ? 'bg-amber-600 border-amber-600 text-white shadow-sm shadow-amber-900/10' 
-                  : 'bg-slate-50 hover:bg-slate-100 hover:text-slate-900 border-slate-200/60 text-slate-700'
+                  : 'bg-slate-50 hover:bg-slate-100 hover:text-slate-900 border-slate-200/60 text-slate-700 hover:border-amber-500'
               }`}
             >
               {cat.name}
@@ -291,15 +305,22 @@ export default function POS() {
         </aside>
 
         {/* Col 2: Products */}
-        <main className="p-6 overflow-y-auto grid grid-cols-3 gap-4 auto-rows-min bg-slate-50">
-          {filteredProducts.map(product => (
-            <ProductCard 
-              key={product.id}
-              product={product}
-              onSelect={setSelectedProduct}
-              onAddToCart={addToCart}
-            />
-          ))}
+        <main className="p-6 overflow-y-auto bg-slate-50">
+          <motion.div 
+            layout
+            className="grid grid-cols-3 gap-4 auto-rows-min"
+          >
+            <AnimatePresence>
+              {filteredProducts.map(product => (
+                <ProductCard 
+                  key={product.id}
+                  product={product}
+                  onSelect={setSelectedProduct}
+                  onAddToCart={addToCart}
+                />
+              ))}
+            </AnimatePresence>
+          </motion.div>
         </main>
 
         {/* Col 3: Cart */}
