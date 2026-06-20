@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { CreditCard, Tag, Clock, Plus, Trash2, MapPin } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CreditCard, Tag, Clock, Plus, Trash2, MapPin, CheckCircle2, ChevronRight, Award } from 'lucide-react';
 
 export default function CustomerDashboard() {
   const [paymentMethods, setPaymentMethods] = useState([
@@ -19,100 +19,159 @@ export default function CustomerDashboard() {
     { id: 2, code: 'FREELATTE', discount: 'Free Coffee', validUntil: 'Nov 15, 2023' }
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="p-8 space-y-8 text-slate-800 font-sans animate-fade-in pb-20">
+    <motion.div 
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
+      className="p-4 sm:p-8 space-y-8 text-slate-800 font-sans pb-24"
+    >
       {/* Title */}
-      <div className="border-b border-slate-200/60 pb-6">
-        <h1 className="text-3xl font-light tracking-tight text-slate-900">
-          Customer <span className="font-semibold text-amber-600">Portal</span>
-        </h1>
-        <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Manage your profile & history</p>
-      </div>
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between border-b border-slate-200/50 pb-6"
+      >
+        <div>
+          <h1 className="text-4xl font-black tracking-tighter text-slate-900">
+            Customer <span className="text-amber-500">Portal</span>
+          </h1>
+          <p className="text-sm text-slate-500 mt-1 font-medium">Welcome back! Here is your cafe history.</p>
+        </div>
+        <div className="hidden sm:flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-2xl border border-amber-100 shadow-sm">
+          <Award className="w-5 h-5 text-amber-500" />
+          <span className="font-bold text-amber-700 text-sm">Gold Member</span>
+        </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
         {/* Left Column: Orders */}
-        <div className="lg:col-span-2 space-y-8">
-          <div className="bg-white/60 backdrop-blur-md border border-slate-200/80 rounded-[2rem] p-8 shadow-sm">
-            <div className="flex items-center gap-3 mb-6 text-slate-800">
-              <Clock className="w-5 h-5 text-amber-500" />
-              <h2 className="text-lg font-bold">Past Orders</h2>
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="lg:col-span-2 space-y-6">
+          <div className="bg-white/70 backdrop-blur-[40px] border border-white rounded-[2.5rem] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.03)]">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="bg-slate-900 p-2.5 rounded-xl text-white shadow-md">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl font-black text-slate-800">Order History</h2>
+              </div>
+              <button className="text-sm font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1 transition">
+                View All <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
+            
             <div className="space-y-4">
               {pastOrders.map(order => (
-                <div key={order.id} className="flex items-center justify-between p-4 bg-white/80 border border-slate-100 rounded-[1.5rem] hover:shadow-md transition cursor-pointer group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 font-bold font-mono text-sm border border-amber-100">
+                <motion.div 
+                  variants={itemVariants}
+                  key={order.id} 
+                  whileHover={{ scale: 1.01, x: 5 }}
+                  className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-[1.5rem] shadow-[0_4px_15px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.06)] hover:border-amber-100 transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-5">
+                    <div className="w-14 h-14 rounded-[1.25rem] bg-amber-50 flex items-center justify-center text-amber-600 font-black font-mono text-lg border border-amber-100/50 group-hover:bg-amber-500 group-hover:text-white transition-colors">
                       {order.items}
                     </div>
                     <div>
-                      <p className="font-bold text-slate-800 text-sm">{order.id}</p>
-                      <p className="text-xs text-slate-400 font-medium">{order.date}</p>
+                      <p className="font-black text-slate-800 text-base">{order.id}</p>
+                      <p className="text-xs text-slate-400 font-bold mt-0.5">{order.date}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-black text-slate-800 font-mono text-lg">${order.total.toFixed(2)}</p>
-                    <p className="text-[10px] uppercase font-bold text-emerald-500 tracking-wider">{order.status}</p>
+                  <div className="text-right flex flex-col items-end">
+                    <p className="font-black text-slate-900 font-mono text-xl">${order.total.toFixed(2)}</p>
+                    <div className="flex items-center gap-1 mt-1 text-[10px] uppercase font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md">
+                      <CheckCircle2 className="w-3 h-3" /> {order.status}
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right Column: Payments & Coupons */}
-        <div className="space-y-8">
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-8">
+          
           {/* Payment Methods */}
-          <div className="bg-white/60 backdrop-blur-md border border-slate-200/80 rounded-[2rem] p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-6 text-slate-800">
+          <motion.div variants={itemVariants} className="bg-white/70 backdrop-blur-[40px] border border-white rounded-[2.5rem] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.03)]">
+            <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
-                <CreditCard className="w-5 h-5 text-indigo-500" />
-                <h2 className="text-lg font-bold">Payment Methods</h2>
+                <div className="bg-indigo-500 p-2.5 rounded-xl text-white shadow-md">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl font-black text-slate-800">Wallet</h2>
               </div>
-              <button className="p-2 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition">
+              <button className="p-2 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 transition">
                 <Plus className="w-4 h-4" />
               </button>
             </div>
-            <div className="space-y-3">
-              {paymentMethods.map(pm => (
-                <div key={pm.id} className="flex items-center justify-between p-4 bg-gradient-to-br from-slate-800 to-slate-900 text-white rounded-[1.5rem] shadow-md relative overflow-hidden">
-                  <div className="absolute -right-4 -top-4 w-16 h-16 bg-white/5 rounded-full blur-xl"></div>
-                  <div>
-                    <p className="font-bold text-sm">{pm.type}</p>
-                    <p className="text-xs font-mono text-slate-400 mt-1">**** **** **** {pm.last4}</p>
-                  </div>
-                  <button 
-                    onClick={() => setPaymentMethods(prev => prev.filter(p => p.id !== pm.id))}
-                    className="p-2 bg-white/10 hover:bg-rose-500/80 text-white rounded-full transition cursor-pointer"
+            
+            <div className="space-y-4">
+              <AnimatePresence>
+                {paymentMethods.map(pm => (
+                  <motion.div 
+                    key={pm.id} 
+                    initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                    className="flex items-center justify-between p-5 bg-gradient-to-br from-slate-800 to-slate-900 text-white rounded-[1.5rem] shadow-lg relative overflow-hidden group"
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
+                    <div className="relative z-10">
+                      <p className="font-black text-base">{pm.type}</p>
+                      <p className="text-xs font-mono text-slate-300 mt-1 tracking-widest">**** **** **** {pm.last4}</p>
+                    </div>
+                    <button 
+                      onClick={() => setPaymentMethods(prev => prev.filter(p => p.id !== pm.id))}
+                      className="relative z-10 p-2.5 bg-white/10 hover:bg-rose-500 text-white rounded-xl transition cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
-          </div>
+          </motion.div>
 
           {/* Coupons */}
-          <div className="bg-white/60 backdrop-blur-md border border-slate-200/80 rounded-[2rem] p-8 shadow-sm">
-            <div className="flex items-center gap-3 mb-6 text-slate-800">
-              <Tag className="w-5 h-5 text-emerald-500" />
-              <h2 className="text-lg font-bold">Available Coupons</h2>
+          <motion.div variants={itemVariants} className="bg-white/70 backdrop-blur-[40px] border border-white rounded-[2.5rem] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.03)]">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-emerald-500 p-2.5 rounded-xl text-white shadow-md">
+                <Tag className="w-5 h-5" />
+              </div>
+              <h2 className="text-xl font-black text-slate-800">Offers</h2>
             </div>
+            
             <div className="space-y-4">
               {coupons.map(coupon => (
-                <div key={coupon.id} className="border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-4 rounded-[1.5rem] flex items-center justify-between">
-                  <div>
-                    <p className="font-black text-emerald-700 text-lg">{coupon.discount}</p>
-                    <p className="text-[10px] text-emerald-600/70 uppercase font-bold mt-1">Valid until {coupon.validUntil}</p>
+                <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  key={coupon.id} 
+                  className="relative overflow-hidden border border-emerald-100 bg-gradient-to-r from-emerald-50 to-white p-5 rounded-[1.5rem] flex items-center justify-between shadow-sm cursor-pointer"
+                >
+                  {/* Decorative dashed line */}
+                  <div className="absolute left-0 top-0 bottom-0 w-2 border-r-2 border-dashed border-emerald-200"></div>
+                  
+                  <div className="pl-4">
+                    <p className="font-black text-emerald-600 text-lg">{coupon.discount}</p>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold mt-1 tracking-wider">Valid till {coupon.validUntil}</p>
                   </div>
-                  <div className="bg-white text-emerald-800 font-mono font-bold text-xs px-3 py-1.5 rounded-lg border border-emerald-100 shadow-sm">
+                  <div className="bg-emerald-600 text-white font-mono font-bold text-xs px-3 py-1.5 rounded-lg shadow-md tracking-wider">
                     {coupon.code}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
-        </div>
+          </motion.div>
+
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
