@@ -14,7 +14,9 @@ import {
   LayoutGrid,
   Presentation,
   Plus,
-  Home
+  Home,
+  SlidersHorizontal,
+  X
 } from 'lucide-react';
 
 export default function POS() {
@@ -30,6 +32,10 @@ export default function POS() {
   const [direction, setDirection] = useState(1);
   const [isScrolling, setIsScrolling] = useState(false);
   const [viewMode, setViewMode] = useState('cinematic'); // 'cinematic' | 'grid'
+  
+  const [isSearchOpen, setIsSearchOpen] = useState(Boolean(searchParams.get('search')));
+  const [sortOrder, setSortOrder] = useState('default'); // 'default' | 'price_asc' | 'price_desc' | 'name_asc'
+  const [isSortOpen, setIsSortOpen] = useState(false);
 
   const navigate = useNavigate();
   const { addToCart, cart } = useCartStore();
@@ -59,24 +65,32 @@ export default function POS() {
     return matchesSearch && matchesCategory;
   });
 
+  // Apply sorting
+  const sortedAndFilteredProducts = [...filteredProducts].sort((a, b) => {
+    if (sortOrder === 'price_asc') return a.price - b.price;
+    if (sortOrder === 'price_desc') return b.price - a.price;
+    if (sortOrder === 'name_asc') return a.name.localeCompare(b.name);
+    return 0; // 'default' keeps original mockProducts order
+  });
+
   // Ensure activeIndex is valid when filters change
   useEffect(() => {
     setActiveIndex(0);
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, sortOrder]);
 
-  const activeProduct = filteredProducts[activeIndex] || null;
+  const activeProduct = sortedAndFilteredProducts[activeIndex] || null;
 
   const handleNext = useCallback(() => {
-    if (filteredProducts.length === 0) return;
+    if (sortedAndFilteredProducts.length === 0) return;
     setDirection(1);
-    setActiveIndex((prev) => (prev + 1) % filteredProducts.length);
-  }, [filteredProducts.length]);
+    setActiveIndex((prev) => (prev + 1) % sortedAndFilteredProducts.length);
+  }, [sortedAndFilteredProducts.length]);
 
   const handlePrev = useCallback(() => {
-    if (filteredProducts.length === 0) return;
+    if (sortedAndFilteredProducts.length === 0) return;
     setDirection(-1);
-    setActiveIndex((prev) => (prev - 1 + filteredProducts.length) % filteredProducts.length);
-  }, [filteredProducts.length]);
+    setActiveIndex((prev) => (prev - 1 + sortedAndFilteredProducts.length) % sortedAndFilteredProducts.length);
+  }, [sortedAndFilteredProducts.length]);
 
   // Handle Mouse Wheel properly with debounce/throttle to prevent rapid scrolling
   const handleWheel = (e) => {
@@ -139,12 +153,12 @@ export default function POS() {
 
   // Determine carousel items to show (5 items total: 2 left, 1 center, 2 right)
   const getCarouselItems = () => {
-    if (filteredProducts.length === 0) return [];
+    if (sortedAndFilteredProducts.length === 0) return [];
     const items = [];
     for (let i = -2; i <= 2; i++) {
-      let idx = (activeIndex + i) % filteredProducts.length;
-      if (idx < 0) idx += filteredProducts.length;
-      items.push({ product: filteredProducts[idx], indexOffset: i, absoluteIndex: idx });
+      let idx = (activeIndex + i) % sortedAndFilteredProducts.length;
+      if (idx < 0) idx += sortedAndFilteredProducts.length;
+      items.push({ product: sortedAndFilteredProducts[idx], indexOffset: i, absoluteIndex: idx });
     }
     return items;
   };
@@ -229,8 +243,74 @@ export default function POS() {
                 </button>
               </div>
 
-              <button className="p-4 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-white transition cursor-pointer border border-slate-200/50">
-                <Search className="w-5 h-5 text-slate-700" />
+              <div className="relative">
+                <button 
+                  onClick={() => setIsSortOpen(!isSortOpen)}
+                  className="p-4 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-white transition cursor-pointer border border-slate-200/50"
+                >
+                  <SlidersHorizontal className="w-5 h-5 text-slate-700" />
+                </button>
+                <AnimatePresence>
+                  {isSortOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute top-full mt-3 right-0 w-48 bg-white/95 backdrop-blur-[40px] border border-slate-200 shadow-xl rounded-2xl p-2 z-50 flex flex-col gap-1"
+                    >
+                      <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 px-3 pt-2 pb-1">Sort By</p>
+                      {[
+                        { id: 'default', label: 'Default' },
+                        { id: 'price_asc', label: 'Price: Low to High' },
+                        { id: 'price_desc', label: 'Price: High to Low' },
+                        { id: 'name_asc', label: 'Name: A to Z' }
+                      ].map(option => (
+                        <button
+                          key={option.id}
+                          onClick={() => { setSortOrder(option.id); setIsSortOpen(false); }}
+                          className={`text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+                            sortOrder === option.id ? 'bg-amber-100 text-amber-700' : 'text-slate-600 hover:bg-slate-100'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {isSearchOpen && (
+                <motion.div 
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: 250, opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  className="relative overflow-hidden flex items-center"
+                >
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="Search menu..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-white/90 backdrop-blur shadow-sm rounded-2xl pl-12 pr-4 py-4 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none border border-slate-200/50"
+                  />
+                  <Search className="w-5 h-5 text-slate-400 absolute left-4" />
+                </motion.div>
+              )}
+
+              <button 
+                onClick={() => {
+                  if (isSearchOpen) {
+                    setIsSearchOpen(false);
+                    setSearchQuery('');
+                  } else {
+                    setIsSearchOpen(true);
+                  }
+                }}
+                className={`p-4 backdrop-blur shadow-sm rounded-2xl transition cursor-pointer border border-slate-200/50 ${isSearchOpen ? 'bg-slate-800 hover:bg-slate-700 text-white' : 'bg-white/70 hover:bg-white text-slate-700'}`}
+              >
+                {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
               </button>
               
               <button 
@@ -251,7 +331,16 @@ export default function POS() {
         {/* Dynamic Content Area (Cinematic vs Grid) */}
         <div className="flex-1 overflow-hidden relative z-10 flex flex-col">
           <AnimatePresence mode="wait">
-            {viewMode === 'cinematic' ? (
+            {sortedAndFilteredProducts.length === 0 ? (
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="flex-1 flex flex-col items-center justify-center text-slate-400"
+              >
+                <Search className="w-12 h-12 mb-4 text-slate-300" />
+                <p className="text-xl font-bold text-slate-500">No products found</p>
+                <p className="text-sm font-medium mt-1">Try adjusting your search or filters.</p>
+              </motion.div>
+            ) : viewMode === 'cinematic' ? (
               
               /* CINEMATIC VIEW */
               <motion.div 
@@ -377,21 +466,16 @@ export default function POS() {
 
               /* GRID VIEW */
               <motion.div 
-                key="grid"
+                key="grid-view"
                 variants={gridVariants}
                 initial="hidden"
                 animate="show"
                 exit="exit"
                 className="flex-1 overflow-y-auto px-8 pb-8 pt-4 custom-scrollbar"
               >
-                {filteredProducts.length === 0 ? (
-                  <div className="h-full flex items-center justify-center text-slate-400 font-semibold text-xl">
-                    No products found
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                    {filteredProducts.map(product => (
-                      <motion.div
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {sortedAndFilteredProducts.map(product => (
+                    <motion.div
                         key={product.id}
                         variants={gridItemVariants}
                         whileHover={{ scale: 1.03, y: -5 }}
@@ -421,7 +505,6 @@ export default function POS() {
                       </motion.div>
                     ))}
                   </div>
-                )}
               </motion.div>
             )}
           </AnimatePresence>
