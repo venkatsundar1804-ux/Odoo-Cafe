@@ -92,4 +92,5 @@ export const useAdminStore = create((set, get) => {
       set({ aiSummary: "Today's summary: Strong morning sales in espresso and pastries, peak traffic at 10 AM. Recommended: Stock more milk alternative options for the weekend." });
     }
   }
-}));
+  };
+});
