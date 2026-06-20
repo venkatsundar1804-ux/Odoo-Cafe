@@ -13,7 +13,8 @@ import {
   ShoppingBag,
   LayoutGrid,
   Presentation,
-  Plus
+  Plus,
+  Home
 } from 'lucide-react';
 
 export default function POS() {
@@ -201,6 +202,14 @@ export default function POS() {
             {/* Actions (View Toggle, Search, Cart) */}
             <div className="flex items-center gap-3 ml-4 shrink-0">
               
+              <button 
+                onClick={() => navigate('/floor')}
+                className="p-4 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-slate-800 hover:text-white text-slate-700 transition cursor-pointer border border-slate-200/50 flex items-center justify-center group"
+                title="Back to Home"
+              >
+                <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              </button>
+
               {/* View Mode Toggle */}
               <div className="flex bg-white/70 backdrop-blur border border-slate-200/50 p-1.5 rounded-[1.25rem] shadow-sm">
                 <button 
