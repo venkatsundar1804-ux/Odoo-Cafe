@@ -40,7 +40,11 @@ export const useAdminStore = create((set, get) => {
         syncAdmin({ categories: response.data });
       } catch (error) {
         console.error('Error fetching categories:', error);
-        set({ isLoading: false });
+        // Fallback to mock data
+        import('../data/mockCategoryItems').then(module => {
+          const mockCategories = module.mockCategoryItems.map(c => ({ id: c.categoryId, name: c.categoryName }));
+          set({ categories: mockCategories, isLoading: false });
+        });
       }
     },
 
@@ -51,7 +55,20 @@ export const useAdminStore = create((set, get) => {
       set({ products: response.data, isLoading: false });
     } catch (error) {
       console.error('Error fetching products:', error);
-      set({ isLoading: false });
+      // Fallback to mock data
+      import('../data/mockCategoryItems').then(module => {
+        const mockProducts = [];
+        module.mockCategoryItems.forEach(category => {
+          category.itemTypes.forEach((item, index) => {
+            mockProducts.push({
+              id: `${category.categoryId}-${index}`,
+              name: item,
+              category: category.categoryName
+            });
+          });
+        });
+        set({ products: mockProducts, isLoading: false });
+      });
     }
   },
 
