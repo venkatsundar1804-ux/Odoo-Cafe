@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useCartStore } from '../../store/cartStore';
+import { resolveImage } from '../../utils/imageResolver';
 
 export default function ProductGrid({ products, categories }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -69,16 +70,26 @@ export default function ProductGrid({ products, categories }) {
               key={product.id}
               onClick={() => addToCart(product)}
               style={{ borderTopColor: themeColor }}
-              className="bg-slate-950/50 border-t-4 border-x border-b border-slate-800/80 hover:border-slate-700/80 rounded-xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-950/40 group"
+              className="bg-slate-950/50 border-t-4 border-x border-b border-slate-800/80 hover:border-slate-700/80 rounded-xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-950/40 group relative overflow-hidden"
             >
-              <div>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-bl-[100px] z-0 pointer-events-none" />
+              
+              <div className="relative z-10 flex flex-col items-center mb-3">
+                <img 
+                  src={resolveImage(product.name)} 
+                  alt={product.name}
+                  className="w-24 h-24 object-cover rounded-full shadow-lg group-hover:scale-110 transition-transform duration-500 bg-white/10 p-0.5 border border-slate-700/50"
+                />
+              </div>
+
+              <div className="relative z-10">
                 <span 
                   className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: `${themeColor}15`, color: themeColor }}
                 >
                   {category?.name || 'Item'}
                 </span>
-                <h3 className="font-semibold text-slate-100 mt-2 text-base group-hover:text-amber-400 transition-colors">
+                <h3 className="font-semibold text-slate-100 mt-2 text-base group-hover:text-amber-400 transition-colors line-clamp-1">
                   {product.name}
                 </h3>
                 {product.description && (
@@ -87,11 +98,11 @@ export default function ProductGrid({ products, categories }) {
                   </p>
                 )}
               </div>
-              <div className="flex items-center justify-between mt-4">
+              <div className="flex items-center justify-between mt-4 relative z-10">
                 <span className="text-amber-500 font-bold text-lg font-mono">
                   ${product.price.toFixed(2)}
                 </span>
-                <span className="text-[10px] text-slate-500 font-medium">
+                <span className="text-[10px] text-slate-500 font-medium bg-slate-900 px-2 py-1 rounded-md">
                   {product.unit_of_measure || 'piece'}
                 </span>
               </div>

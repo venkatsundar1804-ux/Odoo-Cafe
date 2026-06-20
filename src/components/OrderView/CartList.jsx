@@ -1,5 +1,6 @@
 import { Plus, Minus, Trash2 } from 'lucide-react';
 import { useCartStore } from '../../store/cartStore';
+import { resolveImage } from '../../utils/imageResolver';
 
 export default function CartList() {
   const { cart, addToCart, removeFromCart, clearCart } = useCartStore();
@@ -32,15 +33,22 @@ export default function CartList() {
           cart.map((item) => (
             <div
               key={item.id}
-              className="flex justify-between items-center bg-slate-950/60 border border-slate-800/80 rounded-xl p-4 transition-all hover:border-slate-700/80"
+              className="flex justify-between items-center bg-slate-950/60 border border-slate-800/80 rounded-xl p-3 transition-all hover:border-slate-700/80"
             >
-              <div className="flex flex-col">
-                <span className="text-slate-100 font-semibold text-sm leading-tight">
-                  {item.name}
-                </span>
-                <span className="text-slate-500 text-xs mt-1 font-mono">
-                  ${item.price.toFixed(2)} each
-                </span>
+              <div className="flex items-center gap-3">
+                <img 
+                  src={resolveImage(item.name)} 
+                  alt={item.name} 
+                  className="w-12 h-12 object-cover rounded-lg border border-slate-700/50" 
+                />
+                <div className="flex flex-col">
+                  <span className="text-slate-100 font-semibold text-sm leading-tight">
+                    {item.name}
+                  </span>
+                  <span className="text-slate-500 text-xs mt-1 font-mono">
+                    ${item.price.toFixed(2)} each
+                  </span>
+                </div>
               </div>
 
               <div className="flex items-center gap-4">
