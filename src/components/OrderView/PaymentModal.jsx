@@ -24,6 +24,31 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
     setChangeDue(Math.max(0, received - totalAmount));
   }, [cashReceived, totalAmount]);
 
+  // Polling for UPI payment status
+  useEffect(() => {
+    let pollingInterval;
+
+    // Only poll if the modal is on the UPI/QR tab and we have a valid order initialized
+    if (activeTab === 'upi' && orderId && paymentStep === 'payment') {
+      pollingInterval = setInterval(async () => {
+        const status = await ordersService.checkOrderStatus(orderId);
+        
+        if (status === 'Paid') {
+          clearInterval(pollingInterval); // Stop checking
+          
+          // Trigger your existing success transition logic!
+          setPaymentStep('receipt'); 
+          if (onPaymentSuccess) onPaymentSuccess();
+        }
+      }, 3000); // Ping every 3 seconds
+    }
+
+    // Cleanup interval if the user closes the modal or switches tabs
+    return () => {
+      if (pollingInterval) clearInterval(pollingInterval);
+    };
+  }, [activeTab, orderId, paymentStep, onPaymentSuccess]);
+
   if (!isOpen) return null;
 
   const handleFinalizePayment = async () => {
@@ -160,7 +185,7 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
                     <div className="flex flex-col items-center justify-center p-4 border border-slate-200 bg-slate-50 rounded-2xl space-y-4">
                       <div className="bg-white p-3 border border-slate-100 rounded-xl shadow-sm">
                         <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`upi://pay?pa=odoocafe@upi&pn=Odoo%20Cafe&am=${totalAmount}`)}`}
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`upi://pay?pa=venkatvallai2004@okhdfcbank&pn=Odoo%20Cafe&am=${totalAmount}`)}`}
                           alt="UPI Payment QR Code"
                           className="w-36 h-36"
                         />

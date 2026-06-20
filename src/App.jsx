@@ -10,6 +10,7 @@ import FloorSelection from './pages/FloorSelection';
 import KitchenDisplay from './pages/KitchenDisplay';
 import Dashboard from './pages/admin/Dashboard';
 import CustomerDisplay from './pages/CustomerDisplay';
+import CustomerManagement from './pages/CustomerManagement';
 import { useTableStore } from './store/tableStore';
 
 // Table selection guard
@@ -44,6 +45,7 @@ export default function App() {
           <Route index element={<Dashboard />} />
           <Route path="overview" element={<Home />} />
           <Route path="products" element={<Products />} />
+          <Route path="customers" element={<CustomerManagement />} />
           <Route path="categories" element={<CategoryAdmin />} />
           <Route path="payments" element={<Payments />} />
           <Route path="coupons" element={<Coupons />} />

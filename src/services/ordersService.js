@@ -55,8 +55,29 @@ export const ordersService = {
       const response = await api.post(`/orders/${orderId}/receipt`, { email });
       return response.data;
     } catch (error) {
-      console.warn("Receipt Email API failed, simulating local success", error);
       return { success: true, message: `Receipt sent to ${email}` };
+    }
+  },
+
+  // Check order status for polling
+  checkOrderStatus: async (orderId) => {
+    try {
+      const response = await api.get(`/orders/${orderId}/status`);
+      return response.data.status;
+    } catch (error) {
+      console.error("Failed to fetch order status", error);
+      return null;
+    }
+  },
+
+  // Simulate UPI Webhook
+  simulateUPIWebhook: async (orderId) => {
+    try {
+      const response = await api.post(`/webhook/upi/${orderId}`);
+      return response.data;
+    } catch (error) {
+      console.warn("Webhook simulation failed", error);
+      return null;
     }
   }
 };

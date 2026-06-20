@@ -3,6 +3,7 @@ import { User, Tag, Send, X, CreditCard } from 'lucide-react';
 import { useCartStore } from '../../store/cartStore';
 import { ordersService } from '../../services/ordersService';
 import PaymentModal from './PaymentModal';
+import { useCustomerStore } from '../../store/customerStore';
 
 export default function OrderSummary({ selectedTableId }) {
   const { 
@@ -22,7 +23,7 @@ export default function OrderSummary({ selectedTableId }) {
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   
-  const [customerList, setCustomerList] = useState([]);
+  const { fetchCustomers, customers: customerList } = useCustomerStore();
   const [couponList, setCouponList] = useState([]);
   const [typedCoupon, setTypedCoupon] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,9 +32,9 @@ export default function OrderSummary({ selectedTableId }) {
   // Fetch lists when modals are opened
   useEffect(() => {
     if (showCustomerModal) {
-      ordersService.getCustomers().then(setCustomerList).catch(() => {});
+      fetchCustomers();
     }
-  }, [showCustomerModal]);
+  }, [showCustomerModal, fetchCustomers]);
 
   useEffect(() => {
     if (showCouponModal) {

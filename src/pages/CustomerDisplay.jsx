@@ -200,7 +200,7 @@ function PaymentView({ orderData }) {
         {/* UPI QR Display */}
         <div className="bg-white p-4 rounded-2xl shadow-lg mb-6">
           <img 
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`upi://pay?pa=odoocafe@upi&pn=Odoo%20Cafe&am=${orderData.total}`)}`}
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`upi://pay?pa=venkatvallai2004@okhdfcbank&pn=Odoo%20Cafe&am=${orderData.total}`)}`}
             alt="Payment QR"
             className="w-44 h-44"
           />
