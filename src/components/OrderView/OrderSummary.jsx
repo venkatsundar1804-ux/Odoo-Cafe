@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { User, Tag, Send, X } from 'lucide-react';
+import { User, Tag, Send, X, CreditCard } from 'lucide-react';
 import { useCartStore } from '../../store/cartStore';
 import { ordersService } from '../../services/ordersService';
+import PaymentModal from './PaymentModal';
 
 export default function OrderSummary({ selectedTableId }) {
   const { 
@@ -19,10 +20,13 @@ export default function OrderSummary({ selectedTableId }) {
   // Modals Local State
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [showCouponModal, setShowCouponModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  
   const [customerList, setCustomerList] = useState([]);
   const [couponList, setCouponList] = useState([]);
   const [typedCoupon, setTypedCoupon] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdOrderId, setCreatedOrderId] = useState(null);
 
   // Fetch lists when modals are opened
   useEffect(() => {
@@ -37,7 +41,7 @@ export default function OrderSummary({ selectedTableId }) {
     }
   }, [showCouponModal]);
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (payImmediately = false) => {
     if (cart.length === 0) {
       alert("Cart is empty!");
       return;
@@ -56,8 +60,13 @@ export default function OrderSummary({ selectedTableId }) {
 
     try {
       const order = await ordersService.createOrder(orderPayload);
-      alert(`Order #${order.id} sent successfully!`);
-      clearCart();
+      if (payImmediately) {
+        setCreatedOrderId(order.id);
+        setShowPaymentModal(true);
+      } else {
+        alert(`Order #${order.id} sent successfully to kitchen!`);
+        clearCart();
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to submit order. Please try again.");
@@ -137,13 +146,23 @@ export default function OrderSummary({ selectedTableId }) {
             <Tag size={14} /> Discount
           </button>
         </div>
-        <button
-          onClick={handleCheckout}
-          disabled={isSubmitting}
-          className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-800 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-900/10 cursor-pointer"
-        >
-          <Send size={16} /> {isSubmitting ? "Processing..." : "Send to Kitchen"}
-        </button>
+        
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleCheckout(false)}
+            disabled={isSubmitting}
+            className="flex-1 bg-slate-950/60 border border-slate-800 hover:border-slate-700 text-slate-300 font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs cursor-pointer"
+          >
+            <Send size={14} /> Kitchen
+          </button>
+          <button
+            onClick={() => handleCheckout(true)}
+            disabled={isSubmitting}
+            className="flex-1 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-800 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs shadow-lg shadow-amber-900/10 cursor-pointer"
+          >
+            <CreditCard size={14} /> Pay Now
+          </button>
+        </div>
       </div>
 
       {/* Customer Modal */}
@@ -220,6 +239,24 @@ export default function OrderSummary({ selectedTableId }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Payment & Receipt Modal */}
+      {showPaymentModal && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => { setShowPaymentModal(false); clearCart(); }}
+          orderId={createdOrderId}
+          totalAmount={total}
+          customer={customer}
+          cartItems={cart}
+          subtotal={subtotal}
+          tax={tax}
+          discountAmount={discountAmount}
+          onPaymentSuccess={() => {
+            // Callback on successful payment (can do things like sound effects or notifications)
+          }}
+        />
       )}
     </div>
   );
