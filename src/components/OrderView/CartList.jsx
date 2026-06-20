@@ -46,7 +46,7 @@ export default function CartList() {
                     {item.name}
                   </span>
                   <span className="text-slate-500 text-xs mt-1 font-mono">
-                    ${item.price.toFixed(2)} each
+                    ₹{item.price.toFixed(2)} each
                   </span>
                 </div>
               </div>
@@ -70,7 +70,7 @@ export default function CartList() {
                   </button>
                 </div>
                 <span className="w-16 text-right font-mono font-bold text-slate-100 text-sm">
-                  ${(item.price * item.quantity).toFixed(2)}
+                  ₹{(item.price * item.quantity).toFixed(2)}
                 </span>
               </div>
             </div>

@@ -112,7 +112,7 @@ export default function CustomerDashboard() {
                     </div>
                   </div>
                   <div className="text-right flex flex-col items-end">
-                    <p className="font-black text-slate-900 font-mono text-xl">${order.total.toFixed(2)}</p>
+                    <p className="font-black text-slate-900 font-mono text-xl">₹{order.total.toFixed(2)}</p>
                     
                     {order.status === 'pending' && (
                       <div className="flex items-center gap-1 mt-1 text-[10px] uppercase font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">

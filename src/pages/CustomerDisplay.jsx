@@ -143,12 +143,12 @@ function OrderView({ orderData }) {
               <div key={idx} className="flex justify-between items-center py-1">
                 <div className="flex flex-col">
                   <span className="text-sm font-semibold text-slate-100">{item.name}</span>
-                  <span className="text-[10px] text-slate-500 font-mono mt-0.5">${item.price.toFixed(2)} each</span>
+                  <span className="text-[10px] text-slate-500 font-mono mt-0.5">₹{item.price.toFixed(2)} each</span>
                 </div>
                 <div className="flex items-center gap-6">
                   <span className="text-xs font-mono text-slate-400 font-semibold">x{item.quantity}</span>
                   <span className="w-16 text-right font-mono font-bold text-slate-200 text-sm">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    ₹{(item.price * item.quantity).toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -161,21 +161,21 @@ function OrderView({ orderData }) {
           <div className="border-t border-slate-900 pt-6 mt-6 space-y-3.5 shrink-0">
             <div className="flex justify-between text-xs text-slate-400">
               <span>Subtotal</span>
-              <span className="font-mono text-slate-200">${orderData.subtotal.toFixed(2)}</span>
+              <span className="font-mono text-slate-200">₹{orderData.subtotal.toFixed(2)}</span>
             </div>
             {orderData.discountAmount > 0 && (
               <div className="flex justify-between text-xs text-rose-400">
                 <span>Discount</span>
-                <span className="font-mono">-${orderData.discountAmount.toFixed(2)}</span>
+                <span className="font-mono">-₹{orderData.discountAmount.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between text-xs text-slate-400">
               <span>Tax</span>
-              <span className="font-mono text-slate-200">${orderData.tax.toFixed(2)}</span>
+              <span className="font-mono text-slate-200">₹{orderData.tax.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center font-bold text-2xl border-t border-slate-900 pt-4 mt-2">
               <span className="text-slate-200">Total</span>
-              <span className="font-mono text-amber-500">${orderData.total.toFixed(2)}</span>
+              <span className="font-mono text-amber-500">₹{orderData.total.toFixed(2)}</span>
             </div>
           </div>
         )}
@@ -194,7 +194,7 @@ function PaymentView({ orderData }) {
         </span>
         <h2 className="text-lg font-bold text-slate-300">Scan to Pay</h2>
         <p className="text-2xl font-black font-mono text-amber-500 mt-2 mb-6">
-          Total: ${orderData.total.toFixed(2)}
+          Total: ₹{orderData.total.toFixed(2)}
         </p>
 
         {/* UPI QR Display */}

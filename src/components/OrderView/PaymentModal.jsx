@@ -157,7 +157,7 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
                   {/* Total Header */}
                   <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex justify-between items-center">
                     <span className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Total Due</span>
-                    <span className="text-2xl font-black font-mono text-amber-500">${totalAmount.toFixed(2)}</span>
+                    <span className="text-2xl font-black font-mono text-amber-500">₹{totalAmount.toFixed(2)}</span>
                   </div>
 
                   {/* Cash Form */}
@@ -175,7 +175,7 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
                       </div>
                       <div className="flex justify-between items-center border-t border-slate-200/50 pt-4">
                         <span className="text-slate-500 text-xs uppercase tracking-wider font-semibold">Change Due</span>
-                        <span className="text-xl font-bold font-mono text-emerald-400">${changeDue.toFixed(2)}</span>
+                        <span className="text-xl font-bold font-mono text-emerald-400">₹{changeDue.toFixed(2)}</span>
                       </div>
                     </div>
                   )}
@@ -243,7 +243,7 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
                   {cartItems.map((item) => (
                     <div key={item.id} className="flex justify-between text-slate-700 print:text-black">
                       <span>{item.name} x{item.quantity}</span>
-                      <span>${(item.price * item.quantity).toFixed(2)}</span>
+                      <span>₹{(item.price * item.quantity).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -252,29 +252,29 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
                 <div className="border-t border-dashed border-slate-200 pt-3 space-y-1.5 print:border-black">
                   <div className="flex justify-between text-slate-500 print:text-black">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-slate-500 print:text-black">
                     <span>Tax</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>₹{tax.toFixed(2)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-rose-400 print:text-black">
                       <span>Discount</span>
-                      <span>-${discountAmount.toFixed(2)}</span>
+                      <span>-₹{discountAmount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between font-bold text-sm text-slate-800 pt-2 border-t border-slate-200/50 print:border-black print:text-black">
                     <span>Total Paid ({activeTab.toUpperCase()})</span>
-                    <span>${totalAmount.toFixed(2)}</span>
+                    <span>₹{totalAmount.toFixed(2)}</span>
                   </div>
                 </div>
 
                 {/* Cash Specific Footer */}
                 {activeTab === 'cash' && (
                   <div className="text-[10px] text-slate-500 space-y-0.5 pt-2 border-t border-slate-900 print:text-black print:border-black">
-                    <div className="flex justify-between"><span>Cash Tendered:</span><span>${(parseFloat(cashReceived) || totalAmount).toFixed(2)}</span></div>
-                    <div className="flex justify-between"><span>Change Given:</span><span>${changeDue.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span>Cash Tendered:</span><span>₹{(parseFloat(cashReceived) || totalAmount).toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span>Change Given:</span><span>₹{changeDue.toFixed(2)}</span></div>
                   </div>
                 )}
               </div>

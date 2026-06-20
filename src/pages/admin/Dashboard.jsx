@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
-  DollarSign, 
+  IndianRupee, 
   ShoppingBag, 
   Percent, 
   Sparkles, 
@@ -233,11 +233,11 @@ export default function Dashboard() {
           <div>
             <p className="text-[10px] text-indigo-100 uppercase font-extrabold tracking-widest opacity-80">Total Revenue</p>
             <p className="text-3xl font-light font-mono mt-2.5">
-              $<span className="font-semibold">{(summary.revenue || 0).toFixed(2)}</span>
+              ₹<span className="font-semibold">{(summary.revenue || 0).toFixed(2)}</span>
             </p>
           </div>
           <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
-            <DollarSign className="w-6 h-6 text-white" />
+            <IndianRupee className="w-6 h-6 text-white" />
           </div>
         </div>
 
@@ -259,7 +259,7 @@ export default function Dashboard() {
           <div>
             <p className="text-[10px] text-emerald-100 uppercase font-extrabold tracking-widest opacity-80">Avg Order Value</p>
             <p className="text-3xl font-light font-mono mt-2.5">
-              $<span className="font-semibold">{(summary.average_order_value || 0).toFixed(2)}</span>
+              ₹<span className="font-semibold">{(summary.average_order_value || 0).toFixed(2)}</span>
             </p>
           </div>
           <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
@@ -304,7 +304,7 @@ export default function Dashboard() {
               return (
                 <div key={index} className="flex flex-col items-center group flex-1">
                   <span className="opacity-0 group-hover:opacity-100 transition-all duration-200 bg-slate-900 text-[10px] text-white px-2 py-0.5 rounded absolute -top-4 font-mono font-bold">
-                    ${d.value.toFixed(2)}
+                    ₹{d.value.toFixed(2)}
                   </span>
                   <div
                     style={{ height: `${height}px` }}
@@ -373,7 +373,7 @@ export default function Dashboard() {
                     <td className="py-3.5 px-3 font-mono font-bold text-slate-900">#{ord.id}</td>
                     <td className="py-3.5 px-3 font-bold">{ord.customer}</td>
                     <td className="py-3.5 px-3 font-mono text-slate-400">{ord.items} items</td>
-                    <td className="py-3.5 px-3 text-right font-mono font-bold text-indigo-600">${ord.total.toFixed(2)}</td>
+                    <td className="py-3.5 px-3 text-right font-mono font-bold text-indigo-600">₹{ord.total.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -400,7 +400,7 @@ export default function Dashboard() {
                   <tr key={idx} className="hover:bg-slate-50/50 transition-colors text-xs text-slate-600">
                     <td className="py-3.5 px-3 font-bold text-slate-900">{prod.name}</td>
                     <td className="py-3.5 px-3 font-mono text-slate-400">{prod.sold} sold</td>
-                    <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-600">${prod.revenue.toFixed(2)}</td>
+                    <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-600">₹{prod.revenue.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>

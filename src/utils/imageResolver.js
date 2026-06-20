@@ -1,4 +1,4 @@
-﻿const fallbackSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="%23CBD5E1" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12c0 2 2 4 4 4s4-2 4-4"/><path d="M10 8h.01"/><path d="M14 8h.01"/></svg>';
+const fallbackSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="%23CBD5E1" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12c0 2 2 4 4 4s4-2 4-4"/><path d="M10 8h.01"/><path d="M14 8h.01"/></svg>';
 
 const imageMap = {
   "alfredo pasta": "Alfredo Pasta.jpg",
@@ -27,7 +27,7 @@ const imageMap = {
   "chicken sandwich": "Chicken Sandwich.jpg",
   "chicken wrap": "Chicken Wrap.jpg",
   "chocolate pastry": "Chocolate Pastry.jpg",
-  "chocolate truffle cake": "Chocolate Truffle Cake.jpg",
+  "chocolate truffle cake": "Chocolate Truffle Cake.png",
   "classic veg burger": "Classic Veg Burger.jpg",
   "club sandwich": "Club Sandwich.jpg",
   "coffee and sandwich combo": "Coffee and Sandwich Combo.jpg",

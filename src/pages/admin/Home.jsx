@@ -1,9 +1,9 @@
-import { Users, ShoppingBag, DollarSign, TrendingUp } from 'lucide-react';
+import { Users, ShoppingBag, IndianRupee, TrendingUp } from 'lucide-react';
 import { mockTransactions } from '../../data/mockTransactions';
 
 export default function Home() {
   const stats = [
-    { name: 'Total Revenue', value: '₹45,231', icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-100' },
+    { name: 'Total Revenue', value: '₹45,231', icon: IndianRupee, color: 'text-emerald-600', bg: 'bg-emerald-100' },
     { name: 'Orders Today', value: '124', icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-100' },
     { name: 'Active Customers', value: '42', icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-100' },
     { name: 'Growth', value: '+12.5%', icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-100' },

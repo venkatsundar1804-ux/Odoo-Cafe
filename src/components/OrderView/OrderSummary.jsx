@@ -112,21 +112,21 @@ export default function OrderSummary({ selectedTableId }) {
       <div className="flex-1 space-y-3.5">
         <div className="flex justify-between text-sm text-slate-400">
           <span>Subtotal</span>
-          <span className="font-mono text-slate-200 font-medium">${subtotal.toFixed(2)}</span>
+          <span className="font-mono text-slate-200 font-medium">₹{subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm text-slate-400">
           <span>Tax</span>
-          <span className="font-mono text-slate-200 font-medium">${tax.toFixed(2)}</span>
+          <span className="font-mono text-slate-200 font-medium">₹{tax.toFixed(2)}</span>
         </div>
         {discountAmount > 0 && (
           <div className="flex justify-between text-sm text-rose-400">
             <span>Discount</span>
-            <span className="font-mono font-medium">-${discountAmount.toFixed(2)}</span>
+            <span className="font-mono font-medium">-₹{discountAmount.toFixed(2)}</span>
           </div>
         )}
         <div className="flex justify-between font-bold text-xl text-slate-100 border-t border-slate-800 pt-4 mt-2">
           <span>Total</span>
-          <span className="font-mono text-amber-500">${total.toFixed(2)}</span>
+          <span className="font-mono text-amber-500">₹{total.toFixed(2)}</span>
         </div>
       </div>
 
@@ -230,7 +230,7 @@ export default function OrderSummary({ selectedTableId }) {
                     >
                       <span className="text-amber-500 font-bold font-mono text-sm">{c.code}</span>
                       <span className="text-slate-400 text-xs mt-1">
-                        {c.discount_type === 'percentage' ? `${c.value}% Off` : `$${c.value} Off`}
+                        {c.discount_type === 'percentage' ? `${c.value}% Off` : `₹${c.value} Off`}
                       </span>
                     </button>
                   ))}
