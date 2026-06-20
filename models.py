@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import declarative_base
+from datetime import datetime, timezone
 
 Base = declarative_base()
 
@@ -59,4 +60,20 @@ class Coupon(Base):
     code = Column(String, unique=True, index=True)
     discount_type = Column(String) # 'percentage' or 'fixed'
     value = Column(Float)
+    is_active = Column(Boolean, default=True)
+
+class POSSession(Base):
+    __tablename__ = "pos_sessions"
+    id = Column(Integer, primary_key=True, index=True)
+    opened_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    closed_at = Column(DateTime, nullable=True)
+    closing_amount = Column(Float, nullable=True)
+    is_open = Column(Boolean, default=True)
+    employee_id = Column(Integer, ForeignKey("users.id"))
+
+class PaymentMethod(Base):
+    __tablename__ = "payment_methods"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    upi_id = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)

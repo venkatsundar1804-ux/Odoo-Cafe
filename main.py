@@ -1,7 +1,9 @@
 import json
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Dict, Any
+from pydantic import BaseModel
+from datetime import datetime, timezone
 
 import models
 import schemas
@@ -89,3 +91,87 @@ async def create_order(order_req: schemas.OrderCreate, db: Session = Depends(get
     await manager.broadcast(json.dumps(kds_payload))
 
     return db_order
+
+class SessionOpen(BaseModel):
+    employee_id: int
+
+class SessionClose(BaseModel):
+    closing_amount: float
+
+@app.post("/api/sessions/open")
+def open_session(session_req: SessionOpen, db: Session = Depends(get_db)):
+    db_session = models.POSSession(
+        employee_id=session_req.employee_id,
+        is_open=True
+    )
+    db.add(db_session)
+    db.commit()
+    db.refresh(db_session)
+    return db_session
+
+@app.post("/api/sessions/{session_id}/close")
+def close_session(session_id: int, session_req: SessionClose, db: Session = Depends(get_db)):
+    db_session = db.query(models.POSSession).filter(models.POSSession.id == session_id).first()
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if not db_session.is_open:
+        raise HTTPException(status_code=400, detail="Session is already closed")
+    
+    db_session.is_open = False
+    db_session.closed_at = datetime.now(timezone.utc)
+    db_session.closing_amount = session_req.closing_amount
+    db.commit()
+    db.refresh(db_session)
+    return db_session
+
+class CFDConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[int, List[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, table_id: int):
+        await websocket.accept()
+        if table_id not in self.active_connections:
+            self.active_connections[table_id] = []
+        self.active_connections[table_id].append(websocket)
+
+    def disconnect(self, websocket: WebSocket, table_id: int):
+        if table_id in self.active_connections:
+            if websocket in self.active_connections[table_id]:
+                self.active_connections[table_id].remove(websocket)
+            if not self.active_connections[table_id]:
+                del self.active_connections[table_id]
+
+    async def broadcast_to_table(self, table_id: int, message: dict):
+        if table_id in self.active_connections:
+            for connection in self.active_connections[table_id]:
+                await connection.send_json(message)
+
+cfd_manager = CFDConnectionManager()
+
+@app.websocket("/ws/cfd/{table_id}")
+async def websocket_cfd_endpoint(websocket: WebSocket, table_id: int):
+    await cfd_manager.connect(websocket, table_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        cfd_manager.disconnect(websocket, table_id)
+
+class CFDUpdateRequest(BaseModel):
+    table_id: int
+    cart_items: List[Dict[str, Any]]
+    subtotal: float
+    tax: float
+    total: float
+
+@app.post("/api/cfd/update")
+async def update_cfd(update_req: CFDUpdateRequest):
+    payload = {
+        "event": "CART_UPDATED",
+        "cart_items": update_req.cart_items,
+        "subtotal": update_req.subtotal,
+        "tax": update_req.tax,
+        "total": update_req.total
+    }
+    await cfd_manager.broadcast_to_table(update_req.table_id, payload)
+    return {"status": "success", "message": f"Broadcasted to table {update_req.table_id}"}
