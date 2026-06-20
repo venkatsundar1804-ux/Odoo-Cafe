@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ShoppingBag, Plus, Minus, X, Tag } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
@@ -13,7 +13,11 @@ import { usePromoStore } from '../store/promoStore';
 export default function Checkout() {
   const navigate = useNavigate();
   const { cart, addToCart, removeFromCart, getTotals, clearCart } = useCartStore();
-  const { promos } = usePromoStore();
+  const { promos, fetchPromos } = usePromoStore();
+
+  useEffect(() => {
+    fetchPromos();
+  }, []);
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
@@ -22,7 +26,22 @@ export default function Checkout() {
   const { subtotal } = getTotals();
   const shippingCost = cart.length > 0 ? 4.99 : 0;
   
-  const discountAmount = appliedPromo ? (subtotal * appliedPromo.discountPercent) / 100 : 0;
+  let discountAmount = 0;
+  if (appliedPromo) {
+    let applicableSubtotal = subtotal;
+    if (appliedPromo.product_id) {
+      applicableSubtotal = cart
+        .filter(item => item.id === appliedPromo.product_id)
+        .reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    }
+    if (appliedPromo.discount_type === 'percentage') {
+      discountAmount = applicableSubtotal * (appliedPromo.value / 100);
+    } else {
+      discountAmount = Math.min(appliedPromo.value, applicableSubtotal);
+    }
+    discountAmount = Math.min(discountAmount, subtotal);
+  }
+
   const total = subtotal - discountAmount + shippingCost;
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -212,18 +231,22 @@ export default function Checkout() {
           {/* Show available promos for quick select */}
           {promos.length > 0 && !appliedPromo && (
             <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
-              {promos.map(promo => (
-                <button
-                  key={promo.code}
-                  onClick={() => {
-                    setPromoCode(promo.code);
-                    setAppliedPromo(promo);
-                  }}
-                  className="shrink-0 bg-emerald-50 border border-emerald-100 text-emerald-700 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap hover:bg-emerald-100 transition"
-                >
-                  {promo.code} (-{promo.discountPercent}%)
-                </button>
-              ))}
+              {promos.map(promo => {
+                const label = promo.discount_type === 'percentage' ? `${promo.value}%` : `₹${promo.value}`;
+                return (
+                  <button
+                    key={promo.code}
+                    onClick={() => {
+                      setPromoCode(promo.code);
+                      setAppliedPromo(promo);
+                    }}
+                    className="shrink-0 bg-emerald-50 border border-emerald-100 text-emerald-700 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap hover:bg-emerald-100 transition"
+                  >
+                    {promo.code} (-{label})
+                    {promo.product_id ? ' [Item Specific]' : ''}
+                  </button>
+                );
+              })}
             </div>
           )}
           
@@ -231,6 +254,7 @@ export default function Checkout() {
             <div className="flex items-center justify-between bg-emerald-50 text-emerald-700 px-4 py-3 rounded-xl border border-emerald-100 text-sm font-bold">
               <span className="flex items-center gap-2">
                 <Tag className="w-4 h-4" /> {appliedPromo.code} Applied!
+                {appliedPromo.product_id && <span className="text-xs bg-white/50 px-2 py-0.5 rounded-md ml-1">Item Specific</span>}
               </span>
               <button 
                 onClick={() => { setAppliedPromo(null); setPromoCode(''); }}
@@ -250,7 +274,7 @@ export default function Checkout() {
           </div>
           {appliedPromo && (
             <div className="flex justify-between font-bold text-emerald-600">
-              <span>Discount ({appliedPromo.discountPercent}%)</span>
+              <span>Discount ({appliedPromo.discount_type === 'percentage' ? `${appliedPromo.value}%` : `₹${appliedPromo.value}`})</span>
               <span>-₹{discountAmount.toFixed(2)}</span>
             </div>
           )}
@@ -280,7 +304,10 @@ export default function Checkout() {
 
       <PaymentModal
         isOpen={isPaymentOpen}
-        onClose={() => setIsPaymentOpen(false)}
+        onClose={() => {
+          setIsPaymentOpen(false);
+          navigate('/floor');
+        }}
         totalAmount={total}
         orderId={currentOrderId}
         onPaymentSuccess={async (paymentMethod) => {
@@ -295,14 +322,11 @@ export default function Checkout() {
             total: total,
             time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
             date: new Date().toLocaleDateString(),
-            status: paymentMethod === 'upi' ? 'sent' : 'pending',
+            status: paymentMethod === 'cash' ? 'pending' : 'sent',
             paymentMethod: paymentMethod === 'upi' ? 'qr' : paymentMethod
           });
 
           clearCart();
-          setIsPaymentOpen(false);
-          // Return to POS or floor when completed!
-          navigate('/floor');
         }}
       />
     </motion.div>

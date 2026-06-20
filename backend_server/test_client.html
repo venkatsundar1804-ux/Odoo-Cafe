@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odoo Cafe - API Test Client</title>
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 20px; max-width: 800px; margin: auto; background: #1e293b; color: #f8fafc; }
+        button { background: #10b981; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #059669; }
+        pre { background: #0f172a; padding: 15px; border-radius: 8px; overflow-x: auto; border: 1px solid #334155; min-height: 200px; }
+        h2 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>⚡ Odoo Cafe - Engine Test</h2>
+    
+    <p><strong>Step 1:</strong> Watch the WebSocket connection below.<br>
+       <strong>Step 2:</strong> Click the button to fire an Axios-style POST request.<br>
+       <strong>Step 3:</strong> Watch the WebSocket catch the live event instantly.</p>
+
+    <button onclick="fireTestOrder()">🛒 Fire Test Order (Table 1)</button>
+
+    <h3>📡 Live WebSocket & API Logs:</h3>
+    <pre id="logs"></pre>
+
+    <script>
+        const logs = document.getElementById('logs');
+        function logMessage(msg, type = "info") {
+            const icons = { info: "🔹", success: "✅", ws: "🔔", error: "❌" };
+            logs.innerHTML += `${icons[type]} ${msg}\n`;
+        }
+
+        // 1. Establish the KDS WebSocket Connection
+        const ws = new WebSocket('ws://localhost:8000/ws/kds');
+        
+        ws.onopen = () => logMessage('Connected to KDS WebSocket (ws://localhost:8000/ws/kds)', 'success');
+        
+        ws.onmessage = (event) => {
+            logMessage('KDS WEBSOCKET EVENT TRIGGERED!', 'ws');
+            logMessage(JSON.stringify(JSON.parse(event.data), null, 2), 'ws');
+        };
+        
+        ws.onerror = () => logMessage('WebSocket Error! Is Uvicorn running?', 'error');
+
+        // 2. The REST API Trigger
+        async function fireTestOrder() {
+            logMessage('Sending POST request to /api/orders/...', 'info');
+            
+            // This is exactly what Person B's React cart will send
+            const payload = {
+                table_id: 1,
+                customer_id: null,
+                coupon_code: null,
+                items: [
+                    { product_id: 1, quantity: 2 },
+                    { product_id: 2, quantity: 1 }
+                ]
+            };
+
+            try {
+                const response = await fetch('http://localhost:8000/api/orders/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    logMessage(`HTTP 200 OK: Order #${data.id} saved to SQLite.`, 'success');
+                } else {
+                    logMessage(`HTTP Error: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                logMessage(`Fetch Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

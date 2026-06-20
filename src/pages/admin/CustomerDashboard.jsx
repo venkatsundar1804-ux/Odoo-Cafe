@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCard, Tag, Clock, Plus, Trash2, MapPin, CheckCircle2, ChevronRight, Award, ShoppingBag, ChefHat, Send, Home, Bell, X } from 'lucide-react';
 import { useOrderSyncStore } from '../../store/orderSyncStore';
 import { usePromoStore } from '../../store/promoStore';
+import api from '../../api';
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function CustomerDashboard() {
 
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [notification, setNotification] = useState(null);
+  
   useEffect(() => {
     const channel = new BroadcastChannel('odoo-cafe-order-sync');
     const handleMessage = (event) => {
@@ -26,6 +28,44 @@ export default function CustomerDashboard() {
       channel.removeEventListener('message', handleMessage);
       channel.close();
     };
+  }, []);
+
+  // Poll backend for real-time status updates across devices
+  useEffect(() => {
+    const pollBackend = async () => {
+      try {
+        const res = await api.get('/orders');
+        const dbOrders = res.data;
+        useOrderSyncStore.setState(state => {
+          let changed = false;
+          let newlyDelivered = null;
+          const newOrders = state.orders.map(o => {
+            const dbOrder = dbOrders.find(dbO => dbO.id === o.id);
+            if (dbOrder && dbOrder.status !== o.status && dbOrder.status !== 'Unknown') {
+              changed = true;
+              if (dbOrder.status === 'Delivered') newlyDelivered = o.id;
+              return { ...o, status: dbOrder.status };
+            }
+            return o;
+          });
+          if (changed) {
+            const channel = new BroadcastChannel('odoo-cafe-order-sync');
+            channel.postMessage({ type: 'SYNC_STATE', orders: newOrders });
+            if (newlyDelivered) {
+              setNotification(`Order #${newlyDelivered} has been delivered! Enjoy!`);
+              setTimeout(() => setNotification(null), 5000);
+            }
+            channel.close();
+            return { orders: newOrders };
+          }
+          return state;
+        });
+      } catch (e) {
+        console.error('Polling failed:', e);
+      }
+    };
+    const interval = setInterval(pollBackend, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const pastOrders = orders.map(o => ({
@@ -139,7 +179,7 @@ export default function CustomerDashboard() {
                         <Clock className="w-3 h-3" /> Awaiting Confirmation
                       </div>
                     )}
-                    {order.status === 'sent' && (
+                    {(order.status === 'sent' || order.status === 'To Cook') && (
                       <div className="flex items-center gap-1 mt-1 text-[10px] uppercase font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
                         <Send className="w-3 h-3" /> Sent to Kitchen
                       </div>

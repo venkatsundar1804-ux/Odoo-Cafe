@@ -1,46 +1,78 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
-const promoChannel = new BroadcastChannel('odoo-cafe-promo-sync');
+let ws;
 
-export const usePromoStore = create(
-  persist(
-    (set, get) => {
-      promoChannel.onmessage = (event) => {
-        if (event.data && event.data.type === 'SYNC_PROMOS') {
-          set({ promos: event.data.promos });
+export const usePromoStore = create((set, get) => {
+  const connectWebSocket = () => {
+    if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) return;
+
+    ws = new WebSocket('ws://127.0.0.1:8000/ws/coupons');
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.event === 'COUPON_ADDED' || data.event === 'COUPON_DELETED') {
+          get().fetchPromos();
         }
-      };
+      } catch (e) {
+        console.error("Failed to parse websocket message", e);
+      }
+    };
 
-      const syncPromos = (newPromos) => {
-        promoChannel.postMessage({ type: 'SYNC_PROMOS', promos: newPromos });
-      };
+    ws.onclose = () => {
+      setTimeout(connectWebSocket, 3000);
+    };
+  };
 
-      return {
-        promos: [
-          { code: 'CAFE10', discountPercent: 10, description: '10% off your entire order' },
-          { code: 'WELCOME20', discountPercent: 20, description: '20% off for new customers' },
-          { code: 'STUDENT15', discountPercent: 15, description: '15% student discount' },
-          { code: 'FESTIVE25', discountPercent: 25, description: '25% off festive special' },
-          { code: 'EARLYBIRD', discountPercent: 5, description: '5% off early morning orders' },
-          { code: 'VIP50', discountPercent: 50, description: '50% off VIP orders' }
-        ],
+  // Initiate connection
+  connectWebSocket();
 
-        addPromo: (code, discountPercent, description) => set((state) => {
-          const newPromos = [...state.promos, { code: code.toUpperCase(), discountPercent: Number(discountPercent), description }];
-          syncPromos(newPromos);
-          return { promos: newPromos };
-        }),
+  return {
+    promos: [],
+    isLoading: false,
 
-        removePromo: (code) => set((state) => {
-          const newPromos = state.promos.filter(p => p.code !== code);
-          syncPromos(newPromos);
-          return { promos: newPromos };
-        })
-      };
+    fetchPromos: async () => {
+      set({ isLoading: true });
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/coupons');
+        if (response.ok) {
+          const data = await response.json();
+          set({ promos: data, isLoading: false });
+        } else {
+          set({ isLoading: false });
+        }
+      } catch (err) {
+        console.error("Failed to fetch promos", err);
+        set({ isLoading: false });
+      }
     },
-    {
-      name: 'odoo-cafe-promo-sync-storage',
+
+    addPromo: async (couponData) => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/coupons', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(couponData),
+        });
+        if (!response.ok) {
+          console.error("Failed to add promo");
+        }
+      } catch (err) {
+        console.error("Failed to add promo", err);
+      }
+    },
+
+    removePromo: async (id) => {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/api/coupons/${id}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) {
+          console.error("Failed to remove promo");
+        }
+      } catch (err) {
+        console.error("Failed to remove promo", err);
+      }
     }
-  )
-);
+  };
+});

@@ -30,12 +30,12 @@ export default function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const allMenuItems = [
-    { name: 'Analytics', path: '/admin', icon: LayoutDashboard, roles: ['employee'] },
+    { name: 'Analytics', path: '/admin', icon: LayoutDashboard, roles: ['employee', 'admin'] },
     { name: 'Customer Portal', path: '/admin/customer', icon: Users, roles: ['customer'] },
-    { name: 'Order Dispatch', path: '/admin/dispatch', icon: ChefHat, roles: ['employee'] },
-    { name: 'Products', path: '/admin/products', icon: ShoppingBag, roles: ['employee'] },
-    { name: 'Payments', path: '/admin/payments', icon: CreditCard, roles: ['employee'] },
-    { name: 'Coupons', path: '/admin/coupons', icon: Tag, roles: ['employee'] },
+    { name: 'Order Dispatch', path: '/admin/dispatch', icon: ChefHat, roles: ['employee', 'admin'] },
+    { name: 'Products', path: '/admin/products', icon: ShoppingBag, roles: ['employee', 'admin'] },
+    { name: 'Payments', path: '/admin/payments', icon: CreditCard, roles: ['employee', 'admin'] },
+    { name: 'Coupons', path: '/admin/coupons', icon: Tag, roles: ['employee', 'admin'] },
   ];
 
   // If no role is set, we might default to employee for demo purposes, or force login

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode, Home, Tag, Plus, Trash2, RefreshCw } from 'lucide-react';
+import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode, Home, Tag, Plus, Trash2, RefreshCw, CreditCard } from 'lucide-react';
 import { useOrderSyncStore } from '../../store/orderSyncStore';
 import { usePromoStore } from '../../store/promoStore';
 import { useTableStore } from '../../store/tableStore';
@@ -202,9 +202,12 @@ export default function EmployeeDashboard() {
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-black text-slate-800 text-base">{order.id} <span className="text-slate-400 font-bold text-xs ml-1">{order.table}</span></p>
-                        {order.paymentMethod === 'qr' && (
+                        {['qr', 'card', 'netbanking', 'wallet'].includes(order.paymentMethod) && (
                           <span className="bg-indigo-100 text-indigo-700 text-[9px] uppercase font-black px-1.5 py-0.5 rounded border border-indigo-200 flex items-center gap-1">
-                            <QrCode className="w-2.5 h-2.5" /> Auto-Sent
+                            {order.paymentMethod === 'qr' ? <QrCode className="w-2.5 h-2.5" /> : 
+                             order.paymentMethod === 'card' ? <CreditCard className="w-2.5 h-2.5" /> : 
+                             <Send className="w-2.5 h-2.5" />}
+                            Auto-Sent ({order.paymentMethod})
                           </span>
                         )}
                       </div>

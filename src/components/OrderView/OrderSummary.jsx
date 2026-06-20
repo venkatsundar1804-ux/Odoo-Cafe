@@ -231,6 +231,7 @@ export default function OrderSummary({ selectedTableId }) {
                       <span className="text-amber-500 font-bold font-mono text-sm">{c.code}</span>
                       <span className="text-slate-400 text-xs mt-1">
                         {c.discount_type === 'percentage' ? `${c.value}% Off` : `₹${c.value} Off`}
+                        {c.product_id ? ' (Item Specific)' : ''}
                       </span>
                     </button>
                   ))}

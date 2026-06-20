@@ -65,9 +65,9 @@ function AnimatedRoutes() {
         } />
         <Route path="/cfd" element={<CustomerDisplay />} />
         <Route path="/pos" element={
-          <ProtectedRoute allowedRoles={['employee', 'admin']}>
+          <TableRequired>
             <POS />
-          </ProtectedRoute>
+          </TableRequired>
         } />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/orderview" element={

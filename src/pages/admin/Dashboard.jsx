@@ -40,9 +40,13 @@ export default function Dashboard() {
   const [salesTrendData, setSalesTrendData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
 
+  const [dbOrders, setDbOrders] = useState([]);
+
   // Fetch initial products for filter dropdown
   useEffect(() => {
     fetchProducts();
+    // Fetch historical real database orders
+    api.get('/orders').then(res => setDbOrders(res.data)).catch(() => {});
   }, [fetchProducts]);
 
   const { orders } = useOrderSyncStore();
@@ -61,24 +65,26 @@ export default function Dashboard() {
     fetchDashboardSummary(filters);
     fetchAiSummary();
     
-    generateMockDataForFilters(period);
-  }, [period, employee, session, selectedProduct, startDate, endDate, fetchDashboardSummary, fetchAiSummary, orders]);
+    // Merge real-time local sync orders with historical database orders
+    const combinedOrders = [...dbOrders, ...orders.filter(o => !dbOrders.some(dbO => dbO.id === o.id))];
+    generateMockDataForFilters(period, combinedOrders);
+  }, [period, employee, session, selectedProduct, startDate, endDate, fetchDashboardSummary, fetchAiSummary, orders, dbOrders]);
 
-  const generateMockDataForFilters = (selectedPeriod) => {
+  const generateMockDataForFilters = (selectedPeriod, sourceOrders = []) => {
     // 1. Top Orders (Sort by total, descending)
-    const sortedOrders = [...orders].sort((a, b) => (b.total || 0) - (a.total || 0)).slice(0, 5);
+    const sortedOrders = [...sourceOrders].sort((a, b) => (b.total || b.total_amount || 0) - (a.total || a.total_amount || 0)).slice(0, 5);
     const mappedTopOrders = sortedOrders.map(o => ({
       id: o.id,
       customer: o.customer_id ? `Cust #${o.customer_id}` : 'Walk-in',
       items: o.items ? o.items.reduce((sum, i) => sum + (i.quantity || 1), 0) : 0,
-      total: o.total || 0,
+      total: o.total || o.total_amount || 0,
       time: o.time || o.date || new Date().toLocaleTimeString()
     }));
     setTopOrders(mappedTopOrders.length > 0 ? mappedTopOrders : []);
 
     // 2. Top Products (Aggregate items from all orders)
     const productMap = {};
-    orders.forEach(order => {
+    sourceOrders.forEach(order => {
       (order.items || []).forEach(item => {
         if (!productMap[item.name]) {
           productMap[item.name] = { sold: 0, revenue: 0 };
@@ -96,7 +102,7 @@ export default function Dashboard() {
     setTopProducts(sortedProducts);
 
     // 3. Sales Trend (Using mock hours but scaled based on real order total if low)
-    let totalRealRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+    let totalRealRevenue = sourceOrders.reduce((sum, o) => sum + (o.total || o.total_amount || 0), 0);
     // If no real orders yet, show a flatline trend instead of fake big numbers
     if (totalRealRevenue === 0) {
       setSalesTrendData([
@@ -260,7 +266,7 @@ export default function Dashboard() {
           <div>
             <p className="text-[10px] text-indigo-100 uppercase font-extrabold tracking-widest opacity-80">Total Revenue</p>
             <p className="text-3xl font-light font-mono mt-2.5">
-              ₹<span className="font-semibold">{(summary.revenue || 0).toFixed(2)}</span>
+              ₹<span className="font-semibold">{(summary.total_revenue || 0).toFixed(2)}</span>
             </p>
           </div>
           <div className="bg-white/10 p-4 rounded-2xl border border-white/10">

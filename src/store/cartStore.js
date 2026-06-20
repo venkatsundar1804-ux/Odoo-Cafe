@@ -45,10 +45,18 @@ export const useCartStore = create((set, get) => ({
     // 3. Discount calculation
     let discountAmount = 0.0;
     if (coupon && coupon.is_active) {
+      let applicableSubtotal = subtotal;
+      
+      if (coupon.product_id) {
+        applicableSubtotal = cart
+          .filter(item => item.id === coupon.product_id)
+          .reduce((acc, item) => acc + (item.price * item.quantity), 0);
+      }
+      
       if (coupon.discount_type === 'percentage') {
-        discountAmount = subtotal * (coupon.value / 100.0);
+        discountAmount = applicableSubtotal * (coupon.value / 100.0);
       } else if (coupon.discount_type === 'fixed') {
-        discountAmount = coupon.value;
+        discountAmount = Math.min(coupon.value, applicableSubtotal);
       }
       discountAmount = Math.min(discountAmount, subtotal);
     }
