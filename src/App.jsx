@@ -9,6 +9,7 @@ import OrderView from './pages/OrderView';
 import FloorSelection from './pages/FloorSelection';
 import KitchenDisplay from './pages/KitchenDisplay';
 import Dashboard from './pages/admin/Dashboard';
+import CustomerDisplay from './pages/CustomerDisplay';
 import { useTableStore } from './store/tableStore';
 
 // Table selection guard
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/login" element={<div className="p-4">Auth Page</div>} />
         <Route path="/floor" element={<FloorSelection />} />
         <Route path="/kds" element={<KitchenDisplay />} />
+        <Route path="/cfd" element={<CustomerDisplay />} />
         <Route path="/pos" element={
           <TableRequired>
             <OrderView />
