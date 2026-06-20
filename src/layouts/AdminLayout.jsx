@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { 
   ShoppingBag, 
@@ -17,6 +17,7 @@ import {
 
 export default function AdminLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -51,7 +52,11 @@ export default function AdminLayout() {
 
         {/* Center: Action Buttons */}
         <div className="flex items-center gap-2">
-          <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors cursor-pointer" title="Cash Register">
+          <button 
+            onClick={() => navigate('/checkout')}
+            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors cursor-pointer" 
+            title="Checkout / Shopping Bag"
+          >
             <Calculator className="w-5 h-5" />
           </button>
           

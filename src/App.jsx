@@ -6,6 +6,8 @@ import Coupons from './pages/admin/Coupons';
 import Products from './pages/admin/Products';
 import OrderView from './pages/OrderView';
 import FloorSelection from './pages/FloorSelection';
+import POS from './pages/POS';
+import Checkout from './pages/Checkout';
 import { useTableStore } from './store/tableStore';
 
 // Pre-route check to force table selection
@@ -29,11 +31,20 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<div className="p-4">Auth Page</div>} />
         <Route path="/floor" element={<FloorSelection />} />
-        <Route path="/pos" element={
+        
+        {/* Our Cinematic POS screen */}
+        <Route path="/pos" element={<POS />} />
+        
+        {/* Our New Checkout Screen */}
+        <Route path="/checkout" element={<Checkout />} />
+
+        {/* Upstream Order View with Table Requirements */}
+        <Route path="/orderview" element={
           <TableRequired>
             <OrderView />
           </TableRequired>
         } />
+
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Home />} />
           <Route path="products" element={<Products />} />
