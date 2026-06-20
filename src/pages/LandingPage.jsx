@@ -18,7 +18,7 @@ export default function LandingPage() {
   }, [fetchTables]);
 
   const handleTableSelect = (table) => {
-    setTableId(table.id);
+    setTableId(table.id, user?.name || 'Guest');
     navigate(`/pos?table_id=${table.id}`);
   };
 
@@ -42,7 +42,9 @@ export default function LandingPage() {
     show: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
   };
 
-  const availableTables = tables.filter(t => t.status === 'available');
+  const availableTables = tables.filter(t => 
+    t.status === 'available' || (user && t.occupiedBy === user.name)
+  );
 
   const recommendedFoods = [
     { id: 1, name: 'Truffle Croissant', price: 6.50, img: '/mockup_images/cafe_banner.png', tag: 'Chef\'s Pick' },
@@ -240,12 +242,18 @@ export default function LandingPage() {
                     <div className="mt-auto relative z-10">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5 text-slate-500 text-sm font-bold">
-                          <Armchair size={16} className="text-emerald-500" />
+                          <Armchair size={16} className={table.occupiedBy === user?.name ? "text-rose-500" : "text-emerald-500"} />
                           <span>{table.seats} Seats</span>
                         </div>
-                        <div className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm">
-                          Sit Here
-                        </div>
+                        {table.occupiedBy === user?.name ? (
+                          <div className="bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm border border-rose-100">
+                            Your Table
+                          </div>
+                        ) : (
+                          <div className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm">
+                            Sit Here
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>
