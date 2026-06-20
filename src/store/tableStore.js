@@ -16,8 +16,12 @@ export const useTableStore = create(
   persist(
     (set, get) => {
       tableChannel.onmessage = (event) => {
-        if (event.data && event.data.type === 'SYNC_TABLES') {
-          set({ tables: event.data.tables });
+        if (event.data) {
+          if (event.data.type === 'SYNC_TABLES') {
+            set({ tables: event.data.tables });
+          } else if (event.data.type === 'RESET_TABLES') {
+            set({ tables: event.data.tables, currentTableId: null });
+          }
         }
       };
 
@@ -38,6 +42,12 @@ export const useTableStore = create(
           );
           syncTables(newTables);
           return { currentTableId: id, tables: newTables };
+        }),
+
+        resetTables: () => set((state) => {
+          const newTables = state.tables.map(t => ({ ...t, status: 'available', occupiedBy: null }));
+          tableChannel.postMessage({ type: 'RESET_TABLES', tables: newTables });
+          return { tables: newTables, currentTableId: null };
         }),
 
         freeTable: (id) => set((state) => {

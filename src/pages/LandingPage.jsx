@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Armchair, Coffee, Quote, Settings, LogIn, User, MapPin, Tag, Star, ArrowRight } from 'lucide-react';
+import { Armchair, Coffee, Quote, Settings, LogIn, LogOut, User, MapPin, Tag, Star, ArrowRight } from 'lucide-react';
 import { useTableStore } from '../store/tableStore';
 import { useAuthStore } from '../store/authStore';
 import { mockProducts } from '../data/mockProducts';
@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function LandingPage() {
   const navigate = useNavigate();
   const { tables, fetchTables, setTableId } = useTableStore();
-  const { role, user } = useAuthStore();
+  const { role, user, logout } = useAuthStore();
 
   const [showTables, setShowTables] = useState(false);
   const tablesRef = useRef(null);
@@ -101,6 +101,16 @@ export default function LandingPage() {
               >
                 <Settings className="w-4 h-4" />
                 <span className="hidden sm:inline">Dashboard</span>
+              </button>
+              <button
+                onClick={() => {
+                  logout();
+                  navigate('/');
+                }}
+                className="flex items-center gap-2 bg-rose-50 text-rose-600 hover:bg-rose-100 px-6 py-3 rounded-2xl transition font-black text-sm shadow-[0_10px_30px_rgba(225,29,72,0.15)] cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
           ) : (

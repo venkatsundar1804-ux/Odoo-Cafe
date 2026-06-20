@@ -44,13 +44,23 @@ export default function Checkout() {
     }
     
     try {
-      // Bypass backend order creation for the prototype
-      const mockOrderId = Math.floor(Math.random() * 9000) + 1000;
-      setCurrentOrderId(mockOrderId);
+      const orderPayload = {
+        table_id: useTableStore.getState().currentTableId || 1,
+        items: cart.map(item => ({ 
+          product_id: item.id, 
+          quantity: item.quantity,
+          name: item.name,
+          price: item.price
+        })),
+        coupon_code: appliedPromo ? appliedPromo.code : null
+      };
+
+      const createdOrder = await ordersService.createOrder(orderPayload);
+      setCurrentOrderId(createdOrder.id);
       setIsPaymentOpen(true);
     } catch (err) {
       console.error(err);
-      alert("Failed to process checkout locally.");
+      alert("Failed to create order in database.");
     }
   };
 
@@ -273,10 +283,13 @@ export default function Checkout() {
         onClose={() => setIsPaymentOpen(false)}
         totalAmount={total}
         orderId={currentOrderId}
-        onPaymentSuccess={(paymentMethod) => {
+        onPaymentSuccess={async (paymentMethod) => {
+          // Send payment confirmation to backend
+          await ordersService.payOrder(currentOrderId, paymentMethod, {});
+
           // Push order to sync store
           useOrderSyncStore.getState().addOrder({
-            id: `ORD-${currentOrderId}`,
+            id: currentOrderId,
             table: `T-${useTableStore.getState().currentTableId || 1}`,
             items: cart.map(i => ({ product_id: i.id, name: `${i.quantity}x ${i.name}`, quantity: i.quantity, completed: false })),
             total: total,

@@ -1,18 +1,28 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode, Home, Tag, Plus, Trash2 } from 'lucide-react';
+import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode, Home, Tag, Plus, Trash2, RefreshCw } from 'lucide-react';
 import { useOrderSyncStore } from '../../store/orderSyncStore';
 import { usePromoStore } from '../../store/promoStore';
+import { useTableStore } from '../../store/tableStore';
+import { useAuthStore } from '../../store/authStore';
 
 export default function EmployeeDashboard() {
   const navigate = useNavigate();
   const { orders, dispatchOrderToKds, markDelivered } = useOrderSyncStore();
   const { promos, addPromo, removePromo } = usePromoStore();
+  const { resetTables } = useTableStore();
   
   const [newPromoCode, setNewPromoCode] = useState('');
   const [newPromoDiscount, setNewPromoDiscount] = useState('');
   const [newPromoDesc, setNewPromoDesc] = useState('');
+  
+  const { sessionId, openSession, closeSession } = useAuthStore();
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [closingAmount, setClosingAmount] = useState('');
+
+  const cashOrders = orders.filter(o => o.paymentMethod === 'cash');
+  const expectedCash = cashOrders.reduce((sum, o) => sum + (o.total || 0), 0);
 
   const sendToKds = (id) => {
     dispatchOrderToKds(id);
@@ -59,11 +69,31 @@ export default function EmployeeDashboard() {
             <span className="font-bold text-rose-700 text-sm">{pendingOrders.length} Pending</span>
           </div>
           <button 
+            onClick={() => setIsRegisterOpen(true)}
+            className={`flex items-center gap-2 p-3 backdrop-blur shadow-sm rounded-2xl transition cursor-pointer border ${sessionId ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}`}
+            title="Register Control"
+          >
+            <Banknote className="w-5 h-5" />
+            <span className="hidden sm:inline font-bold text-sm">{sessionId ? 'Session Active' : 'Start Shift'}</span>
+          </button>
+          <button 
             onClick={() => navigate('/floor')}
             className="p-3 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-slate-800 hover:text-white text-slate-700 transition cursor-pointer border border-slate-200/50 flex items-center justify-center group"
             title="Back to Home"
           >
             <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          </button>
+          <button 
+            onClick={() => {
+              if (window.confirm('Are you sure you want to free up all tables?')) {
+                resetTables();
+              }
+            }}
+            className="flex items-center gap-2 p-3 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-rose-50 hover:text-rose-600 text-slate-700 transition cursor-pointer border border-slate-200/50"
+            title="Reset All Tables"
+          >
+            <RefreshCw className="w-5 h-5" />
+            <span className="hidden sm:inline font-bold text-sm">Reset Tables</span>
           </button>
         </div>
       </motion.div>
@@ -323,6 +353,85 @@ export default function EmployeeDashboard() {
           </div>
         </div>
       </motion.div>
+
+      {/* Register Control Modal */}
+      <AnimatePresence>
+        {isRegisterOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
+              className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-sky-500"></div>
+              
+              <div className="flex justify-between items-center mb-6 mt-2">
+                <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                  <Banknote className="w-6 h-6 text-indigo-500" /> Register Control
+                </h3>
+                <button onClick={() => setIsRegisterOpen(false)} className="text-slate-400 hover:text-slate-600 transition">
+                  <Trash2 className="w-5 h-5 opacity-0" /> {/* Just for spacing or close icon if imported */}
+                </button>
+              </div>
+
+              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 mb-6 text-center">
+                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Expected Cash In Hand</p>
+                <p className="text-4xl font-black font-mono text-slate-800">₹{expectedCash.toFixed(2)}</p>
+              </div>
+
+              {!sessionId ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-600 text-center font-medium">Your register is currently closed. Start your shift to begin taking orders.</p>
+                  <button 
+                    onClick={async () => {
+                      await openSession();
+                      setIsRegisterOpen(false);
+                    }}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl shadow-lg transition"
+                  >
+                    Open Register & Start Shift
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-600 text-center font-medium">Please verify the cash in the till before closing your shift.</p>
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Actual Closing Amount (₹)</label>
+                    <input 
+                      type="number" 
+                      value={closingAmount}
+                      onChange={e => setClosingAmount(e.target.value)}
+                      className="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-3 text-lg font-bold text-slate-800 focus:outline-none focus:border-indigo-500"
+                      placeholder="e.g. 5000"
+                    />
+                  </div>
+                  <div className="pt-2">
+                    <button 
+                      onClick={async () => {
+                        await closeSession(parseFloat(closingAmount) || 0);
+                        setIsRegisterOpen(false);
+                        setClosingAmount('');
+                      }}
+                      className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg transition"
+                    >
+                      End Shift & Close Register
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              <button 
+                onClick={() => setIsRegisterOpen(false)}
+                className="w-full mt-4 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold py-3 rounded-xl transition"
+              >
+                Cancel
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

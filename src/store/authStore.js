@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '../api';
+import { useTableStore } from './tableStore';
 
 export const useAuthStore = create(
   persist(
@@ -35,7 +36,38 @@ export const useAuthStore = create(
         }
       },
 
+      register: async ({ name, email, password }) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await api.post('/auth/register', { name, email, password });
+          const { access_token, user } = response.data;
+          
+          set({
+            token: access_token,
+            user: { id: user.id, name: user.name, email: user.email },
+            role: user.role,
+            isLoading: false
+          });
+
+          return user.role;
+        } catch (err) {
+          set({ 
+            error: err.response?.data?.detail || 'Registration failed.', 
+            isLoading: false 
+          });
+          throw err;
+        }
+      },
+
       logout: () => {
+        const { user } = get();
+        if (user) {
+          const tableStore = useTableStore.getState();
+          const tableToFree = tableStore.tables.find(t => t.occupiedBy === user.name);
+          if (tableToFree) {
+            tableStore.freeTable(tableToFree.id);
+          }
+        }
         set({ role: null, user: null, token: null, sessionId: null, error: null });
       },
 

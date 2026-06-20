@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CreditCard, Tag, Clock, Plus, Trash2, MapPin, CheckCircle2, ChevronRight, Award, ShoppingBag, ChefHat, Send, Home } from 'lucide-react';
+import { CreditCard, Tag, Clock, Plus, Trash2, MapPin, CheckCircle2, ChevronRight, Award, ShoppingBag, ChefHat, Send, Home, Bell, X } from 'lucide-react';
 import { useOrderSyncStore } from '../../store/orderSyncStore';
 import { usePromoStore } from '../../store/promoStore';
 
@@ -11,6 +11,22 @@ export default function CustomerDashboard() {
   const { promos } = usePromoStore();
 
   const [paymentMethods, setPaymentMethods] = useState([]);
+  const [notification, setNotification] = useState(null);
+  useEffect(() => {
+    const channel = new BroadcastChannel('odoo-cafe-order-sync');
+    const handleMessage = (event) => {
+      if (event.data && event.data.type === 'ORDER_DELIVERED') {
+        setNotification(`Order #${event.data.orderId} has been delivered! Enjoy!`);
+        setTimeout(() => setNotification(null), 5000);
+      }
+    };
+    channel.addEventListener('message', handleMessage);
+    
+    return () => {
+      channel.removeEventListener('message', handleMessage);
+      channel.close();
+    };
+  }, []);
 
   const pastOrders = orders.map(o => ({
     id: o.id,
@@ -35,6 +51,24 @@ export default function CustomerDashboard() {
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
       className="p-4 sm:p-8 space-y-8 text-slate-800 font-sans pb-24"
     >
+      {/* Notification Toast */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: -50, x: '-50%' }}
+            className="fixed top-8 left-1/2 z-50 flex items-center gap-3 bg-emerald-500 text-white px-6 py-4 rounded-2xl shadow-[0_10px_40px_rgba(16,185,129,0.3)] min-w-[300px] max-w-md w-max"
+          >
+            <Bell className="w-6 h-6 animate-bounce" />
+            <span className="font-bold">{notification}</span>
+            <button onClick={() => setNotification(null)} className="ml-auto p-1 hover:bg-emerald-600 rounded-full transition">
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Title */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -118,6 +152,11 @@ export default function CustomerDashboard() {
                     {order.status === 'Completed' && (
                       <div className="flex items-center gap-1 mt-1 text-[10px] uppercase font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
                         <CheckCircle2 className="w-3 h-3" /> Completed
+                      </div>
+                    )}
+                    {order.status === 'Delivered' && (
+                      <div className="flex items-center gap-1 mt-1 text-[10px] uppercase font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200">
+                        <CheckCircle2 className="w-3 h-3" /> Delivered
                       </div>
                     )}
 

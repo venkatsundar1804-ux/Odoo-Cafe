@@ -62,6 +62,7 @@ export const useOrderSyncStore = create(
         markDelivered: (orderId) => set((state) => {
           const newOrders = state.orders.map(o => o.id === orderId ? { ...o, status: 'Delivered' } : o);
           syncToOtherTabs(newOrders);
+          channel.postMessage({ type: 'ORDER_DELIVERED', orderId });
           return { orders: newOrders };
         }),
       };

@@ -1,17 +1,26 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Coffee, ChevronLeft, LogIn, Lock, Mail, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
-export default function AuthPage() {
+const AuthPage = () => {
   const navigate = useNavigate();
-  const { login, isLoading, error } = useAuthStore();
+  const { login, register } = useAuthStore();
+  
+  // true = Sign Up active (Overlay on left)
+  // false = Sign In active (Overlay on right)
+  const [isRightPanelActive, setIsRightPanelActive] = useState(false);
+
+  // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
     try {
       const role = await login(email, password);
       if (role === 'employee' || role === 'admin') {
@@ -20,106 +29,182 @@ export default function AuthPage() {
         navigate('/floor');
       }
     } catch (err) {
-      // Error is handled by the store and displayed via the `error` state below
-      console.error(err);
+      setError(err.message || 'Authentication failed.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
+    try {
+      const role = await register({ name, email, password });
+      if (role === 'employee' || role === 'admin') {
+        navigate('/admin/dispatch');
+      } else {
+        navigate('/floor');
+      }
+    } catch (err) {
+      setError(err.message || 'Registration failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Helper to switch modes and clear errors/forms
+  const togglePanel = (isSignUp) => {
+    setIsRightPanelActive(isSignUp);
+    setError('');
+    setEmail('');
+    setPassword('');
+    setName('');
+  };
+
   return (
-    <motion.div 
-      initial={{ opacity: 0, filter: 'blur(10px)' }}
-      animate={{ opacity: 1, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, filter: 'blur(10px)' }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden font-['Poppins',sans-serif]"
-    >
-      {/* Background Shapes */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[70%] bg-indigo-100/60 rounded-full blur-[140px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[60%] bg-indigo-50/60 rounded-full blur-[120px]" />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-[-7rem] top-12 h-72 w-72 rounded-full bg-sky-200/70 blur-3xl transition-all duration-700" />
+        <div className={`absolute bottom-[-5rem] right-[-4rem] h-80 w-80 rounded-full blur-3xl transition-all duration-700 ${!isRightPanelActive ? 'bg-amber-100' : 'bg-rose-100/70'}`} />
       </div>
 
-      <div className="relative z-10 w-full max-w-md bg-white/70 backdrop-blur-[80px] rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-200/60 p-8 flex flex-col items-center">
-        
-        <button 
-          onClick={() => navigate('/floor')}
-          className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-semibold text-sm transition"
+      {/* MAIN CONTAINER */}
+      <div className="relative overflow-hidden w-full max-w-[900px] min-h-[550px] bg-white/50 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(131,128,196,0.15)] rounded-2xl z-10">
+
+        {/* --- SIGN UP FORM --- */}
+        <div 
+          className={`absolute top-0 left-0 h-full w-1/2 transition-all duration-700 ease-in-out px-12 flex flex-col justify-center items-center bg-transparent ${
+            isRightPanelActive 
+              ? 'translate-x-full opacity-100 z-50' 
+              : 'opacity-0 z-10 pointer-events-none'
+          }`}
         >
-          <ChevronLeft className="w-4 h-4" /> Back
-        </button>
-
-        <div className="bg-indigo-600 text-white p-4 rounded-2xl shadow-lg mb-6 mt-4">
-          <Coffee className="w-8 h-8" />
+          <h2 className="text-3xl font-bold text-[#8380C4] mb-6 text-center">Create Account</h2>
+          {error && isRightPanelActive && <p className="text-sm text-rose-500 mb-4">{error}</p>}
+          <form className="w-full space-y-4" onSubmit={handleRegisterSubmit}>
+            <input 
+              type="text" 
+              placeholder="Name" 
+              className="odoo-input" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required 
+            />
+            <input 
+              type="email" 
+              placeholder="Email" 
+              className="odoo-input" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required 
+            />
+            <input 
+              type="password" 
+              placeholder="Password" 
+              className="odoo-input" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required 
+            />
+            <button type="submit" disabled={isSubmitting} className="btn-gradient w-full py-3 mt-4 text-white font-bold rounded-xl shadow-lg disabled:opacity-60">
+              {isSubmitting ? 'CREATING...' : 'SIGN UP'}
+            </button>
+          </form>
         </div>
-        
-        <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-2 text-center">
-          Odoo Cafe
-        </h1>
-        <p className="text-slate-500 text-sm font-medium mb-8 text-center px-4">
-          Enter your credentials to access the POS terminal.
-        </p>
 
-        {error && (
-          <div className="w-full mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl flex items-start gap-3 text-sm font-medium">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="w-full space-y-5">
-          <div>
-            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Email</label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@cafe.com"
-                className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
-              />
+        {/* --- SIGN IN FORM --- */}
+        <div 
+          className={`absolute top-0 left-0 h-full w-1/2 transition-all duration-700 ease-in-out px-12 flex flex-col justify-center items-center bg-transparent ${
+            isRightPanelActive 
+              ? 'translate-x-full opacity-0 z-10 pointer-events-none' 
+              : 'translate-x-0 opacity-100 z-50'
+          }`}
+        >
+          <h2 className="text-3xl font-bold text-[#8380C4] mb-6 text-center">Sign In</h2>
+          {error && !isRightPanelActive && <p className="text-sm text-rose-500 mb-4">{error}</p>}
+          <form className="w-full space-y-4" onSubmit={handleLoginSubmit}>
+            <input 
+              type="email" 
+              placeholder="Email" 
+              className="odoo-input" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required 
+            />
+            <input 
+              type="password" 
+              placeholder="Password" 
+              className="odoo-input" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required 
+            />
+            <div className="text-right w-full">
+              <button type="button" className="text-sm text-[#8380C4] hover:text-[#FFD4A6] transition-colors underline-offset-4 hover:underline">
+                Forgot your password?
+              </button>
             </div>
-          </div>
+            <button type="submit" disabled={isSubmitting} className="btn-gradient w-full py-3 mt-4 text-white font-bold rounded-xl shadow-lg disabled:opacity-60">
+              {isSubmitting ? 'SIGNING IN...' : 'SIGN IN'}
+            </button>
+          </form>
+        </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-4 mt-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold tracking-wide shadow-lg shadow-indigo-600/30 transition-all flex justify-center items-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+        {/* --- THE SLIDING OVERLAY CONTAINER --- */}
+        <div 
+          className={`absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-[100] ${
+            isRightPanelActive ? '-translate-x-full' : 'translate-x-0'
+          }`}
+        >
+          {/* The Inner Overlay */}
+          <div 
+            className={`absolute top-0 left-[-100%] w-[200%] h-full transition-transform duration-700 ease-in-out bg-gradient-to-br from-[#8380C4] to-[#FFD4A6] text-white ${
+              isRightPanelActive ? 'translate-x-1/2' : 'translate-x-0'
+            }`}
           >
-            {isLoading ? (
-              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-            ) : (
-              <>
-                <LogIn className="w-5 h-5" /> Sign In
-              </>
-            )}
-          </button>
-        </form>
-        
-        <div className="mt-8 pt-6 border-t border-slate-100 w-full text-center">
-          <p className="text-xs text-slate-400 font-medium">
-            Demo Credentials:<br/>
-            Admin: admin@cafe.com / admin123<br/>
-            Cashier: john@cafe.com / pos123
-          </p>
+            {/* OVERLAY LEFT PANEL (Shows when Sign Up is active) */}
+            <div 
+              className={`absolute top-0 left-0 w-1/2 h-full flex flex-col items-center justify-center px-12 text-center transition-transform duration-700 ease-in-out ${
+                isRightPanelActive ? 'translate-x-0' : '-translate-x-[20%]'
+              }`}
+            >
+              <h2 className="text-4xl font-bold mb-4 drop-shadow-md">Welcome Back!</h2>
+              <p className="mb-8 text-white/90 leading-relaxed drop-shadow-sm">
+                To keep connected with Odoo Cafe please login with your personal info
+              </p>
+              <button
+                onClick={() => togglePanel(false)}
+                className="border-2 border-white bg-transparent rounded-xl px-12 py-3 font-bold hover:bg-white hover:text-[#8380C4] transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+              >
+                SIGN IN
+              </button>
+            </div>
+
+            {/* OVERLAY RIGHT PANEL (Shows when Sign In is active) */}
+            <div 
+              className={`absolute top-0 right-0 w-1/2 h-full flex flex-col items-center justify-center px-12 text-center transition-transform duration-700 ease-in-out ${
+                isRightPanelActive ? 'translate-x-[20%]' : 'translate-x-0'
+              }`}
+            >
+              <h2 className="text-4xl font-bold mb-4 drop-shadow-md">Hello, Friend!</h2>
+              <p className="mb-8 text-white/90 leading-relaxed drop-shadow-sm">
+                Enter your personal details and start customizing your orders
+              </p>
+              <button
+                onClick={() => togglePanel(true)}
+                className="border-2 border-white bg-transparent rounded-xl px-12 py-3 font-bold hover:bg-white hover:text-[#8380C4] transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+              >
+                SIGN UP
+              </button>
+            </div>
+          </div>
         </div>
+
       </div>
-    </motion.div>
+    </div>
   );
-}
+};
+
+export default AuthPage;

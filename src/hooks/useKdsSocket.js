@@ -9,6 +9,7 @@ export function useKdsSocket() {
 
   useEffect(() => {
     let reconnectTimeout;
+    let heartbeatInterval;
 
     function connect() {
       console.log("Connecting to KDS WebSocket at:", KDS_WS_URL);
@@ -18,14 +19,20 @@ export function useKdsSocket() {
       ws.onopen = () => {
         console.log("KDS WebSocket connected successfully.");
         setIsConnected(true);
+        // Heartbeat check to prevent drift on intermittent connections
+        heartbeatInterval = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'ping' }));
+          }
+        }, 15000); // 15 seconds ping
       };
 
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log("KDS WebSocket Message Received:", data);
           
           if (data.event === 'NEW_ORDER') {
+            console.log("KDS WebSocket Message Received:", data);
             // Map backend payload to KDS store structure
             const mappedOrder = {
               id: data.order_id,
@@ -50,6 +57,7 @@ export function useKdsSocket() {
       ws.onclose = (event) => {
         console.warn("KDS WebSocket connection closed:", event.reason);
         setIsConnected(false);
+        clearInterval(heartbeatInterval);
         // Auto-reconnect after 3 seconds
         reconnectTimeout = setTimeout(connect, 3000);
       };
@@ -66,6 +74,7 @@ export function useKdsSocket() {
       if (wsRef.current) {
         wsRef.current.close();
       }
+      clearInterval(heartbeatInterval);
       clearTimeout(reconnectTimeout);
     };
   }, [addOrder]);

@@ -65,39 +65,63 @@ export default function Dashboard() {
   }, [period, employee, session, selectedProduct, startDate, endDate, fetchDashboardSummary, fetchAiSummary, orders]);
 
   const generateMockDataForFilters = (selectedPeriod) => {
-    let multiplier = 1;
-    if (selectedPeriod === 'This Week') multiplier = 5.2;
-    if (selectedPeriod === 'This Month') multiplier = 22.4;
+    // 1. Top Orders (Sort by total, descending)
+    const sortedOrders = [...orders].sort((a, b) => (b.total || 0) - (a.total || 0)).slice(0, 5);
+    const mappedTopOrders = sortedOrders.map(o => ({
+      id: o.id,
+      customer: o.customer_id ? `Cust #${o.customer_id}` : 'Walk-in',
+      items: o.items ? o.items.reduce((sum, i) => sum + (i.quantity || 1), 0) : 0,
+      total: o.total || 0,
+      time: o.time || o.date || new Date().toLocaleTimeString()
+    }));
+    setTopOrders(mappedTopOrders.length > 0 ? mappedTopOrders : []);
 
-    setTopOrders([
-      { id: 1205, customer: 'Alice Smith', items: 3, total: 24.50 * multiplier, time: '10:45 AM' },
-      { id: 1206, customer: 'Bob Jones', items: 1, total: 8.00 * multiplier, time: '11:15 AM' },
-      { id: 1207, customer: 'Walk-in', items: 2, total: 15.75 * multiplier, time: '11:40 AM' },
-      { id: 1208, customer: 'Charlie Brown', items: 4, total: 32.20 * multiplier, time: '12:05 PM' }
-    ]);
+    // 2. Top Products (Aggregate items from all orders)
+    const productMap = {};
+    orders.forEach(order => {
+      (order.items || []).forEach(item => {
+        if (!productMap[item.name]) {
+          productMap[item.name] = { sold: 0, revenue: 0 };
+        }
+        productMap[item.name].sold += (item.quantity || 1);
+        productMap[item.name].revenue += ((item.price || 0) * (item.quantity || 1));
+      });
+    });
+    
+    const sortedProducts = Object.entries(productMap)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.sold - a.sold)
+      .slice(0, 5);
+    
+    setTopProducts(sortedProducts);
 
-    setTopProducts([
-      { name: 'Espresso', sold: Math.round(48 * multiplier), revenue: 144.00 * multiplier },
-      { name: 'Croissant', sold: Math.round(35 * multiplier), revenue: 122.50 * multiplier },
-      { name: 'Iced Latte', sold: Math.round(30 * multiplier), revenue: 135.00 * multiplier },
-      { name: 'Blueberry Muffin', sold: Math.round(22 * multiplier), revenue: 77.00 * multiplier }
-    ]);
+    // 3. Sales Trend (Using mock hours but scaled based on real order total if low)
+    let totalRealRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+    // If no real orders yet, show a flatline trend instead of fake big numbers
+    if (totalRealRevenue === 0) {
+      setSalesTrendData([
+        { label: '08:00', value: 0 }, { label: '10:00', value: 0 },
+        { label: '12:00', value: 0 }, { label: '14:00', value: 0 },
+        { label: '16:00', value: 0 }, { label: '18:00', value: 0 }
+      ]);
+      setCategoryData([]);
+      return;
+    }
 
-    // Trend points (relative heights for custom SVG graph)
+    // Distribute real revenue across trend for visualization (simple mock distribution based on actual total)
     setSalesTrendData([
-      { label: '08:00', value: 120 * multiplier },
-      { label: '10:00', value: 340 * multiplier },
-      { label: '12:00', value: 520 * multiplier },
-      { label: '14:00', value: 410 * multiplier },
-      { label: '16:00', value: 290 * multiplier },
-      { label: '18:00', value: 610 * multiplier }
+      { label: '08:00', value: totalRealRevenue * 0.1 },
+      { label: '10:00', value: totalRealRevenue * 0.25 },
+      { label: '12:00', value: totalRealRevenue * 0.35 },
+      { label: '14:00', value: totalRealRevenue * 0.15 },
+      { label: '16:00', value: totalRealRevenue * 0.1 },
+      { label: '18:00', value: totalRealRevenue * 0.05 }
     ]);
 
+    // 4. Category Data (Mock distribution if not categorised in items)
     setCategoryData([
-      { name: 'Hot Coffee', value: 45 },
-      { name: 'Cold Brews', value: 25 },
-      { name: 'Pastries', value: 20 },
-      { name: 'Food Items', value: 10 }
+      { name: 'Beverages', value: 60 },
+      { name: 'Food', value: 40 }
     ]);
   };
 
