@@ -1,95 +1,36 @@
 import { useEffect, useState } from 'react';
 import { ChefHat, Wifi, WifiOff, Clock, Armchair, CheckCircle2, Circle } from 'lucide-react';
-import { useKdsStore } from '../store/kdsStore';
+import { useOrderSyncStore } from '../store/orderSyncStore';
 import { useKdsSocket } from '../hooks/useKdsSocket';
 import api from '../api';
 
 export default function KitchenDisplay() {
   const { isConnected } = useKdsSocket();
-  const { activeOrders, setOrders, transitionOrder, toggleItemStrike } = useKdsStore();
+  const { orders, transitionKdsStatus, toggleItemStrike } = useOrderSyncStore();
   const [prevOrderCount, setPrevOrderCount] = useState(0);
   const [newOrderAlert, setNewOrderAlert] = useState(false);
 
-  // Load existing orders on mount
-  useEffect(() => {
-    const fetchExistingOrders = async () => {
-      try {
-        const response = await api.get('/orders/');
-        const mappedOrders = response.data.map((order) => {
-          let kdsStatus = 'To Cook';
-          if (order.status === 'cooking' || order.status === 'preparing') kdsStatus = 'Preparing';
-          else if (order.status === 'completed' || order.status === 'paid') kdsStatus = 'Completed';
-
-          return {
-            id: order.id,
-            table_id: order.table_id,
-            status: kdsStatus,
-            items: order.items.map((item) => ({
-              product_id: item.product_id,
-              name: item.product_name || `Product #${item.product_id}`,
-              quantity: item.quantity,
-              completed: false
-            })),
-            timestamp: new Date(order.created_at || Date.now()).toLocaleTimeString()
-          };
-        });
-
-        const activeKdsOrders = mappedOrders.filter(o => o.status !== 'Completed');
-        setOrders(activeKdsOrders);
-        setPrevOrderCount(activeKdsOrders.length);
-      } catch (error) {
-        console.warn("Failed to load existing orders, initializing with mock cooking list", error);
-        const mockList = [
-          {
-            id: 101,
-            table_id: 2,
-            status: 'To Cook',
-            items: [
-              { product_id: 1, name: 'Espresso', quantity: 2, completed: false },
-              { product_id: 2, name: 'Croissant', quantity: 1, completed: false }
-            ],
-            timestamp: '14:15:00'
-          },
-          {
-            id: 102,
-            table_id: 4,
-            status: 'Preparing',
-            items: [
-              { product_id: 3, name: 'Iced Latte', quantity: 1, completed: true },
-              { product_id: 4, name: 'Blueberry Muffins', quantity: 3, completed: false }
-            ],
-            timestamp: '14:20:00'
-          }
-        ];
-        setOrders(mockList);
-        setPrevOrderCount(mockList.length);
-      }
-    };
-
-    fetchExistingOrders();
-  }, [setOrders]);
-
   // Monitor new orders to trigger pulse alert sound or animation
   useEffect(() => {
-    if (activeOrders.length > prevOrderCount) {
+    const kdsVisibleOrders = orders.filter(o => o.status !== 'pending');
+    if (kdsVisibleOrders.length > prevOrderCount) {
       setNewOrderAlert(true);
-      // Play a short mock tone or simple trigger
       const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav');
       audio.volume = 0.2;
       audio.play().catch(() => {});
 
       const timer = setTimeout(() => setNewOrderAlert(false), 5000);
-      setPrevOrderCount(activeOrders.length);
+      setPrevOrderCount(kdsVisibleOrders.length);
       return () => clearTimeout(timer);
     } else {
-      setPrevOrderCount(activeOrders.length);
+      setPrevOrderCount(kdsVisibleOrders.length);
     }
-  }, [activeOrders.length, prevOrderCount]);
+  }, [orders, prevOrderCount]);
 
   // Group active orders by their status/stage
-  const toCookOrders = activeOrders.filter((o) => o.status === 'To Cook');
-  const preparingOrders = activeOrders.filter((o) => o.status === 'Preparing');
-  const completedOrders = activeOrders.filter((o) => o.status === 'Completed');
+  const toCookOrders = orders.filter((o) => o.status === 'sent' || o.status === 'To Cook');
+  const preparingOrders = orders.filter((o) => o.status === 'Preparing');
+  const completedOrders = orders.filter((o) => o.status === 'Completed');
 
   return (
     <div className="h-screen w-screen bg-slate-100 text-slate-800 flex flex-col overflow-hidden font-sans">
@@ -146,7 +87,7 @@ export default function KitchenDisplay() {
               <OrderCard 
                 key={order.id} 
                 order={order} 
-                onTransition={transitionOrder} 
+                onTransition={transitionKdsStatus} 
                 onToggleItem={toggleItemStrike} 
                 cardClass="bg-red-50/50 border-2 border-red-200 hover:border-red-400"
                 btnClass="bg-red-600 hover:bg-red-700 text-white"
@@ -171,7 +112,7 @@ export default function KitchenDisplay() {
               <OrderCard 
                 key={order.id} 
                 order={order} 
-                onTransition={transitionOrder} 
+                onTransition={transitionKdsStatus} 
                 onToggleItem={toggleItemStrike} 
                 cardClass="bg-amber-50/50 border-2 border-amber-200 hover:border-amber-400 animate-pulse"
                 btnClass="bg-amber-600 hover:bg-amber-700 text-white"
@@ -196,7 +137,7 @@ export default function KitchenDisplay() {
               <OrderCard 
                 key={order.id} 
                 order={order} 
-                onTransition={transitionOrder} 
+                onTransition={transitionKdsStatus} 
                 onToggleItem={toggleItemStrike} 
                 cardClass="bg-emerald-50/40 border-2 border-emerald-200"
                 bulletClass="text-emerald-500"
@@ -225,11 +166,11 @@ function OrderCard({ order, onTransition, onToggleItem, cardClass, btnClass, bul
           </span>
           <div className="flex items-center gap-1.5 text-slate-500 text-xs font-black uppercase tracking-wider mt-1.5">
             <Armchair size={13} className="text-slate-400 animate-pulse" />
-            <span>Table {order.table_id}</span>
+            <span>{order.table || `Table ${order.table_id}`}</span>
           </div>
         </div>
         <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-slate-550 bg-white/80 border border-slate-100 px-2.5 py-1 rounded-lg">
-          <Clock size={12} className="text-slate-400" /> {order.timestamp || ''}
+          <Clock size={12} className="text-slate-400" /> {order.time || order.timestamp || ''}
         </div>
       </div>
 
@@ -276,7 +217,7 @@ function OrderCard({ order, onTransition, onToggleItem, cardClass, btnClass, bul
           onClick={() => onTransition(order.id)}
           className={`w-full mt-5 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all hover:scale-[1.02] shadow-md cursor-pointer ${btnClass}`}
         >
-          {order.status === 'To Cook' ? '👉 Start Preparing' : '🏁 Mark Completed'}
+          {(order.status === 'To Cook' || order.status === 'sent') ? '👉 Start Preparing' : '🏁 Mark Completed'}
         </button>
       )}
     </div>

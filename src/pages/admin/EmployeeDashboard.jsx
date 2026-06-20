@@ -1,17 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode } from 'lucide-react';
+import { useOrderSyncStore } from '../../store/orderSyncStore';
 
 export default function EmployeeDashboard() {
-  const [orders, setOrders] = useState([
-    { id: 'ORD-2099', table: 'T-12', items: ['2x Espresso', '1x Croissant'], time: '2 mins ago', status: 'pending', paymentMethod: 'cash' },
-    { id: 'ORD-2100', table: 'T-04', items: ['1x Iced Latte', '1x Avocado Toast'], time: '5 mins ago', status: 'pending', paymentMethod: 'cash' },
-    { id: 'ORD-2101', table: 'Takeaway', items: ['3x Cappuccino'], time: '8 mins ago', status: 'sent', paymentMethod: 'qr' }
-  ]);
+  const { orders, dispatchOrderToKds } = useOrderSyncStore();
 
   const sendToKds = (id) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'sent' } : o));
-    alert(`Order ${id} dispatched to Kitchen Display System!`);
+    dispatchOrderToKds(id);
+    // Optionally alert or toast: alert(`Order ${id} dispatched to Kitchen Display System!`);
   };
 
   const pendingOrders = orders.filter(o => o.status === 'pending');
@@ -63,7 +60,7 @@ export default function EmployeeDashboard() {
                       </span>
                     </div>
                     <ul className="text-sm font-medium text-slate-600 space-y-1">
-                      {order.items.map((item, idx) => <li key={idx}>• {item}</li>)}
+                      {order.items.map((item, idx) => <li key={idx}>• {item.name}</li>)}
                     </ul>
                   </div>
                   

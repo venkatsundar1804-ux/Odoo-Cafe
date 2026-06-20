@@ -38,7 +38,7 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
           
           // Trigger your existing success transition logic!
           setPaymentStep('receipt'); 
-          if (onPaymentSuccess) onPaymentSuccess();
+          if (onPaymentSuccess) onPaymentSuccess(activeTab);
         }
       }, 3000); // Ping every 3 seconds
     }
@@ -65,7 +65,7 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
     try {
       await ordersService.payOrder(orderId, activeTab, details);
       setPaymentStep('receipt');
-      if (onPaymentSuccess) onPaymentSuccess();
+      if (onPaymentSuccess) onPaymentSuccess(activeTab);
     } catch (err) {
       console.error(err);
       alert("Payment recording failed. Please try again.");

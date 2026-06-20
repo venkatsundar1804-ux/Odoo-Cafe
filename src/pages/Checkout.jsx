@@ -7,6 +7,7 @@ import { resolveImage } from '../utils/imageResolver';
 import { ordersService } from '../services/ordersService';
 import PaymentModal from '../components/OrderView/PaymentModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useOrderSyncStore } from '../store/orderSyncStore';
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -225,7 +226,17 @@ export default function Checkout() {
         onClose={() => setIsPaymentOpen(false)}
         totalAmount={total}
         orderId={currentOrderId}
-        onPaymentSuccess={() => {
+        onPaymentSuccess={(paymentMethod) => {
+          // Push order to sync store
+          useOrderSyncStore.getState().addOrder({
+            id: `ORD-${currentOrderId}`,
+            table: `T-${useTableStore.getState().currentTableId || 1}`,
+            items: cart.map(i => ({ product_id: i.id, name: `${i.quantity}x ${i.name}`, quantity: i.quantity, completed: false })),
+            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            status: paymentMethod === 'upi' ? 'sent' : 'pending',
+            paymentMethod: paymentMethod === 'upi' ? 'qr' : paymentMethod
+          });
+
           clearCart();
           setIsPaymentOpen(false);
           // Return to POS or floor when completed!
