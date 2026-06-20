@@ -48,7 +48,13 @@ export default function Checkout() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#ebf0f5] flex items-center justify-center p-4 font-sans relative overflow-hidden">
+    <motion.div 
+      initial={{ opacity: 0, x: 50, filter: 'blur(10px)' }}
+      animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, x: -50, filter: 'blur(10px)' }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="min-h-screen w-full bg-[#ebf0f5] flex items-center justify-center p-4 font-sans relative overflow-hidden"
+    >
       
       {/* Decorative background blobs */}
       <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] bg-white/40 rounded-full blur-[80px]" />
@@ -226,6 +232,6 @@ export default function Checkout() {
           navigate('/floor');
         }}
       />
-    </div>
+    </motion.div>
   );
 }

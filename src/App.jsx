@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import AdminLayout from './layouts/AdminLayout';
 import CategoryAdmin from './pages/admin/CategoryAdmin';
 import Home from './pages/admin/Home';
@@ -30,10 +31,12 @@ function TableRequired({ children }) {
   return children;
 }
 
-export default function App() {
+function AnimatedRoutes() {
+  const location = useLocation();
+  
   return (
-    <BrowserRouter>
-      <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         <Route path="/login" element={<div className="p-4">Auth Page</div>} />
         <Route path="/floor" element={<LandingPage />} />
         <Route path="/kds" element={<KitchenDisplay />} />
@@ -57,6 +60,14 @@ export default function App() {
         <Route path="/" element={<Navigate to="/floor" replace />} />
         <Route path="*" element={<Navigate to="/floor" replace />} />
       </Routes>
+    </AnimatePresence>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AnimatedRoutes />
     </BrowserRouter>
   );
 }

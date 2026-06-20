@@ -31,7 +31,13 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 overflow-x-hidden font-sans relative">
+    <motion.div 
+      initial={{ opacity: 0, filter: 'blur(10px)' }}
+      animate={{ opacity: 1, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, filter: 'blur(10px)' }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="min-h-screen w-full bg-slate-50 overflow-x-hidden font-sans relative"
+    >
       
       {/* Top Navigation */}
       <motion.nav 
@@ -183,6 +189,6 @@ export default function LandingPage() {
           )}
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 }
