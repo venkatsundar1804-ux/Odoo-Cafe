@@ -23,16 +23,50 @@ const getProductImage = (name) => {
   
   const cleanName = name.trim();
   const localImages = [
-    'Americano',
-    'Cappuccino',
-    'Cold Coffee',
-    'Espresso',
-    'Fresh Lime Soda',
-    'Fruit Punch',
-    'Green Tea',
-    'Latte',
-    'Masala Tea',
-    'Virgin Mojito'
+    // Beverages
+    'Americano', 'Cappuccino', 'Cold Coffee', 'Espresso', 'Fresh Lime Soda', 
+    'Fruit Punch', 'Green Tea', 'Latte', 'Masala Tea', 'Virgin Mojito',
+    // Breakfast
+    'Pancakes', 'Waffles', 'French Toast', 'Omelette', 'Scrambled Eggs', 
+    'Breakfast Platter', 'Avocado Toast', 'Granola Bowl',
+    // Sandwiches
+    'Veg Grilled Sandwich', 'Club Sandwich', 'Cheese Corn Sandwich', 
+    'Paneer Sandwich', 'Chicken Sandwich', 'Tuna Sandwich',
+    // Burgers
+    'Classic Veg Burger', 'Cheese Burger', 'Crispy Chicken Burger', 
+    'Paneer Burger', 'Mushroom Burger',
+    // Pizzas
+    'Margherita Pizza', 'Farmhouse Pizza', 'Veggie Delight Pizza', 
+    'Pepperoni Pizza', 'BBQ Chicken Pizza',
+    // Pasta
+    'Alfredo Pasta', 'Arrabbiata Pasta', 'Pink Sauce Pasta', 
+    'Pesto Pasta', 'Mac and Cheese',
+    // Wraps
+    'Paneer Tikka Wrap', 'Chicken Wrap', 'Falafel Wrap', 
+    'Veggie Wrap', 'Mexican Wrap',
+    // Salads
+    'Caesar Salad', 'Greek Salad', 'Garden Salad', 'Chicken Salad', 'Quinoa Salad',
+    // Soups
+    'Tomato Soup', 'Sweet Corn Soup', 'Hot and Sour Soup', 
+    'Mushroom Soup', 'Chicken Clear Soup',
+    // Fries & Sides
+    'French Fries', 'Peri Peri Fries', 'Potato Wedges', 
+    'Garlic Bread', 'Cheese Garlic Bread', 'Onion Rings',
+    // Snacks
+    'Nachos', 'Spring Rolls', 'Mozzarella Sticks', 
+    'Veg Nuggets', 'Chicken Nuggets', 'Loaded Nachos',
+    // Pastries
+    'Chocolate Pastry', 'Black Forest Pastry', 'Red Velvet Pastry', 
+    'Butterscotch Pastry', 'Blueberry Pastry',
+    // Cakes
+    'Chocolate Truffle Cake', 'Cheesecake', 'Red Velvet Cake', 
+    'Carrot Cake', 'Fruit Cake',
+    // Desserts
+    'Brownie with Ice Cream', 'Tiramisu', 'Mousse', 'Waffle Sundae', 'Caramel Pudding',
+    // Combos
+    'Coffee and Sandwich Combo', 'Burger Fries and Coke Combo', 
+    'Pizza and Mocktail Combo', 'Pasta and Garlic Bread Combo', 
+    'Cake and Coffee Combo'
   ];
   
   const matched = localImages.find(imgName => imgName.toLowerCase() === cleanName.toLowerCase());

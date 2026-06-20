@@ -13,6 +13,20 @@ export const mockCategoryItems = [
       "Fresh Lime Soda",
       "Virgin Mojito",
       "Fruit Punch"
+    ],
+    "mockupImages": [
+      {
+        "label": "Coffee drinks",
+        "url": "https://www.pexels.com/search/coffee%20cafe/"
+      },
+      {
+        "label": "Tea cups",
+        "url": "https://www.pexels.com/search/tea%20cup/"
+      },
+      {
+        "label": "Mocktails",
+        "url": "https://www.pexels.com/search/mocktail/"
+      }
     ]
   },
   {
@@ -27,6 +41,12 @@ export const mockCategoryItems = [
       "Breakfast Platter",
       "Avocado Toast",
       "Granola Bowl"
+    ],
+    "mockupImages": [
+      {
+        "label": "Cafe breakfast",
+        "url": "https://www.pexels.com/search/cafe%20breakfast/"
+      }
     ]
   },
   {
@@ -39,6 +59,12 @@ export const mockCategoryItems = [
       "Paneer Sandwich",
       "Chicken Sandwich",
       "Tuna Sandwich"
+    ],
+    "mockupImages": [
+      {
+        "label": "Sandwiches",
+        "url": "https://www.pexels.com/search/sandwich/"
+      }
     ]
   },
   {
@@ -50,6 +76,12 @@ export const mockCategoryItems = [
       "Crispy Chicken Burger",
       "Paneer Burger",
       "Mushroom Burger"
+    ],
+    "mockupImages": [
+      {
+        "label": "Burgers",
+        "url": "https://www.pexels.com/search/burger/"
+      }
     ]
   },
   {
@@ -61,6 +93,12 @@ export const mockCategoryItems = [
       "Veggie Delight Pizza",
       "Pepperoni Pizza",
       "BBQ Chicken Pizza"
+    ],
+    "mockupImages": [
+      {
+        "label": "Pizzas",
+        "url": "https://www.pexels.com/search/pizza/"
+      }
     ]
   },
   {
@@ -72,6 +110,12 @@ export const mockCategoryItems = [
       "Pink Sauce Pasta",
       "Pesto Pasta",
       "Mac and Cheese"
+    ],
+    "mockupImages": [
+      {
+        "label": "Pasta bowls",
+        "url": "https://www.pexels.com/search/pasta/"
+      }
     ]
   },
   {
@@ -83,6 +127,12 @@ export const mockCategoryItems = [
       "Falafel Wrap",
       "Veggie Wrap",
       "Mexican Wrap"
+    ],
+    "mockupImages": [
+      {
+        "label": "Wraps",
+        "url": "https://www.pexels.com/search/wrap%20food/"
+      }
     ]
   },
   {
@@ -94,6 +144,12 @@ export const mockCategoryItems = [
       "Garden Salad",
       "Chicken Salad",
       "Quinoa Salad"
+    ],
+    "mockupImages": [
+      {
+        "label": "Salads",
+        "url": "https://www.pexels.com/search/salad/"
+      }
     ]
   },
   {
@@ -105,6 +161,12 @@ export const mockCategoryItems = [
       "Hot and Sour Soup",
       "Mushroom Soup",
       "Chicken Clear Soup"
+    ],
+    "mockupImages": [
+      {
+        "label": "Soups",
+        "url": "https://www.pexels.com/search/soup/"
+      }
     ]
   },
   {
@@ -117,6 +179,12 @@ export const mockCategoryItems = [
       "Garlic Bread",
       "Cheese Garlic Bread",
       "Onion Rings"
+    ],
+    "mockupImages": [
+      {
+        "label": "Fries and sides",
+        "url": "https://www.pexels.com/search/french%20fries/"
+      }
     ]
   },
   {
@@ -129,6 +197,12 @@ export const mockCategoryItems = [
       "Veg Nuggets",
       "Chicken Nuggets",
       "Loaded Nachos"
+    ],
+    "mockupImages": [
+      {
+        "label": "Cafe snacks",
+        "url": "https://www.pexels.com/search/snacks/"
+      }
     ]
   },
   {
@@ -140,6 +214,12 @@ export const mockCategoryItems = [
       "Red Velvet Pastry",
       "Butterscotch Pastry",
       "Blueberry Pastry"
+    ],
+    "mockupImages": [
+      {
+        "label": "Pastries",
+        "url": "https://www.pexels.com/search/pastry/"
+      }
     ]
   },
   {
@@ -151,6 +231,12 @@ export const mockCategoryItems = [
       "Red Velvet Cake",
       "Carrot Cake",
       "Fruit Cake"
+    ],
+    "mockupImages": [
+      {
+        "label": "Cakes",
+        "url": "https://www.pexels.com/search/cake/"
+      }
     ]
   },
   {
@@ -162,6 +248,12 @@ export const mockCategoryItems = [
       "Mousse",
       "Waffle Sundae",
       "Caramel Pudding"
+    ],
+    "mockupImages": [
+      {
+        "label": "Desserts",
+        "url": "https://www.pexels.com/search/dessert/"
+      }
     ]
   },
   {
@@ -173,6 +265,12 @@ export const mockCategoryItems = [
       "Pizza and Mocktail Combo",
       "Pasta and Garlic Bread Combo",
       "Cake and Coffee Combo"
+    ],
+    "mockupImages": [
+      {
+        "label": "Cafe combo meals",
+        "url": "https://www.pexels.com/search/meal%20combo/"
+      }
     ]
   }
 ];
