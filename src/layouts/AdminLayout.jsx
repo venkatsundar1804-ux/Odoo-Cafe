@@ -59,12 +59,12 @@ export default function AdminLayout() {
         <header className="h-20 border-b border-slate-200/50 flex items-center justify-between px-8 bg-white/40 shrink-0">
           {/* Left Side: Logo & Search */}
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3 text-slate-800 font-black text-xl tracking-tighter">
+            <Link to="/floor" className="flex items-center gap-3 text-slate-800 font-black text-xl tracking-tighter hover:opacity-80 transition cursor-pointer">
               <div className="bg-amber-500 text-white p-2 rounded-xl shadow-md">
                 <Coffee className="w-5 h-5" />
               </div>
               <span>Odoo Cafe</span>
-            </div>
+            </Link>
             
             <div className="relative w-80 hidden md:block">
               <input 
