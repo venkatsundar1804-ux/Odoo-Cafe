@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Armchair, CheckCircle2, AlertTriangle, Coffee, Quote } from 'lucide-react';
+import { Armchair, CheckCircle2, AlertTriangle, Coffee, Quote, Settings, LogIn } from 'lucide-react';
 import { useTableStore } from '../store/tableStore';
 import { motion } from 'framer-motion';
 
@@ -31,8 +31,37 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 overflow-x-hidden font-sans">
+    <div className="min-h-screen w-full bg-slate-50 overflow-x-hidden font-sans relative">
       
+      {/* Top Navigation */}
+      <motion.nav 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="absolute top-0 left-0 w-full z-50 p-6 sm:px-10 flex justify-between items-center"
+      >
+        <div className="text-white font-black text-2xl tracking-tighter drop-shadow-md flex items-center gap-3">
+          <Coffee className="w-7 h-7 text-amber-400" />
+          <span className="hidden sm:inline">Odoo Cafe</span>
+        </div>
+        <div className="flex gap-4">
+          <button 
+            onClick={() => navigate('/admin')}
+            className="flex items-center gap-2 bg-black/20 hover:bg-black/40 backdrop-blur-md text-white px-5 py-2.5 rounded-xl transition font-semibold text-sm border border-white/20 cursor-pointer"
+          >
+            <Settings className="w-4 h-4" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </button>
+          <button 
+            onClick={() => navigate('/login')}
+            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-2.5 rounded-xl transition font-bold text-sm shadow-[0_4px_14px_rgba(245,158,11,0.4)] cursor-pointer"
+          >
+            <LogIn className="w-4 h-4" />
+            <span>Login / Sign Up</span>
+          </button>
+        </div>
+      </motion.nav>
+
       {/* Hero Section */}
       <section className="relative w-full h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
         {/* Banner Image Background */}
