@@ -8,17 +8,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { resolveImage } from '../utils/imageResolver';
 import { 
   Search, 
-  Menu,
   ChevronLeft,
   ChevronRight,
-  Utensils,
-  Coffee,
-  MessageSquare,
-  User,
-  Mic,
-  Star,
-  Play,
-  ShoppingBag
+  ShoppingBag,
+  LayoutGrid,
+  Presentation,
+  Plus
 } from 'lucide-react';
 
 export default function POS() {
@@ -33,6 +28,7 @@ export default function POS() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [isScrolling, setIsScrolling] = useState(false);
+  const [viewMode, setViewMode] = useState('cinematic'); // 'cinematic' | 'grid'
 
   const navigate = useNavigate();
   const { addToCart, cart } = useCartStore();
@@ -94,6 +90,7 @@ export default function POS() {
 
   // Handle Mouse Wheel properly with debounce/throttle to prevent rapid scrolling
   const handleWheel = (e) => {
+    if (viewMode !== 'cinematic') return; // Don't hijack scroll in grid view!
     if (isScrolling) return;
     
     // Only trigger if scroll delta is significant enough
@@ -139,6 +136,17 @@ export default function POS() {
     exit: { opacity: 0, x: -40, transition: { duration: 0.4 } }
   };
 
+  const gridVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.05 } },
+    exit: { opacity: 0 }
+  };
+
+  const gridItemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   // Determine carousel items to show (5 items total: 2 left, 1 center, 2 right)
   const getCarouselItems = () => {
     if (filteredProducts.length === 0) return [];
@@ -153,30 +161,12 @@ export default function POS() {
 
   return (
     <div 
-      className="h-screen w-full bg-white overflow-hidden flex items-center justify-center p-6 sm:p-10" 
+      className="h-screen w-full bg-slate-50 overflow-hidden flex items-center justify-center p-4 sm:p-8 font-sans" 
       onWheel={handleWheel}
     >
       {/* Glassy Transparent Screen Container */}
-      <div className="relative w-full h-full max-w-[1400px] bg-slate-50/50 backdrop-blur-[60px] rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-200/50 overflow-hidden flex flex-col">
+      <div className="relative w-full h-full max-w-[1500px] bg-white/70 backdrop-blur-[80px] rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-200/60 overflow-hidden flex flex-col">
         
-        {/* Top Header */}
-        <header className="flex justify-end p-8 absolute top-0 right-0 z-30 gap-4">
-          <button className="p-3 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-white transition cursor-pointer">
-            <Search className="w-5 h-5 text-slate-700" />
-          </button>
-          <button 
-            onClick={() => navigate('/checkout')}
-            className="p-3 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-white transition cursor-pointer relative"
-          >
-            <ShoppingBag className="w-5 h-5 text-slate-700" />
-            {cartItemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-slate-800 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                {cartItemCount}
-              </span>
-            )}
-          </button>
-        </header>
-
         {/* Abstract Artistic Background Shapes */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
           <div className="absolute top-[-10%] left-[-5%] w-[45%] h-[55%] bg-orange-100/60 rounded-full blur-[120px]" />
@@ -184,133 +174,252 @@ export default function POS() {
           <div className="absolute top-[20%] right-[-5%] w-[25%] h-[35%] bg-rose-50/50 rounded-full blur-[90px]" />
         </div>
 
-        {/* Main Hero Content Area */}
-        <div className="flex-1 flex flex-col relative z-10 pt-16 px-12 md:px-20 pb-4">
-          
-          <AnimatePresence custom={direction} mode="wait">
-            {activeProduct ? (
-              <motion.div 
-                key={activeProduct.id}
-                custom={direction}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                className="flex-1 flex flex-col md:flex-row items-center gap-12 lg:gap-24"
-              >
-                {/* Left Side: Massive Hero Image */}
-                <div className="w-full md:w-1/2 flex justify-center items-center relative">
-                  <motion.img
-                    src={resolveImage(activeProduct.name)}
-                    alt={activeProduct.name}
-                    custom={direction}
-                    variants={imageVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    className="w-[300px] h-[300px] lg:w-[480px] lg:h-[480px] object-cover rounded-full z-20 bg-slate-100/50"
-                    style={{
-                      boxShadow: '0 40px 80px rgba(0,0,0,0.12), 0 -10px 40px rgba(255,255,255,0.8) inset'
-                    }}
-                  />
-                  {/* Small decorative accent near the image */}
-                  <div className="absolute left-[10%] top-[20%] w-2 h-16 bg-slate-200 rounded-full hidden lg:block" />
-                  <div className="absolute left-[12%] top-[25%] w-1 h-8 bg-slate-200 rounded-full hidden lg:block" />
-                </div>
-
-                {/* Right Side: Hero Text / Card */}
-                <div className="w-full md:w-1/2 flex flex-col justify-center">
-                  <motion.div variants={textVariants} initial="initial" animate="animate" exit="exit">
-                    <p className="text-slate-500 font-bold tracking-[0.2em] text-xs uppercase mb-4">
-                      #{activeIndex + 1} Most loved dish
-                    </p>
-                    
-                    <h1 className="text-5xl lg:text-7xl font-black text-slate-800 leading-[1.1] tracking-tighter uppercase font-sans">
-                      {activeProduct.name.split(' ').map((word, i, arr) => (
-                        <span key={i} className={i === arr.length - 1 ? "text-slate-900 block text-[1.1em] mt-1 opacity-90" : ""}>
-                          {word}{' '}
-                        </span>
-                      ))}
-                    </h1>
-
-                    <div className="flex items-center gap-6 mt-10">
-
-                      <button 
-                        onClick={() => {
-                          addToCart(activeProduct);
-                          alert(`${activeProduct.name} added to cart!`);
-                        }}
-                        className="flex items-center gap-2 bg-slate-800 text-white px-8 py-3.5 rounded-2xl font-bold hover:bg-slate-900 transition shadow-[0_10px_20px_rgba(15,23,42,0.15)] cursor-pointer text-sm tracking-wide uppercase hover:-translate-y-0.5"
-                      >
-                        Order food
-                      </button>
-                    </div>
-
-
-                  </motion.div>
-                </div>
-              </motion.div>
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-slate-400 font-semibold text-xl">
-                No products found
-              </div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Bottom Bar: Carousel */}
-        <div className="relative z-20 pb-8 px-12 md:px-20 flex flex-col md:flex-row justify-center items-center mt-8">
-
-          {/* Right Side: Mini Product Carousel */}
-          <div className="flex items-center gap-6 pb-2">
-            <button 
-              onClick={handlePrev} 
-              className="w-10 h-10 flex items-center justify-center bg-white shadow-sm rounded-full text-slate-400 hover:text-slate-800 hover:shadow-md transition cursor-pointer"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
+        {/* Top Header & Categories Navigation */}
+        <header className="relative z-30 px-8 pt-8 pb-4 flex flex-col gap-6">
+          <div className="flex justify-between items-center">
             
-            <div className="flex gap-5 items-end justify-center w-[400px]">
-              {getCarouselItems().map((item, idx) => (
-                <div 
-                  key={`${item.product.id}-${idx}`} 
-                  onClick={() => {
-                    if (item.indexOffset > 0) {
-                      setDirection(1);
-                      setActiveIndex(item.absoluteIndex);
-                    } else if (item.indexOffset < 0) {
-                      setDirection(-1);
-                      setActiveIndex(item.absoluteIndex);
-                    }
-                  }}
-                  className={`flex flex-col items-center transition-all duration-500 cursor-pointer ${
-                    item.indexOffset === 0 
-                      ? 'scale-125 -translate-y-3 opacity-100 z-10 mx-4' 
-                      : 'scale-90 opacity-50 hover:opacity-100 hover:-translate-y-1'
+            {/* Category Pills */}
+            <div className="flex-1 flex overflow-x-auto gap-3 custom-scrollbar pb-2 pr-4">
+              <button
+                onClick={() => setSelectedCategory('All')}
+                className={`px-6 py-2.5 rounded-full text-sm font-bold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+                  selectedCategory === 'All'
+                    ? 'bg-slate-800 text-white shadow-md'
+                    : 'bg-white/60 text-slate-500 hover:bg-white hover:text-slate-800 border border-slate-200/50'
+                }`}
+              >
+                All
+              </button>
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.name)}
+                  className={`px-6 py-2.5 rounded-full text-sm font-bold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+                    selectedCategory === cat.name
+                      ? 'bg-amber-500 text-white shadow-md'
+                      : 'bg-white/60 text-slate-500 hover:bg-white hover:text-slate-800 border border-slate-200/50'
                   }`}
                 >
-                  <img 
-                    src={resolveImage(item.product.name)} 
-                    alt={item.product.name} 
-                    className="w-16 h-16 object-cover rounded-full shadow-[0_8px_16px_rgba(0,0,0,0.1)] bg-white/50 p-0.5 border border-white"
-                  />
-                  <div className={`mt-4 text-center w-24 transition-opacity duration-300 ${item.indexOffset === 0 ? 'opacity-100' : 'opacity-0'}`}>
-                    <p className="text-[10px] font-bold text-slate-600 leading-tight">
-                      {item.product.name}
-                    </p>
-                    <p className="text-[9px] text-slate-400 mt-0.5">₹{item.product.price}</p>
-                  </div>
-                </div>
+                  {cat.name}
+                </button>
               ))}
             </div>
 
-            <button 
-              onClick={handleNext} 
-              className="w-10 h-10 flex items-center justify-center bg-white shadow-sm rounded-full text-slate-400 hover:text-slate-800 hover:shadow-md transition cursor-pointer"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
+            {/* Actions (View Toggle, Search, Cart) */}
+            <div className="flex items-center gap-3 ml-4 shrink-0">
+              
+              {/* View Mode Toggle */}
+              <div className="flex bg-white/70 backdrop-blur border border-slate-200/50 p-1.5 rounded-[1.25rem] shadow-sm">
+                <button 
+                  onClick={() => setViewMode('cinematic')}
+                  className={`p-2.5 rounded-xl transition cursor-pointer flex items-center gap-2 ${viewMode === 'cinematic' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                >
+                  <Presentation className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2.5 rounded-xl transition cursor-pointer flex items-center gap-2 ${viewMode === 'grid' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+              </div>
 
+              <button className="p-4 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-white transition cursor-pointer border border-slate-200/50">
+                <Search className="w-5 h-5 text-slate-700" />
+              </button>
+              
+              <button 
+                onClick={() => navigate('/checkout')}
+                className="p-4 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-white transition cursor-pointer border border-slate-200/50 relative"
+              >
+                <ShoppingBag className="w-5 h-5 text-slate-700" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-slate-800 text-white text-[10px] font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md">
+                    {cartItemCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Dynamic Content Area (Cinematic vs Grid) */}
+        <div className="flex-1 overflow-hidden relative z-10 flex flex-col">
+          <AnimatePresence mode="wait">
+            {viewMode === 'cinematic' ? (
+              
+              /* CINEMATIC VIEW */
+              <motion.div 
+                key="cinematic"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="flex-1 flex flex-col px-12 md:px-20 pb-4 h-full"
+              >
+                <AnimatePresence custom={direction} mode="wait">
+                  {activeProduct ? (
+                    <motion.div 
+                      key={activeProduct.id}
+                      custom={direction}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      className="flex-1 flex flex-col md:flex-row items-center gap-12 lg:gap-24"
+                    >
+                      {/* Left Side: Massive Hero Image */}
+                      <div className="w-full md:w-1/2 flex justify-center items-center relative">
+                        <motion.img
+                          src={resolveImage(activeProduct.name)}
+                          alt={activeProduct.name}
+                          custom={direction}
+                          variants={imageVariants}
+                          initial="initial"
+                          animate="animate"
+                          exit="exit"
+                          className="w-[300px] h-[300px] lg:w-[450px] lg:h-[450px] object-cover rounded-full z-20 bg-slate-100/50"
+                          style={{
+                            boxShadow: '0 40px 80px rgba(0,0,0,0.12), 0 -10px 40px rgba(255,255,255,0.8) inset'
+                          }}
+                        />
+                      </div>
+
+                      {/* Right Side: Hero Text / Card */}
+                      <div className="w-full md:w-1/2 flex flex-col justify-center">
+                        <motion.div variants={textVariants} initial="initial" animate="animate" exit="exit">
+                          <p className="text-amber-600 font-bold tracking-[0.2em] text-xs uppercase mb-4 bg-amber-100/50 inline-block px-3 py-1.5 rounded-lg">
+                            {activeProduct.category?.name || selectedCategory}
+                          </p>
+                          
+                          <h1 className="text-5xl lg:text-7xl font-black text-slate-800 leading-[1.1] tracking-tighter uppercase font-sans">
+                            {activeProduct.name.split(' ').map((word, i, arr) => (
+                              <span key={i} className={i === arr.length - 1 ? "text-slate-900 block text-[1.1em] mt-1 opacity-90" : ""}>
+                                {word}{' '}
+                              </span>
+                            ))}
+                          </h1>
+
+                          <div className="mt-8 mb-10 text-3xl font-bold text-slate-600 font-mono">
+                            ₹{activeProduct.price}
+                          </div>
+
+                          <div className="flex items-center gap-6">
+                            <button 
+                              onClick={() => {
+                                addToCart(activeProduct);
+                              }}
+                              className="flex items-center gap-2 bg-slate-800 text-white px-10 py-4 rounded-2xl font-bold hover:bg-slate-900 transition shadow-[0_15px_30px_rgba(15,23,42,0.15)] cursor-pointer text-sm tracking-widest uppercase hover:-translate-y-1"
+                            >
+                              Add To Cart
+                            </button>
+                          </div>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <div className="flex-1 flex items-center justify-center text-slate-400 font-semibold text-xl">
+                      No products found in this category
+                    </div>
+                  )}
+                </AnimatePresence>
+
+                {/* Bottom Bar: Carousel */}
+                <div className="relative z-20 pb-8 flex flex-col md:flex-row justify-center items-center mt-auto">
+                  <div className="flex items-center gap-6 pb-2">
+                    <button 
+                      onClick={handlePrev} 
+                      className="w-12 h-12 flex items-center justify-center bg-white shadow-sm border border-slate-100 rounded-full text-slate-400 hover:text-slate-800 hover:shadow-md transition cursor-pointer hover:scale-105"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    
+                    <div className="flex gap-5 items-end justify-center w-[450px]">
+                      {getCarouselItems().map((item, idx) => (
+                        <div 
+                          key={`${item.product.id}-${idx}`} 
+                          onClick={() => {
+                            if (item.indexOffset > 0) {
+                              setDirection(1);
+                              setActiveIndex(item.absoluteIndex);
+                            } else if (item.indexOffset < 0) {
+                              setDirection(-1);
+                              setActiveIndex(item.absoluteIndex);
+                            }
+                          }}
+                          className={`flex flex-col items-center transition-all duration-500 cursor-pointer ${
+                            item.indexOffset === 0 
+                              ? 'scale-125 -translate-y-4 opacity-100 z-10 mx-6' 
+                              : 'scale-90 opacity-50 hover:opacity-100 hover:-translate-y-1'
+                          }`}
+                        >
+                          <img 
+                            src={resolveImage(item.product.name)} 
+                            alt={item.product.name} 
+                            className="w-16 h-16 object-cover rounded-full shadow-[0_10px_20px_rgba(0,0,0,0.1)] bg-white/50 p-0.5 border border-white"
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <button 
+                      onClick={handleNext} 
+                      className="w-12 h-12 flex items-center justify-center bg-white shadow-sm border border-slate-100 rounded-full text-slate-400 hover:text-slate-800 hover:shadow-md transition cursor-pointer hover:scale-105"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+
+            ) : (
+
+              /* GRID VIEW */
+              <motion.div 
+                key="grid"
+                variants={gridVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                className="flex-1 overflow-y-auto px-8 pb-8 pt-4 custom-scrollbar"
+              >
+                {filteredProducts.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-slate-400 font-semibold text-xl">
+                    No products found
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    {filteredProducts.map(product => (
+                      <motion.div
+                        key={product.id}
+                        variants={gridItemVariants}
+                        whileHover={{ scale: 1.03, y: -5 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => addToCart(product)}
+                        className="bg-white/80 backdrop-blur border border-slate-200/60 rounded-[2rem] p-5 flex flex-col justify-between cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] group"
+                      >
+                        <div className="w-full flex justify-center mb-4">
+                          <img 
+                            src={resolveImage(product.name)} 
+                            alt={product.name}
+                            className="w-28 h-28 object-cover rounded-full shadow-md group-hover:shadow-xl transition-shadow duration-300"
+                          />
+                        </div>
+                        <div className="text-center">
+                          <h3 className="font-bold text-slate-800 text-lg leading-tight mb-1 group-hover:text-amber-500 transition-colors line-clamp-1">{product.name}</h3>
+                          <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">
+                            {product.category?.name || 'Item'}
+                          </p>
+                          <div className="flex justify-between items-center mt-2">
+                            <span className="font-black text-slate-800 font-mono text-lg">₹{product.price}</span>
+                            <button className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
       </div>
