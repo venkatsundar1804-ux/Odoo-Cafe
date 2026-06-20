@@ -84,73 +84,7 @@ function ProductCard({ product, onSelect, onAddToCart }) {
   );
 }
 
-// Subcomponent: ProductDetailOverlay
-function ProductDetailOverlay({ product, onClose, onAddToCart }) {
-  if (!product) return null;
-  const imageUrl = resolveImage(product.name);
 
-  return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <motion.div 
-        layoutId={`product-${product.id}`}
-        transition={{ duration: 0.4, ease: "easeInOut" }}
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full overflow-hidden z-10"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="relative h-64 w-full bg-slate-100">
-          <img 
-            src={imageUrl} 
-            alt={product.name} 
-            className="w-full h-full object-cover"
-          />
-          <button 
-            onClick={onClose}
-            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-slate-750 hover:text-slate-900 flex items-center justify-center shadow-md transition-all cursor-pointer font-bold text-sm"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="p-6 space-y-4">
-          <div>
-            <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg">
-              Featured Item
-            </span>
-            <h2 className="text-xl font-bold text-slate-900 mt-2">{product.name}</h2>
-            <p className="text-2xl font-extrabold text-amber-605 mt-1">₹{product.price}</p>
-          </div>
-          
-          <p className="text-sm text-slate-500 leading-relaxed font-sans">
-            Freshly prepared using premium, hand-picked ingredients. Hot, delicious, and cooked to perfection just for you.
-          </p>
-
-          <div className="flex gap-3 pt-4 border-t border-slate-100">
-            <button 
-              onClick={onClose}
-              className="flex-1 py-3 bg-slate-105 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition-colors cursor-pointer"
-            >
-              Back to POS
-            </button>
-            <button 
-              onClick={() => {
-                onAddToCart(product);
-                onClose();
-              }}
-              className="flex-1 py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-sm transition-colors cursor-pointer shadow-lg shadow-amber-900/10"
-            >
-              Add to Order
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
 
 export default function POS() {
   const [products, setProducts] = useState([]);
@@ -306,21 +240,61 @@ export default function POS() {
 
         {/* Col 2: Products */}
         <main className="p-6 overflow-y-auto bg-slate-50">
-          <motion.div 
-            layout
-            className="grid grid-cols-3 gap-4 auto-rows-min"
-          >
-            <AnimatePresence>
-              {filteredProducts.map(product => (
-                <ProductCard 
-                  key={product.id}
-                  product={product}
-                  onSelect={setSelectedProduct}
-                  onAddToCart={addToCart}
+          <AnimatePresence mode="wait">
+            {!selectedProduct ? (
+              // --- GRID VIEW ---
+              <motion.div 
+                key="grid"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-3 gap-4 auto-rows-min"
+              >
+                {filteredProducts.map(product => (
+                  <ProductCard 
+                    key={product.id}
+                    product={product}
+                    onSelect={setSelectedProduct}
+                    onAddToCart={addToCart}
+                  />
+                ))}
+              </motion.div>
+            ) : (
+              // --- DETAIL VIEW ---
+              <motion.div 
+                key="detail"
+                layoutId={`product-${selectedProduct.id}`}
+                className="bg-white p-8 rounded-2xl border border-slate-200/60 shadow-lg h-full flex flex-col"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+              >
+                <button 
+                  onClick={() => setSelectedProduct(null)}
+                  className="text-slate-500 hover:text-slate-800 mb-6 font-semibold text-sm flex items-center gap-1.5 cursor-pointer w-max"
+                >
+                  ← Back to Menu
+                </button>
+                <img 
+                  src={resolveImage(selectedProduct.name)} 
+                  className="w-full h-64 object-cover rounded-xl mb-6 bg-slate-100"
+                  onError={(e) => {
+                    e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%2394A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8Z"/><path d="M13 15 2 4"/><path d="m22 22-5-5"/><path d="M16 16v1a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2Z"/><path d="M12 11V7"/><path d="M8 11V7"/><path d="M10 11V2"/></svg>';
+                  }}
                 />
-              ))}
-            </AnimatePresence>
-          </motion.div>
+                <h2 className="text-3xl font-bold text-slate-850">{selectedProduct.name}</h2>
+                <p className="text-2xl text-amber-655 font-bold mt-2">₹{selectedProduct.price}</p>
+                <p className="text-slate-500 mt-4 leading-relaxed font-sans">Deliciously crafted item from our cafe menu.</p>
+                
+                <button 
+                  onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); }}
+                  className="w-full mt-auto bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 rounded-xl transition-all cursor-pointer shadow-md shadow-amber-900/10"
+                >
+                  Add to Order
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
 
         {/* Col 3: Cart */}
@@ -351,16 +325,7 @@ export default function POS() {
         </aside>
       </div>
 
-      {/* Cinematic Detail Morphing Overlay */}
-      <AnimatePresence>
-        {selectedProduct && (
-          <ProductDetailOverlay 
-            product={selectedProduct}
-            onClose={() => setSelectedProduct(null)}
-            onAddToCart={addToCart}
-          />
-        )}
-      </AnimatePresence>
+
     </div>
   );
 }
