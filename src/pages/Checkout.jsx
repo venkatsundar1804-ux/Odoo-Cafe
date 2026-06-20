@@ -20,12 +20,10 @@ export default function Checkout() {
 
   const handleCheckout = () => {
     if (cart.length === 0) {
-      alert("Your cart is empty!");
+      alert("Your bag is empty!");
       return;
     }
-    alert("Checkout successful! Generating receipt...");
-    clearCart();
-    navigate(-1);
+    navigate('/payment');
   };
 
   return (

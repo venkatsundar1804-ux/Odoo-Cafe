@@ -8,6 +8,7 @@ import OrderView from './pages/OrderView';
 import FloorSelection from './pages/FloorSelection';
 import POS from './pages/POS';
 import Checkout from './pages/Checkout';
+import Payment from './pages/Payment';
 import { useTableStore } from './store/tableStore';
 
 // Pre-route check to force table selection
@@ -37,6 +38,9 @@ export default function App() {
         
         {/* Our New Checkout Screen */}
         <Route path="/checkout" element={<Checkout />} />
+
+        {/* Our New Payment Screen */}
+        <Route path="/payment" element={<Payment />} />
 
         {/* Upstream Order View with Table Requirements */}
         <Route path="/orderview" element={
