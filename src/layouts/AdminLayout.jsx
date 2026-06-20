@@ -15,7 +15,9 @@ import {
   User, 
   Menu,
   Coffee,
-  ChevronLeft
+  ChevronLeft,
+  Users,
+  ChefHat
 } from 'lucide-react';
 
 export default function AdminLayout() {
@@ -25,7 +27,9 @@ export default function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const menuItems = [
-    { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
+    { name: 'Analytics', path: '/admin', icon: LayoutDashboard },
+    { name: 'Customer Portal', path: '/admin/customer', icon: Users },
+    { name: 'Order Dispatch', path: '/admin/dispatch', icon: ChefHat },
     { name: 'Products', path: '/admin/products', icon: ShoppingBag },
     { name: 'Payments', path: '/admin/payments', icon: CreditCard },
     { name: 'Coupons', path: '/admin/coupons', icon: Tag },

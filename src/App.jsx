@@ -10,6 +10,8 @@ import OrderView from './pages/OrderView';
 import LandingPage from './pages/LandingPage';
 import KitchenDisplay from './pages/KitchenDisplay';
 import Dashboard from './pages/admin/Dashboard';
+import CustomerDashboard from './pages/admin/CustomerDashboard';
+import EmployeeDashboard from './pages/admin/EmployeeDashboard';
 import CustomerDisplay from './pages/CustomerDisplay';
 import CustomerManagement from './pages/CustomerManagement';
 import POS from './pages/POS';
@@ -50,6 +52,8 @@ function AnimatedRoutes() {
         } />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
+          <Route path="customer" element={<CustomerDashboard />} />
+          <Route path="dispatch" element={<EmployeeDashboard />} />
           <Route path="overview" element={<Home />} />
           <Route path="products" element={<Products />} />
           <Route path="customers" element={<CustomerManagement />} />
