@@ -1,4 +1,4 @@
-export const mockCategories = [
+[
   {
     "id": 1,
     "name": "Beverages"
@@ -59,4 +59,4 @@ export const mockCategories = [
     "id": 15,
     "name": "Combos"
   }
-];
+]

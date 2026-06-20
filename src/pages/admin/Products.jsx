@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Plus, FolderTree, RefreshCw, ShoppingBag } from 'lucide-react';
 import Modal from '../../components/Modal';
 import { useAdminStore } from '../../store/adminStore';
-import { mockCategoryItems } from '../../data/mockCategoryItems';
 import { useNavigate } from 'react-router-dom';
 
 export default function Products() {

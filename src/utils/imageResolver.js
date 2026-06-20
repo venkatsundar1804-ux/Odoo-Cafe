@@ -27,7 +27,7 @@ const imageMap = {
   "chicken sandwich": "Chicken Sandwich.jpg",
   "chicken wrap": "Chicken Wrap.jpg",
   "chocolate pastry": "Chocolate Pastry.jpg",
-  "chocolate truffle cake": "Chocolate Truffle Cake.png",
+  "chocolate truffle cake": "Chocolate Truffle Cake.jpg",
   "classic veg burger": "Classic Veg Burger.jpg",
   "club sandwich": "Club Sandwich.jpg",
   "coffee and sandwich combo": "Coffee and Sandwich Combo.jpg",

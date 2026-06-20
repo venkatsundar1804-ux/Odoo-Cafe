@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { useCartStore } from '../store/cartStore';
-import { mockCategories } from '../data/mockCategories';
-import { mockProducts } from '../data/mockProducts';
+import { mockCategories, mockProducts } from '../data/dataProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { resolveImage } from '../utils/imageResolver';
 import { 

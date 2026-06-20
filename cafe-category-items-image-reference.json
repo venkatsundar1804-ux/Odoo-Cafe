@@ -1,4 +1,4 @@
-export const mockCategoryItems = [
+[
   {
     "categoryId": 1,
     "categoryName": "Beverages",
@@ -273,4 +273,4 @@ export const mockCategoryItems = [
       }
     ]
   }
-];
+]

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import { mockCategories } from '../data/mockCategories';
+import { mockCategories } from '../data/dataProvider';
 
 export const useAdminStore = create((set) => ({
   categories: mockCategories,
