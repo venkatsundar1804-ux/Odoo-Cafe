@@ -15,7 +15,7 @@ export default function ProductGrid({ products, categories }) {
   });
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
+    <div className="flex flex-col h-full overflow-hidden bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-2xl p-6">
       {/* Search & Categories */}
       <div className="space-y-4 mb-6">
         <div className="relative">
@@ -25,18 +25,18 @@ export default function ProductGrid({ products, categories }) {
             placeholder="Search products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:border-indigo-500 transition-colors placeholder-slate-400 text-sm"
+            className="w-full bg-slate-950/80 border border-slate-800 text-slate-100 pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:border-amber-500 transition-colors placeholder-slate-500"
           />
         </div>
 
         {/* Categories Bar */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-200">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-800">
           <button
             onClick={() => setSelectedCategory(null)}
-            className={`px-4 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-wider border transition-all whitespace-nowrap cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider border transition-all whitespace-nowrap cursor-pointer ${
               selectedCategory === null
-                ? 'bg-indigo-50 text-indigo-600 border-indigo-200/60 shadow-sm'
-                : 'bg-slate-550/5 text-slate-500 border-slate-200/80 hover:bg-slate-100'
+                ? 'bg-amber-600/20 text-amber-400 border-amber-500/50 shadow-lg shadow-amber-500/5'
+                : 'bg-slate-950/40 text-slate-400 border-slate-800 hover:border-slate-700'
             }`}
           >
             All Items
@@ -45,11 +45,11 @@ export default function ProductGrid({ products, categories }) {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-wider border transition-all whitespace-nowrap cursor-pointer`}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider border transition-all whitespace-nowrap cursor-pointer`}
               style={{
-                borderColor: selectedCategory === cat.id ? cat.color : 'rgba(226, 232, 240, 0.8)',
-                backgroundColor: selectedCategory === cat.id ? `${cat.color}15` : 'rgba(248, 250, 252, 0.8)',
-                color: selectedCategory === cat.id ? cat.color : '#64748b'
+                borderColor: selectedCategory === cat.id ? cat.color : 'rgba(51, 65, 85, 0.4)',
+                backgroundColor: selectedCategory === cat.id ? `${cat.color}20` : 'rgba(2, 6, 23, 0.4)',
+                color: selectedCategory === cat.id ? cat.color : '#94a3b8'
               }}
             >
               {cat.name}
@@ -62,36 +62,36 @@ export default function ProductGrid({ products, categories }) {
       <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-4 pr-1">
         {filteredProducts.map((product) => {
           const category = categories.find((c) => c.id === product.category_id);
-          const themeColor = category?.color || '#6366f1';
+          const themeColor = category?.color || '#64748b';
 
           return (
             <div
               key={product.id}
               onClick={() => addToCart(product)}
               style={{ borderTopColor: themeColor }}
-              className="bg-slate-50 border-t-4 border-x border-b border-slate-200/80 hover:border-slate-350 hover:bg-white rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-slate-100 group"
+              className="bg-slate-950/50 border-t-4 border-x border-b border-slate-800/80 hover:border-slate-700/80 rounded-xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-950/40 group"
             >
               <div>
                 <span 
-                  className="text-[9px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: `${themeColor}10`, color: themeColor }}
+                  className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: `${themeColor}15`, color: themeColor }}
                 >
                   {category?.name || 'Item'}
                 </span>
-                <h3 className="font-bold text-slate-800 mt-2.5 text-sm group-hover:text-indigo-600 transition-colors line-clamp-1">
+                <h3 className="font-semibold text-slate-100 mt-2 text-base group-hover:text-amber-400 transition-colors">
                   {product.name}
                 </h3>
                 {product.description && (
-                  <p className="text-slate-500 text-[11px] mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-slate-400 text-xs mt-1 line-clamp-2">
                     {product.description}
                   </p>
                 )}
               </div>
               <div className="flex items-center justify-between mt-4">
-                <span className="text-indigo-600 font-extrabold text-base font-mono">
+                <span className="text-amber-500 font-bold text-lg font-mono">
                   ${product.price.toFixed(2)}
                 </span>
-                <span className="text-[10px] text-slate-400 font-medium">
+                <span className="text-[10px] text-slate-500 font-medium">
                   {product.unit_of_measure || 'piece'}
                 </span>
               </div>
