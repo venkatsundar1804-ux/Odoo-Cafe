@@ -6,8 +6,30 @@ import { Coffee, Plus, Minus, Clock } from 'lucide-react';
 export default function POS() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const { cart, addToCart, removeFromCart, getTotals } = useCartStore();
+  const [selectedTableId] = useState(1); // Placeholder until we build table selection
+  const { cart, addToCart, removeFromCart, getTotals, clearCart } = useCartStore();
   const { subtotal, tax, total } = getTotals();
+
+  // THE TEAM LEADER'S LOGIC
+  const processCheckout = async () => {
+    const orderPayload = {
+      table_id: selectedTableId,
+      items: cart.map(item => ({
+        product_id: item.id,
+        quantity: item.quantity
+      }))
+    };
+
+    try {
+      const response = await axios.post('http://localhost:8000/api/orders/', orderPayload);
+      console.log("Order Successful:", response.data);
+      alert("Order sent to kitchen!");
+      clearCart();
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      alert("Checkout failed. Check the console.");
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,7 +107,10 @@ export default function POS() {
             <div className="flex justify-between text-sm text-gray-400"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
             <div className="flex justify-between text-sm text-gray-400"><span>Tax (5%)</span><span>₹{tax.toFixed(2)}</span></div>
             <div className="flex justify-between font-bold text-lg border-t border-gray-800 pt-2"><span>Total</span><span>₹{total.toFixed(2)}</span></div>
-            <button className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-lg mt-2 cursor-pointer">
+            <button
+              onClick={processCheckout}
+              className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-lg mt-2 cursor-pointer"
+            >
               Send to Kitchen
             </button>
           </div>
