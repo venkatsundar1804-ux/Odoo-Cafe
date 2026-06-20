@@ -5,6 +5,7 @@ import { useCartStore } from '../store/cartStore';
 import { mockCategories } from '../data/mockCategories';
 import { mockProducts } from '../data/mockProducts';
 import { motion, AnimatePresence } from 'framer-motion';
+import { resolveImage } from '../utils/imageResolver';
 import { 
   Search, 
   Menu,
@@ -18,25 +19,6 @@ import {
   Star,
   Play
 } from 'lucide-react';
-
-const fallbackSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%2394A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v20"/><path d="M2 12h20"/></svg>';
-
-// Dynamic image resolver based on product name
-const resolveImage = (productName) => {
-  if (!productName) return fallbackSvg;
-  const cleanName = productName.trim();
-  
-  // Available mockup image files on disk
-  const localImages = [
-    'Americano', 'Cappuccino', 'Cold Coffee', 'Espresso', 'Fresh Lime Soda', 
-    'Fruit Punch', 'Green Tea', 'Latte', 'Masala Tea', 'Pancakes', 'Virgin Mojito'
-  ];
-  
-  const matched = localImages.find(imgName => imgName.toLowerCase() === cleanName.toLowerCase());
-  if (matched) return `/mockup_images/${matched}.jpg`;
-  
-  return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="%23CBD5E1" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12c0 2 2 4 4 4s4-2 4-4"/><path d="M10 8h.01"/><path d="M14 8h.01"/></svg>';
-};
 
 export default function POS() {
   const [searchParams] = useSearchParams();
@@ -236,12 +218,7 @@ export default function POS() {
                     </h1>
 
                     <div className="flex items-center gap-6 mt-10">
-                      <button className="flex items-center gap-2.5 text-slate-700 font-bold hover:text-amber-600 transition cursor-pointer text-sm tracking-wide uppercase">
-                        <div className="w-10 h-10 rounded-full bg-slate-200/80 flex items-center justify-center">
-                          <Play className="w-4 h-4 ml-0.5 fill-current" />
-                        </div>
-                        Play video
-                      </button>
+
                       <button 
                         onClick={() => {
                           addToCart(activeProduct);
@@ -253,40 +230,7 @@ export default function POS() {
                       </button>
                     </div>
 
-                    {/* Review / Chef Card */}
-                    <div className="mt-14 bg-white/70 backdrop-blur-xl p-6 rounded-[2rem] border border-white shadow-[0_20px_40px_rgba(0,0,0,0.04)] max-w-sm relative">
-                      {/* Decorative Line on card */}
-                      <div className="absolute top-0 right-10 w-px h-full bg-slate-100" />
-                      
-                      <div className="flex gap-6 border-b border-slate-100 pb-4 mb-5 relative z-10">
-                        <button className="font-bold text-slate-800 text-sm tracking-wide relative">
-                          Overview
-                          <span className="absolute -bottom-[17px] left-0 w-full h-0.5 bg-slate-800 rounded-t-md" />
-                        </button>
-                        <button className="font-semibold text-slate-400 hover:text-slate-600 transition text-sm tracking-wide cursor-pointer">
-                          Ingredients
-                        </button>
-                      </div>
-                      
-                      <div className="flex items-center gap-5 relative z-10">
-                        <div className="bg-pink-100/80 p-4 rounded-2xl flex flex-col items-center justify-center text-pink-500 font-black text-2xl min-w-[80px] h-20 shadow-sm">
-                          4.6
-                          <Star className="w-3.5 h-3.5 fill-current mt-0.5 opacity-80" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-lg text-slate-800">Chef Adin Salma</h3>
-                          <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed font-medium">
-                            A beautifully crafted menu item that brings out rich flavors, using the freshest ingredients for an exquisite experience.
-                          </p>
-                        </div>
-                        
-                        {/* Likes/Dislikes icons at bottom of card */}
-                        <div className="absolute -bottom-14 left-0 flex gap-3 opacity-60">
-                          <button className="p-2 bg-white rounded-xl shadow-sm hover:opacity-100 transition"><Star className="w-4 h-4 text-slate-600"/></button>
-                          <button className="p-2 bg-white rounded-xl shadow-sm hover:opacity-100 transition"><MessageSquare className="w-4 h-4 text-slate-600"/></button>
-                        </div>
-                      </div>
-                    </div>
+
                   </motion.div>
                 </div>
               </motion.div>

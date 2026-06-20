@@ -2,20 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ShoppingBag, Plus, Minus, X } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
-
-// Re-using the same image resolver logic from POS.jsx for consistency
-const resolveImage = (productName) => {
-  if (!productName) return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%2394A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v20"/><path d="M2 12h20"/></svg>';
-  const cleanName = productName.trim();
-  const localImages = [
-    'Americano', 'Cappuccino', 'Cold Coffee', 'Espresso', 'Fresh Lime Soda', 
-    'Fruit Punch', 'Green Tea', 'Latte', 'Masala Tea', 'Pancakes', 'Virgin Mojito'
-  ];
-  const matched = localImages.find(imgName => imgName.toLowerCase() === cleanName.toLowerCase());
-  if (matched) return `/mockup_images/${matched}.jpg`;
-  
-  return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="%23CBD5E1" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12c0 2 2 4 4 4s4-2 4-4"/><path d="M10 8h.01"/><path d="M14 8h.01"/></svg>';
-};
+import { resolveImage } from '../utils/imageResolver';
 
 export default function Checkout() {
   const navigate = useNavigate();
