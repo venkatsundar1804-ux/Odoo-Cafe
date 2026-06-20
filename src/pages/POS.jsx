@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useCartStore } from '../store/cartStore';
 import { mockCategories } from '../data/mockCategories';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
   Minus, 
@@ -11,14 +12,147 @@ import {
   PlusSquare, 
   Armchair, 
   User, 
-  Menu 
+  Menu,
+  Clock
 } from 'lucide-react';
+
+// Dynamic image resolver based on product name
+const getProductImage = (name) => {
+  const query = name.toLowerCase();
+  if (query.includes('tea') || query.includes('chai')) {
+    return 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&q=80&w=400';
+  }
+  if (query.includes('coffee') || query.includes('espresso') || query.includes('latte') || query.includes('cappuccino') || query.includes('americano')) {
+    return 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=400';
+  }
+  if (query.includes('burger')) {
+    return 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=400';
+  }
+  if (query.includes('pizza')) {
+    return 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80&w=400';
+  }
+  if (query.includes('sandwich')) {
+    return 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&q=80&w=400';
+  }
+  if (query.includes('combo')) {
+    return 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80&w=400';
+  }
+  return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=400';
+};
+
+// Subcomponent: ProductCard
+function ProductCard({ product, onSelect, onAddToCart }) {
+  const imageUrl = getProductImage(product.name);
+  
+  return (
+    <motion.div 
+      layoutId={`product-${product.id}`}
+      onClick={() => onSelect(product)}
+      className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden flex flex-col justify-between hover:shadow-lg transition-all duration-300 cursor-pointer group"
+      whileHover={{ y: -4 }}
+    >
+      <div className="relative h-32 w-full overflow-hidden bg-slate-100">
+        <img 
+          src={imageUrl} 
+          alt={product.name} 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-505"
+        />
+        <div className="absolute top-3 left-3 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-white shadow-sm" />
+      </div>
+      <div className="p-4 flex-1 flex flex-col justify-between">
+        <div>
+          <h3 className="font-semibold text-slate-800 text-sm group-hover:text-amber-600 transition-colors">{product.name}</h3>
+          <p className="text-amber-650 font-bold mt-1 text-sm">₹{product.price}</p>
+        </div>
+        <button 
+          onClick={(e) => {
+            e.stopPropagation(); // Stop details overlay trigger
+            onAddToCart(product);
+          }}
+          className="w-full mt-3 bg-slate-50 hover:bg-amber-600 hover:text-white text-slate-750 font-semibold py-2 rounded-xl text-xs transition-colors border border-slate-200/80 hover:border-amber-600 cursor-pointer flex items-center justify-center gap-1.5"
+        >
+          <Plus size={14} />
+          <span>Add to Cart</span>
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// Subcomponent: ProductDetailOverlay
+function ProductDetailOverlay({ product, onClose, onAddToCart }) {
+  if (!product) return null;
+  const imageUrl = getProductImage(product.name);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div 
+        layoutId={`product-${product.id}`}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+        className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full overflow-hidden z-10"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="relative h-64 w-full bg-slate-100">
+          <img 
+            src={imageUrl} 
+            alt={product.name} 
+            className="w-full h-full object-cover"
+          />
+          <button 
+            onClick={onClose}
+            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-slate-750 hover:text-slate-900 flex items-center justify-center shadow-md transition-all cursor-pointer font-bold text-sm"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg">
+              Featured Item
+            </span>
+            <h2 className="text-xl font-bold text-slate-900 mt-2">{product.name}</h2>
+            <p className="text-2xl font-extrabold text-amber-605 mt-1">₹{product.price}</p>
+          </div>
+          
+          <p className="text-sm text-slate-500 leading-relaxed font-sans">
+            Freshly prepared using premium, hand-picked ingredients. Hot, delicious, and cooked to perfection just for you.
+          </p>
+
+          <div className="flex gap-3 pt-4 border-t border-slate-100">
+            <button 
+              onClick={onClose}
+              className="flex-1 py-3 bg-slate-105 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition-colors cursor-pointer"
+            >
+              Back to POS
+            </button>
+            <button 
+              onClick={() => {
+                onAddToCart(product);
+                onClose();
+              }}
+              className="flex-1 py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-sm transition-colors cursor-pointer shadow-lg shadow-amber-900/10"
+            >
+              Add to Order
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 export default function POS() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState(mockCategories);
   const [selectedTableId] = useState(1); 
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState(null);
   
   const { cart, addToCart, removeFromCart, getTotals, clearCart } = useCartStore();
   const { subtotal, tax, total } = getTotals();
@@ -67,7 +201,7 @@ export default function POS() {
   return (
     <div className="h-screen flex flex-col bg-slate-50 text-slate-800 font-sans overflow-hidden">
       {/* Header */}
-      <header className="h-16 border-b border-slate-200 flex items-center justify-between px-6 bg-white">
+      <header className="h-16 border-b border-slate-200 flex items-center justify-between px-6 bg-white z-20">
         {/* Left Side: Logo & Search */}
         <div className="flex items-center gap-4">
           <div className="px-4 py-2 bg-amber-700 text-white font-bold rounded-xl text-sm flex items-center justify-center tracking-wider shadow-sm">
@@ -132,18 +266,12 @@ export default function POS() {
         {/* Col 2: Products */}
         <main className="p-6 overflow-y-auto grid grid-cols-3 gap-4 auto-rows-min bg-slate-50">
           {filteredProducts.map(product => (
-            <div key={product.id} className="bg-white p-4 rounded-2xl border border-slate-200/60 flex flex-col justify-between hover:border-amber-500/50 hover:shadow-sm transition-all duration-200">
-              <div>
-                <h3 className="font-semibold text-slate-800">{product.name}</h3>
-                <p className="text-amber-600 font-bold mt-1">₹{product.price}</p>
-              </div>
-              <button 
-                onClick={() => addToCart(product)}
-                className="w-full mt-4 bg-slate-50 hover:bg-amber-600 hover:text-white text-slate-750 font-semibold py-2 rounded-xl text-sm transition-colors border border-slate-200/80 hover:border-amber-600 cursor-pointer"
-              >
-                Add to Cart
-              </button>
-            </div>
+            <ProductCard 
+              key={product.id}
+              product={product}
+              onSelect={setSelectedProduct}
+              onAddToCart={addToCart}
+            />
           ))}
         </main>
 
@@ -174,6 +302,17 @@ export default function POS() {
           </div>
         </aside>
       </div>
+
+      {/* Cinematic Detail Morphing Overlay */}
+      <AnimatePresence>
+        {selectedProduct && (
+          <ProductDetailOverlay 
+            product={selectedProduct}
+            onClose={() => setSelectedProduct(null)}
+            onAddToCart={addToCart}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
