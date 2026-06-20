@@ -19,7 +19,11 @@ export const usePromoStore = create(
       return {
         promos: [
           { code: 'CAFE10', discountPercent: 10, description: '10% off your entire order' },
-          { code: 'WELCOME20', discountPercent: 20, description: '20% off for new customers' }
+          { code: 'WELCOME20', discountPercent: 20, description: '20% off for new customers' },
+          { code: 'STUDENT15', discountPercent: 15, description: '15% student discount' },
+          { code: 'FESTIVE25', discountPercent: 25, description: '25% off festive special' },
+          { code: 'EARLYBIRD', discountPercent: 5, description: '5% off early morning orders' },
+          { code: 'VIP50', discountPercent: 50, description: '50% off VIP orders' }
         ],
 
         addPromo: (code, discountPercent, description) => set((state) => {

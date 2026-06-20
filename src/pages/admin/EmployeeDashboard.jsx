@@ -68,21 +68,7 @@ export default function EmployeeDashboard() {
         </div>
       </motion.div>
 
-      {/* Tabs */}
-      <div className="flex bg-slate-200/50 p-1.5 rounded-2xl w-fit">
-        <button 
-          onClick={() => navigate('/admin/dispatch')}
-          className="px-8 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-slate-800 shadow-sm"
-        >
-          Dispatch
-        </button>
-        <button 
-          onClick={() => navigate('/admin/customer')}
-          className="px-8 py-2.5 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-700"
-        >
-          Customer Portal
-        </button>
-      </div>
+
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         
