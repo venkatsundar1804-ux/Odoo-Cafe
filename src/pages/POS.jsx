@@ -18,114 +18,32 @@ import {
 } from 'lucide-react';
 
 // Dynamic image resolver based on product name
-const getProductImage = (name) => {
-  if (!name) return '/mockup_images/Americano.jpg';
+const resolveImage = (productName) => {
+  if (!productName) {
+    return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%2394A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8Z"/><path d="M13 15 2 4"/><path d="m22 22-5-5"/><path d="M16 16v1a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2Z"/><path d="M12 11V7"/><path d="M8 11V7"/><path d="M10 11V2"/></svg>';
+  }
   
-  const cleanName = name.trim();
+  const cleanName = productName.trim();
+  
+  // Available mockup image files on disk
   const localImages = [
-    // Beverages
     'Americano', 'Cappuccino', 'Cold Coffee', 'Espresso', 'Fresh Lime Soda', 
-    'Fruit Punch', 'Green Tea', 'Latte', 'Masala Tea', 'Virgin Mojito',
-    // Breakfast
-    'Pancakes', 'Waffles', 'French Toast', 'Omelette', 'Scrambled Eggs', 
-    'Breakfast Platter', 'Avocado Toast', 'Granola Bowl',
-    // Sandwiches
-    'Veg Grilled Sandwich', 'Club Sandwich', 'Cheese Corn Sandwich', 
-    'Paneer Sandwich', 'Chicken Sandwich', 'Tuna Sandwich',
-    // Burgers
-    'Classic Veg Burger', 'Cheese Burger', 'Crispy Chicken Burger', 
-    'Paneer Burger', 'Mushroom Burger',
-    // Pizzas
-    'Margherita Pizza', 'Farmhouse Pizza', 'Veggie Delight Pizza', 
-    'Pepperoni Pizza', 'BBQ Chicken Pizza',
-    // Pasta
-    'Alfredo Pasta', 'Arrabbiata Pasta', 'Pink Sauce Pasta', 
-    'Pesto Pasta', 'Mac and Cheese',
-    // Wraps
-    'Paneer Tikka Wrap', 'Chicken Wrap', 'Falafel Wrap', 
-    'Veggie Wrap', 'Mexican Wrap',
-    // Salads
-    'Caesar Salad', 'Greek Salad', 'Garden Salad', 'Chicken Salad', 'Quinoa Salad',
-    // Soups
-    'Tomato Soup', 'Sweet Corn Soup', 'Hot and Sour Soup', 
-    'Mushroom Soup', 'Chicken Clear Soup',
-    // Fries & Sides
-    'French Fries', 'Peri Peri Fries', 'Potato Wedges', 
-    'Garlic Bread', 'Cheese Garlic Bread', 'Onion Rings',
-    // Snacks
-    'Nachos', 'Spring Rolls', 'Mozzarella Sticks', 
-    'Veg Nuggets', 'Chicken Nuggets', 'Loaded Nachos',
-    // Pastries
-    'Chocolate Pastry', 'Black Forest Pastry', 'Red Velvet Pastry', 
-    'Butterscotch Pastry', 'Blueberry Pastry',
-    // Cakes
-    'Chocolate Truffle Cake', 'Cheesecake', 'Red Velvet Cake', 
-    'Carrot Cake', 'Fruit Cake',
-    // Desserts
-    'Brownie with Ice Cream', 'Tiramisu', 'Mousse', 'Waffle Sundae', 'Caramel Pudding',
-    // Combos
-    'Coffee and Sandwich Combo', 'Burger Fries and Coke Combo', 
-    'Pizza and Mocktail Combo', 'Pasta and Garlic Bread Combo', 
-    'Cake and Coffee Combo'
+    'Fruit Punch', 'Green Tea', 'Latte', 'Masala Tea', 'Pancakes', 'Virgin Mojito'
   ];
   
   const matched = localImages.find(imgName => imgName.toLowerCase() === cleanName.toLowerCase());
+  
   if (matched) {
     return `/mockup_images/${matched}.jpg`;
   }
   
-  const query = cleanName.toLowerCase();
-  // Fallbacks using local mockup images for related drinks
-  if (query.includes('tea') || query.includes('chai')) {
-    return '/mockup_images/Masala Tea.jpg';
-  }
-  if (query.includes('coffee') || query.includes('espresso') || query.includes('latte') || query.includes('cappuccino') || query.includes('americano')) {
-    return '/mockup_images/Cappuccino.jpg';
-  }
-  if (query.includes('lime') || query.includes('soda') || query.includes('mojito') || query.includes('punch')) {
-    return '/mockup_images/Virgin Mojito.jpg';
-  }
-  
-  // Curated fallback Unsplash URLs for food items
-  if (query.includes('burger')) {
-    return 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=400';
-  }
-  if (query.includes('pizza')) {
-    return 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80&w=400';
-  }
-  if (query.includes('sandwich')) {
-    return 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&q=80&w=400';
-  }
-  if (query.includes('waffle') || query.includes('pancake')) {
-    return 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&q=80&w=400';
-  }
-  if (query.includes('salad')) {
-    return 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=400';
-  }
-  if (query.includes('pasta')) {
-    return 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&q=80&w=400';
-  }
-  if (query.includes('cake') || query.includes('pastry') || query.includes('brownie') || query.includes('tiramisu') || query.includes('mousse')) {
-    return 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&q=80&w=400';
-  }
-  if (query.includes('soup')) {
-    return 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=400';
-  }
-  if (query.includes('fries') || query.includes('sides') || query.includes('garlic bread') || query.includes('onion rings')) {
-    return 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&q=80&w=400';
-  }
-  if (query.includes('wrap')) {
-    return 'https://images.unsplash.com/photo-1626700051175-6518c4793f4f?auto=format&fit=crop&q=80&w=400';
-  }
-  if (query.includes('combo')) {
-    return 'https://images.unsplash.com/photo-1606787366850-de6330128bfc?auto=format&fit=crop&q=80&w=400';
-  }
-  return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=400';
+  // Fallback placeholder icon (utensils SVG) if mockup image is not found
+  return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%2394A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8Z"/><path d="M13 15 2 4"/><path d="m22 22-5-5"/><path d="M16 16v1a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2Z"/><path d="M12 11V7"/><path d="M8 11V7"/><path d="M10 11V2"/></svg>';
 };
 
 // Subcomponent: ProductCard
 function ProductCard({ product, onSelect, onAddToCart }) {
-  const imageUrl = getProductImage(product.name);
+  const imageUrl = resolveImage(product.name);
   
   return (
     <motion.div 
@@ -134,7 +52,7 @@ function ProductCard({ product, onSelect, onAddToCart }) {
       className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden flex flex-col justify-between hover:shadow-lg transition-all duration-300 cursor-pointer group"
       whileHover={{ y: -4 }}
     >
-      <div className="relative h-32 w-full overflow-hidden bg-slate-100">
+      <div className="relative h-32 w-full overflow-hidden bg-slate-100 flex items-center justify-center">
         <img 
           src={imageUrl} 
           alt={product.name} 
@@ -165,7 +83,7 @@ function ProductCard({ product, onSelect, onAddToCart }) {
 // Subcomponent: ProductDetailOverlay
 function ProductDetailOverlay({ product, onClose, onAddToCart }) {
   if (!product) return null;
-  const imageUrl = getProductImage(product.name);
+  const imageUrl = resolveImage(product.name);
 
   return (
     <motion.div 
