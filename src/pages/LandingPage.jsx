@@ -11,7 +11,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const { tables, fetchTables, setTableId } = useTableStore();
   const { role, user } = useAuthStore();
-  
+
   const [showTables, setShowTables] = useState(false);
   const tablesRef = useRef(null);
 
@@ -44,7 +44,7 @@ export default function LandingPage() {
     show: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
   };
 
-  const availableTables = tables.filter(t => 
+  const availableTables = tables.filter(t =>
     t.status === 'available' || (user && t.occupiedBy === user.name)
   );
 
@@ -54,20 +54,23 @@ export default function LandingPage() {
     { ...mockProducts.find(p => p.name === 'Chocolate Truffle Cake'), tag: "Bestseller" },
     { ...mockProducts.find(p => p.name === 'Farmhouse Pizza'), tag: "Trending" },
     { ...mockProducts.find(p => p.name === 'Pink Sauce Pasta'), tag: "Must Try" },
-    { ...mockProducts.find(p => p.name === 'Cold Coffee'), tag: "Refreshing" }
+    { ...mockProducts.find(p => p.name === 'Cold Coffee'), tag: "Refreshing" },
+    { ...mockProducts.find(p => p.name === 'Chocolate Truffle Cake'), tag: "Bestseller" },
+    { ...mockProducts.find(p => p.name === 'Farmhouse Pizza'), tag: "Trending" },
+    { ...mockProducts.find(p => p.name === 'Pink Sauce Pasta'), tag: "Must Try" },
   ].filter(p => p && p.name); // Filter out any missing items safely
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, filter: 'blur(10px)' }}
       animate={{ opacity: 1, filter: 'blur(0px)' }}
       exit={{ opacity: 0, filter: 'blur(10px)' }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className="min-h-screen w-full bg-[#f8fafc] overflow-x-hidden font-sans relative"
     >
-      
+
       {/* Top Navigation */}
-      <motion.nav 
+      <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
@@ -79,7 +82,7 @@ export default function LandingPage() {
           </div>
           <span className="hidden sm:inline">Odoo Cafe</span>
         </div>
-        
+
         <div className="flex gap-4 items-center">
           {user ? (
             <div className="flex items-center gap-4">
@@ -92,7 +95,7 @@ export default function LandingPage() {
                   <span className="text-sm font-bold">{user.name}</span>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => navigate(role === 'customer' ? '/admin/customer' : '/admin')}
                 className="flex items-center gap-2 bg-white text-slate-900 hover:bg-slate-100 px-6 py-3 rounded-2xl transition font-black text-sm shadow-[0_10px_30px_rgba(0,0,0,0.15)] cursor-pointer"
               >
@@ -101,7 +104,7 @@ export default function LandingPage() {
               </button>
             </div>
           ) : (
-            <button 
+            <button
               onClick={() => navigate('/login')}
               className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-3 rounded-2xl transition font-black text-sm shadow-[0_10px_30px_rgba(245,158,11,0.3)] cursor-pointer"
             >
@@ -115,16 +118,16 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative w-full h-[70vh] min-h-[600px] flex items-center justify-center overflow-hidden rounded-b-[4rem] shadow-2xl">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="/mockup_images/cafe_banner.png" 
-            alt="Cafe Interior" 
+          <img
+            src="/mockup_images/cafe_banner.png"
+            alt="Cafe Interior"
             className="w-full h-full object-cover scale-105"
           />
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-[2px]"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
         </div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
@@ -133,16 +136,16 @@ export default function LandingPage() {
           <span className="bg-amber-500 text-slate-900 text-xs font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full mb-6 shadow-lg">
             Experience the finest
           </span>
-          
+
           <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter drop-shadow-2xl mb-6">
-            Where Every Pour <br/> Tells a <span className="text-amber-400 italic font-serif">Story.</span>
+            Where Every Pour <br /> Tells a <span className="text-amber-400 italic font-serif">Story.</span>
           </h1>
-          
+
           <p className="text-lg text-slate-200 font-medium max-w-xl mx-auto mb-10">
             Skip the line. Select a table, browse our curated menu, and order directly from your device.
           </p>
-          
-          <motion.button 
+
+          <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleRevealTables}
@@ -157,10 +160,10 @@ export default function LandingPage() {
 
       {/* Main Content Area (Conditional) */}
       <section className="relative z-20 -mt-10 max-w-6xl mx-auto px-4 pb-24" ref={tablesRef}>
-        
+
         {!showTables ? (
           /* Recommended Foods & Offers */
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-12"
@@ -170,11 +173,11 @@ export default function LandingPage() {
                 <Star className="w-6 h-6 text-amber-500" />
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Recommended for You</h2>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {recommendedFoods.map(food => (
-                  <div 
-                    key={food.id} 
+                  <div
+                    key={food.id}
                     onClick={() => navigate(`/pos?search=${encodeURIComponent(food.name)}`)}
                     className="relative group overflow-hidden rounded-[2rem] shadow-sm hover:shadow-xl transition-shadow border border-slate-100 bg-white cursor-pointer"
                   >
@@ -184,7 +187,7 @@ export default function LandingPage() {
                         {food.tag}
                       </div>
                     </div>
-                    <div className="p-6">
+                    <div className="p-3">
                       <h3 className="font-bold text-slate-800 text-lg mb-1">{food.name}</h3>
                       <p className="text-emerald-600 font-mono font-bold">₹{food.price.toFixed(2)}</p>
                     </div>
@@ -202,7 +205,7 @@ export default function LandingPage() {
                   <h2 className="text-2xl font-black tracking-tighter mb-2">Buy 1 Coffee, Get 1 Pastry Half Price</h2>
                   <p className="text-slate-400 text-sm font-medium">Valid until 4:00 PM today.</p>
                 </div>
-                <button 
+                <button
                   onClick={handleRevealTables}
                   className="bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-3 rounded-full font-black shadow-lg cursor-pointer transition-colors whitespace-nowrap text-sm"
                 >
@@ -218,7 +221,7 @@ export default function LandingPage() {
                   <h2 className="text-2xl font-black tracking-tighter mb-2">Pizza & Mocktail Combo</h2>
                   <p className="text-rose-100 text-sm font-medium">Save 20% when you order together.</p>
                 </div>
-                <button 
+                <button
                   onClick={handleRevealTables}
                   className="bg-white hover:bg-rose-50 text-rose-600 px-6 py-3 rounded-full font-black shadow-lg cursor-pointer transition-colors whitespace-nowrap text-sm"
                 >
@@ -230,7 +233,7 @@ export default function LandingPage() {
 
         ) : (
           /* Table Selection Grid */
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white/80 backdrop-blur-[40px] rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.06)] border border-white p-8 md:p-12"
@@ -240,7 +243,7 @@ export default function LandingPage() {
               <p className="text-slate-500 font-medium mt-2 text-base">Click a table below to start your digital order</p>
             </div>
 
-            <motion.div 
+            <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="show"
@@ -286,7 +289,7 @@ export default function LandingPage() {
                   </motion.div>
                 ))}
               </AnimatePresence>
-              
+
               {availableTables.length === 0 && (
                 <div className="col-span-full py-20 text-center flex flex-col items-center">
                   <div className="bg-rose-50 text-rose-500 p-4 rounded-full mb-4">

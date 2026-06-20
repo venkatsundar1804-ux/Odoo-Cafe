@@ -1,18 +1,27 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Briefcase, Coffee, ChevronLeft } from 'lucide-react';
+import { Coffee, ChevronLeft, LogIn, Lock, Mail, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const { login } = useAuthStore();
+  const { login, isLoading, error } = useAuthStore();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleLogin = (role) => {
-    login(role);
-    if (role === 'employee') {
-      navigate('/admin/dispatch');
-    } else {
-      navigate('/floor');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const role = await login(email, password);
+      if (role === 'employee' || role === 'admin') {
+        navigate('/admin/dispatch');
+      } else {
+        navigate('/floor');
+      }
+    } catch (err) {
+      // Error is handled by the store and displayed via the `error` state below
+      console.error(err);
     }
   };
 
@@ -22,68 +31,93 @@ export default function AuthPage() {
       animate={{ opacity: 1, filter: 'blur(0px)' }}
       exit={{ opacity: 0, filter: 'blur(10px)' }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden font-sans"
+      className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden font-['Poppins',sans-serif]"
     >
       {/* Background Shapes */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[70%] bg-orange-100/60 rounded-full blur-[140px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[60%] bg-teal-50/60 rounded-full blur-[120px]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[70%] bg-indigo-100/60 rounded-full blur-[140px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[60%] bg-indigo-50/60 rounded-full blur-[120px]" />
       </div>
 
-      <div className="relative z-10 w-full max-w-4xl bg-white/70 backdrop-blur-[80px] rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-200/60 p-8 md:p-16 flex flex-col items-center">
+      <div className="relative z-10 w-full max-w-md bg-white/70 backdrop-blur-[80px] rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-200/60 p-8 flex flex-col items-center">
         
         <button 
           onClick={() => navigate('/floor')}
-          className="absolute top-8 left-8 flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold text-sm transition"
+          className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-semibold text-sm transition"
         >
-          <ChevronLeft className="w-4 h-4" /> Back to Home
+          <ChevronLeft className="w-4 h-4" /> Back
         </button>
 
-        <div className="bg-amber-500 text-white p-4 rounded-2xl shadow-lg mb-8">
+        <div className="bg-indigo-600 text-white p-4 rounded-2xl shadow-lg mb-6 mt-4">
           <Coffee className="w-8 h-8" />
         </div>
         
-        <h1 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tighter mb-2 text-center">
-          Welcome to Odoo Cafe
+        <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-2 text-center">
+          Odoo Cafe
         </h1>
-        <p className="text-slate-500 font-medium mb-16 text-center max-w-md">
-          Please select your account type to access the portal and tailored features.
+        <p className="text-slate-500 text-sm font-medium mb-8 text-center px-4">
+          Enter your credentials to access the POS terminal.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-3xl">
-          
-          {/* Customer Login */}
-          <motion.button
-            whileHover={{ scale: 1.02, y: -5 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => handleLogin('customer')}
-            className="flex flex-col items-center p-10 bg-white/80 border border-slate-200/80 rounded-[2rem] shadow-sm hover:shadow-xl hover:border-amber-200 transition-all group cursor-pointer"
-          >
-            <div className="w-20 h-20 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mb-6 group-hover:bg-amber-500 group-hover:text-white transition-colors shadow-inner">
-              <Users className="w-10 h-10" />
-            </div>
-            <h2 className="text-2xl font-black text-slate-800 mb-2">Customer</h2>
-            <p className="text-slate-500 text-sm font-medium text-center">
-              Access your past orders, manage payment methods, and view your exclusive coupons.
-            </p>
-          </motion.button>
+        {error && (
+          <div className="w-full mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl flex items-start gap-3 text-sm font-medium">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
 
-          {/* Employee Login */}
-          <motion.button
-            whileHover={{ scale: 1.02, y: -5 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => handleLogin('employee')}
-            className="flex flex-col items-center p-10 bg-white/80 border border-slate-200/80 rounded-[2rem] shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all group cursor-pointer"
-          >
-            <div className="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-6 group-hover:bg-indigo-500 group-hover:text-white transition-colors shadow-inner">
-              <Briefcase className="w-10 h-10" />
+        <form onSubmit={handleSubmit} className="w-full space-y-5">
+          <div>
+            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Email</label>
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@cafe.com"
+                className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
+              />
             </div>
-            <h2 className="text-2xl font-black text-slate-800 mb-2">Employee</h2>
-            <p className="text-slate-500 text-sm font-medium text-center">
-              Access the analytics dashboard, dispatch orders to the KDS, and manage products.
-            </p>
-          </motion.button>
+          </div>
 
+          <div>
+            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-4 mt-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold tracking-wide shadow-lg shadow-indigo-600/30 transition-all flex justify-center items-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            ) : (
+              <>
+                <LogIn className="w-5 h-5" /> Sign In
+              </>
+            )}
+          </button>
+        </form>
+        
+        <div className="mt-8 pt-6 border-t border-slate-100 w-full text-center">
+          <p className="text-xs text-slate-400 font-medium">
+            Demo Credentials:<br/>
+            Admin: admin@cafe.com / admin123<br/>
+            Cashier: john@cafe.com / pos123
+          </p>
         </div>
       </div>
     </motion.div>
