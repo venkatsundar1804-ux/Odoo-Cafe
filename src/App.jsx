@@ -6,7 +6,7 @@ import Payments from './pages/admin/Payments';
 import Coupons from './pages/admin/Coupons';
 import Products from './pages/admin/Products';
 import OrderView from './pages/OrderView';
-import FloorSelection from './pages/FloorSelection';
+import LandingPage from './pages/LandingPage';
 import KitchenDisplay from './pages/KitchenDisplay';
 import Dashboard from './pages/admin/Dashboard';
 import CustomerDisplay from './pages/CustomerDisplay';
@@ -35,7 +35,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<div className="p-4">Auth Page</div>} />
-        <Route path="/floor" element={<FloorSelection />} />
+        <Route path="/floor" element={<LandingPage />} />
         <Route path="/kds" element={<KitchenDisplay />} />
         <Route path="/cfd" element={<CustomerDisplay />} />
         <Route path="/pos" element={<POS />} />
@@ -54,7 +54,8 @@ export default function App() {
           <Route path="payments" element={<Payments />} />
           <Route path="coupons" element={<Coupons />} />
         </Route>
-        <Route path="*" element={<Navigate to="/admin" replace />} />
+        <Route path="/" element={<Navigate to="/floor" replace />} />
+        <Route path="*" element={<Navigate to="/floor" replace />} />
       </Routes>
     </BrowserRouter>
   );
