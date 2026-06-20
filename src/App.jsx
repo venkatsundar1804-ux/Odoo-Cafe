@@ -11,6 +11,8 @@ import KitchenDisplay from './pages/KitchenDisplay';
 import Dashboard from './pages/admin/Dashboard';
 import CustomerDisplay from './pages/CustomerDisplay';
 import CustomerManagement from './pages/CustomerManagement';
+import POS from './pages/POS';
+import Checkout from './pages/Checkout';
 import { useTableStore } from './store/tableStore';
 
 // Table selection guard
@@ -36,7 +38,9 @@ export default function App() {
         <Route path="/floor" element={<FloorSelection />} />
         <Route path="/kds" element={<KitchenDisplay />} />
         <Route path="/cfd" element={<CustomerDisplay />} />
-        <Route path="/pos" element={
+        <Route path="/pos" element={<POS />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/orderview" element={
           <TableRequired>
             <OrderView />
           </TableRequired>
