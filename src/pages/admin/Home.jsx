@@ -1,4 +1,5 @@
 import { Users, ShoppingBag, DollarSign, TrendingUp } from 'lucide-react';
+import { mockTransactions } from '../../data/mockTransactions';
 
 export default function Home() {
   const stats = [
@@ -26,8 +27,37 @@ export default function Home() {
 
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
         <h2 className="text-lg font-bold text-slate-900 mb-4">Recent Transactions</h2>
-        <div className="h-64 flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-100 rounded-xl">
-          Live feed will appear here once backend wiring is complete.
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <th className="py-3 px-4">Transaction ID</th>
+                <th className="py-3 px-4">Customer</th>
+                <th className="py-3 px-4">Amount</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right">Time</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {mockTransactions.map((tx) => (
+                <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors text-sm text-slate-700">
+                  <td className="py-4 px-4 font-mono font-semibold text-slate-900">{tx.id}</td>
+                  <td className="py-4 px-4 font-medium">{tx.customer}</td>
+                  <td className="py-4 px-4 font-semibold text-slate-900">₹{tx.amount}</td>
+                  <td className="py-4 px-4">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      tx.status === 'Completed' ? 'bg-emerald-50 text-emerald-700' :
+                      tx.status === 'Pending' ? 'bg-amber-50 text-amber-700' :
+                      'bg-rose-50 text-rose-700'
+                    }`}>
+                      {tx.status}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4 text-right text-slate-550 font-medium">{tx.date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
