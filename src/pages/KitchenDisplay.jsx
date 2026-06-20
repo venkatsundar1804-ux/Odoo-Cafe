@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChefHat, Wifi, WifiOff, Clock, Armchair, CheckCircle2, Circle } from 'lucide-react';
 import { useOrderSyncStore } from '../store/orderSyncStore';
 import { useKdsSocket } from '../hooks/useKdsSocket';
@@ -82,18 +83,29 @@ export default function KitchenDisplay() {
               {toCookOrders.length}
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {toCookOrders.map((order) => (
-              <OrderCard 
-                key={order.id} 
-                order={order} 
-                onTransition={transitionKdsStatus} 
-                onToggleItem={toggleItemStrike} 
-                cardClass="bg-red-50/50 border-2 border-red-200 hover:border-red-400"
-                btnClass="bg-red-600 hover:bg-red-700 text-white"
-                bulletClass="text-red-500"
-              />
-            ))}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+            <AnimatePresence mode="popLayout">
+              {toCookOrders.map((order) => (
+                <motion.div
+                  key={order.id}
+                  layoutId={order.id.toString()}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                >
+                  <OrderCard 
+                    order={order} 
+                    onTransition={transitionKdsStatus} 
+                    onToggleItem={toggleItemStrike} 
+                    cardClass="bg-white border-2 border-red-200/60 shadow-[0_10px_20px_rgba(239,68,68,0.05)] hover:border-red-400 hover:shadow-[0_15px_30px_rgba(239,68,68,0.1)]"
+                    btnClass="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-red-500/30"
+                    bulletClass="text-red-400"
+                    headerBg="bg-red-50/50"
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
 
@@ -107,18 +119,29 @@ export default function KitchenDisplay() {
               {preparingOrders.length}
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {preparingOrders.map((order) => (
-              <OrderCard 
-                key={order.id} 
-                order={order} 
-                onTransition={transitionKdsStatus} 
-                onToggleItem={toggleItemStrike} 
-                cardClass="bg-amber-50/50 border-2 border-amber-200 hover:border-amber-400 animate-pulse"
-                btnClass="bg-amber-600 hover:bg-amber-700 text-white"
-                bulletClass="text-amber-500"
-              />
-            ))}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+            <AnimatePresence mode="popLayout">
+              {preparingOrders.map((order) => (
+                <motion.div
+                  key={order.id}
+                  layoutId={order.id.toString()}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                >
+                  <OrderCard 
+                    order={order} 
+                    onTransition={transitionKdsStatus} 
+                    onToggleItem={toggleItemStrike} 
+                    cardClass="bg-white border-2 border-amber-200/60 shadow-[0_10px_20px_rgba(245,158,11,0.05)] hover:border-amber-400 hover:shadow-[0_15px_30px_rgba(245,158,11,0.1)]"
+                    btnClass="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-amber-500/30"
+                    bulletClass="text-amber-400"
+                    headerBg="bg-amber-50/50"
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
 
@@ -132,18 +155,29 @@ export default function KitchenDisplay() {
               {completedOrders.length}
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {completedOrders.map((order) => (
-              <OrderCard 
-                key={order.id} 
-                order={order} 
-                onTransition={transitionKdsStatus} 
-                onToggleItem={toggleItemStrike} 
-                cardClass="bg-emerald-50/40 border-2 border-emerald-200"
-                bulletClass="text-emerald-500"
-                isCompletedStage={true} 
-              />
-            ))}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+            <AnimatePresence mode="popLayout">
+              {completedOrders.map((order) => (
+                <motion.div
+                  key={order.id}
+                  layoutId={order.id.toString()}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                >
+                  <OrderCard 
+                    order={order} 
+                    onTransition={transitionKdsStatus} 
+                    onToggleItem={toggleItemStrike} 
+                    cardClass="bg-white border-2 border-emerald-200/60 shadow-[0_10px_20px_rgba(16,185,129,0.05)] hover:border-emerald-400 hover:shadow-[0_15px_30px_rgba(16,185,129,0.1)] opacity-70"
+                    bulletClass="text-emerald-400"
+                    isCompletedStage={true}
+                    headerBg="bg-emerald-50/50"
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
 
@@ -153,56 +187,60 @@ export default function KitchenDisplay() {
 }
 
 // Child Order Card Sub-component
-function OrderCard({ order, onTransition, onToggleItem, cardClass, btnClass, bulletClass, isCompletedStage = false }) {
+function OrderCard({ order, onTransition, onToggleItem, cardClass, btnClass, bulletClass, headerBg, isCompletedStage = false }) {
   return (
     <div
-      className={`rounded-2xl p-5 shadow-sm transition-all duration-200 flex flex-col justify-between ${cardClass}`}
+      className={`rounded-2xl shadow-sm transition-all duration-300 flex flex-col justify-between overflow-hidden ${cardClass}`}
     >
-      {/* Card Header */}
-      <div className="flex justify-between items-start border-b border-slate-200/60 pb-3.5 mb-3.5">
+      {/* Card Header (Receipt Style) */}
+      <div className={`flex justify-between items-start border-b-2 border-dashed border-slate-200/80 p-5 ${headerBg}`}>
         <div>
-          <span className="text-2xl font-black font-mono tracking-tight text-slate-900">
+          <span className="text-3xl font-black font-sans tracking-tighter text-slate-900">
             #{order.id}
           </span>
-          <div className="flex items-center gap-1.5 text-slate-500 text-xs font-black uppercase tracking-wider mt-1.5">
-            <Armchair size={13} className="text-slate-400 animate-pulse" />
+          <div className="flex items-center gap-1.5 text-slate-600 text-xs font-black uppercase tracking-widest mt-1">
+            <Armchair size={13} className="text-slate-400" />
             <span>{order.table || `Table ${order.table_id}`}</span>
           </div>
         </div>
-        <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-slate-550 bg-white/80 border border-slate-100 px-2.5 py-1 rounded-lg">
+        <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-slate-600 bg-white shadow-sm border border-slate-100 px-3 py-1.5 rounded-xl">
           <Clock size={12} className="text-slate-400" /> {order.time || order.timestamp || ''}
         </div>
       </div>
 
       {/* Items list */}
-      <div className="space-y-3 py-2 flex-1">
+      <div className="space-y-2 p-5 flex-1 bg-white/50">
         {order.items.map((item) => (
           <div
             key={item.product_id}
             onClick={() => onToggleItem(order.id, item.product_id)}
-            className="flex items-center justify-between cursor-pointer py-2 px-3 rounded-xl bg-white border border-slate-100 hover:border-slate-200 transition-all select-none group"
+            className="flex items-center justify-between cursor-pointer py-3 px-4 rounded-xl bg-white border border-slate-100 hover:border-slate-200 shadow-sm hover:shadow transition-all select-none group"
           >
-            <div className="flex items-center gap-2 max-w-[80%]">
+            <div className="flex items-center gap-3 max-w-[80%]">
               {item.completed ? (
-                <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-500 flex items-center justify-center shrink-0">
+                  <CheckCircle2 size={14} className="stroke-[3]" />
+                </div>
               ) : (
-                <Circle size={16} className={`stroke-[2] shrink-0 ${bulletClass}`} />
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${bulletClass.replace('text-', 'border-').replace('400', '300')} bg-slate-50`}>
+                  <div className={`w-2 h-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${bulletClass.replace('text-', 'bg-')}`}></div>
+                </div>
               )}
               <span
-                className={`text-base font-bold tracking-wide transition-all ${
+                className={`text-base font-bold tracking-tight transition-all ${
                   item.completed
-                    ? 'line-through text-slate-400 font-normal italic opacity-60'
-                    : 'text-slate-800 group-hover:text-indigo-600'
+                    ? 'line-through text-slate-400 font-medium italic opacity-60'
+                    : 'text-slate-800 group-hover:text-slate-900'
                 }`}
               >
                 {item.name}
               </span>
             </div>
             <span
-              className={`font-mono text-xs px-2.5 py-1 rounded-lg font-black border ${
+              className={`font-sans text-sm px-3 py-1 rounded-xl font-black ${
                 item.completed
-                  ? 'bg-slate-50 text-slate-400 border-slate-200/50'
-                  : 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                  ? 'bg-slate-50 text-slate-400 border border-slate-200/50'
+                  : 'bg-slate-100 text-slate-700 border border-slate-200'
               }`}
             >
               x{item.quantity}
@@ -213,12 +251,18 @@ function OrderCard({ order, onTransition, onToggleItem, cardClass, btnClass, bul
 
       {/* Action to advance ticket */}
       {!isCompletedStage && (
-        <button
-          onClick={() => onTransition(order.id)}
-          className={`w-full mt-5 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all hover:scale-[1.02] shadow-md cursor-pointer ${btnClass}`}
-        >
-          {(order.status === 'To Cook' || order.status === 'sent') ? '👉 Start Preparing' : '🏁 Mark Completed'}
-        </button>
+        <div className="p-5 pt-0 bg-white/50">
+          <button
+            onClick={() => onTransition(order.id)}
+            className={`w-full py-4 rounded-xl text-sm font-black uppercase tracking-widest transition-all hover:scale-[1.02] shadow-lg cursor-pointer flex items-center justify-center gap-2 ${btnClass}`}
+          >
+            {(order.status === 'To Cook' || order.status === 'sent') ? (
+              <>Start Preparing</>
+            ) : (
+              <>Mark Completed</>
+            )}
+          </button>
+        </div>
       )}
     </div>
   );
