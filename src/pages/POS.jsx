@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useCartStore } from '../store/cartStore';
 import { mockCategories } from '../data/mockCategories';
+import { mockProducts } from '../data/mockProducts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
@@ -18,13 +19,40 @@ import {
 
 // Dynamic image resolver based on product name
 const getProductImage = (name) => {
-  const query = name.toLowerCase();
+  if (!name) return '/mockup_images/Americano.jpg';
+  
+  const cleanName = name.trim();
+  const localImages = [
+    'Americano',
+    'Cappuccino',
+    'Cold Coffee',
+    'Espresso',
+    'Fresh Lime Soda',
+    'Fruit Punch',
+    'Green Tea',
+    'Latte',
+    'Masala Tea',
+    'Virgin Mojito'
+  ];
+  
+  const matched = localImages.find(imgName => imgName.toLowerCase() === cleanName.toLowerCase());
+  if (matched) {
+    return `/mockup_images/${matched}.jpg`;
+  }
+  
+  const query = cleanName.toLowerCase();
+  // Fallbacks using local mockup images for related drinks
   if (query.includes('tea') || query.includes('chai')) {
-    return 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&q=80&w=400';
+    return '/mockup_images/Masala Tea.jpg';
   }
   if (query.includes('coffee') || query.includes('espresso') || query.includes('latte') || query.includes('cappuccino') || query.includes('americano')) {
-    return 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=400';
+    return '/mockup_images/Cappuccino.jpg';
   }
+  if (query.includes('lime') || query.includes('soda') || query.includes('mojito') || query.includes('punch')) {
+    return '/mockup_images/Virgin Mojito.jpg';
+  }
+  
+  // Curated fallback Unsplash URLs for food items
   if (query.includes('burger')) {
     return 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=400';
   }
@@ -34,8 +62,29 @@ const getProductImage = (name) => {
   if (query.includes('sandwich')) {
     return 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&q=80&w=400';
   }
+  if (query.includes('waffle') || query.includes('pancake')) {
+    return 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&q=80&w=400';
+  }
+  if (query.includes('salad')) {
+    return 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=400';
+  }
+  if (query.includes('pasta')) {
+    return 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&q=80&w=400';
+  }
+  if (query.includes('cake') || query.includes('pastry') || query.includes('brownie') || query.includes('tiramisu') || query.includes('mousse')) {
+    return 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&q=80&w=400';
+  }
+  if (query.includes('soup')) {
+    return 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=400';
+  }
+  if (query.includes('fries') || query.includes('sides') || query.includes('garlic bread') || query.includes('onion rings')) {
+    return 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&q=80&w=400';
+  }
+  if (query.includes('wrap')) {
+    return 'https://images.unsplash.com/photo-1626700051175-6518c4793f4f?auto=format&fit=crop&q=80&w=400';
+  }
   if (query.includes('combo')) {
-    return 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80&w=400';
+    return 'https://images.unsplash.com/photo-1606787366850-de6330128bfc?auto=format&fit=crop&q=80&w=400';
   }
   return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=400';
 };
@@ -150,6 +199,7 @@ function ProductDetailOverlay({ product, onClose, onAddToCart }) {
 export default function POS() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState(mockCategories);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedTableId] = useState(1); 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -188,15 +238,22 @@ export default function POS() {
         setProducts(prodRes.data);
         setCategories(catRes.data);
       } catch (err) {
-        console.error("Failed to fetch POS data, using mock categories", err);
+        console.error("Failed to fetch POS data, using mock categories & products", err);
+        setProducts(mockProducts);
+        setCategories(mockCategories);
       }
     };
     fetchData();
   }, []);
 
-  const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategoryId === null || 
+      Number(product.categoryId) === Number(selectedCategoryId) || 
+      Number(product.category_id) === Number(selectedCategoryId) ||
+      (product.category && Number(product.category.id) === Number(selectedCategoryId));
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 text-slate-800 font-sans overflow-hidden">
@@ -256,8 +313,26 @@ export default function POS() {
       <div className="flex-1 grid grid-cols-[200px_1fr_350px] overflow-hidden">
         {/* Col 1: Categories */}
         <aside className="border-r border-slate-200 p-4 space-y-2 overflow-y-auto bg-white">
+          <button 
+            onClick={() => setSelectedCategoryId(null)}
+            className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-colors cursor-pointer ${
+              selectedCategoryId === null 
+                ? 'bg-amber-600 border-amber-600 text-white shadow-sm shadow-amber-900/10' 
+                : 'bg-slate-50 hover:bg-slate-100 hover:text-slate-900 border-slate-200/60 text-slate-700'
+            }`}
+          >
+            All Items
+          </button>
           {categories.map(cat => (
-            <button key={cat.id} className="w-full text-left px-4 py-3 rounded-xl bg-slate-50 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60 text-sm font-semibold text-slate-700 transition-colors cursor-pointer">
+            <button 
+              key={cat.id} 
+              onClick={() => setSelectedCategoryId(cat.id)}
+              className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-colors cursor-pointer ${
+                selectedCategoryId === cat.id 
+                  ? 'bg-amber-600 border-amber-600 text-white shadow-sm shadow-amber-900/10' 
+                  : 'bg-slate-50 hover:bg-slate-100 hover:text-slate-900 border-slate-200/60 text-slate-700'
+              }`}
+            >
               {cat.name}
             </button>
           ))}

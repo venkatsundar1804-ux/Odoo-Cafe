@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary Mockup Assets
+/mockup_images
+mockup_images.zip
+
