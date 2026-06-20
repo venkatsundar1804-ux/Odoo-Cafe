@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCard, Tag, Clock, Plus, Trash2, MapPin, CheckCircle2, ChevronRight, Award, ShoppingBag, ChefHat, Send, Home } from 'lucide-react';
 import { useOrderSyncStore } from '../../store/orderSyncStore';
+import { usePromoStore } from '../../store/promoStore';
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
   const { orders } = useOrderSyncStore();
+  const { promos } = usePromoStore();
 
   const [paymentMethods, setPaymentMethods] = useState([]);
-  const coupons = [];
 
   const pastOrders = orders.map(o => ({
     id: o.id,
@@ -188,27 +189,27 @@ export default function CustomerDashboard() {
             </div>
             
             <div className="space-y-4">
-              {coupons.map(coupon => (
+              {promos.map(promo => (
                 <motion.div 
                   whileHover={{ scale: 1.02 }}
-                  key={coupon.id} 
+                  key={promo.code} 
                   className="relative overflow-hidden border border-emerald-100 bg-gradient-to-r from-emerald-50 to-white p-5 rounded-[1.5rem] flex items-center justify-between shadow-sm cursor-pointer"
                 >
                   {/* Decorative dashed line */}
                   <div className="absolute left-0 top-0 bottom-0 w-2 border-r-2 border-dashed border-emerald-200"></div>
                   
                   <div className="pl-4">
-                    <p className="font-black text-emerald-600 text-lg">{coupon.discount}</p>
-                    <p className="text-[10px] text-slate-400 uppercase font-bold mt-1 tracking-wider">Valid till {coupon.validUntil}</p>
+                    <p className="font-black text-emerald-600 text-lg">{promo.discountPercent}% OFF</p>
+                    <p className="text-[10px] text-slate-500 uppercase font-bold mt-1 tracking-wider">{promo.description}</p>
                   </div>
                   <div className="bg-emerald-600 text-white font-mono font-bold text-xs px-3 py-1.5 rounded-lg shadow-md tracking-wider">
-                    {coupon.code}
+                    {promo.code}
                   </div>
                 </motion.div>
               ))}
-              {coupons.length === 0 && (
+              {promos.length === 0 && (
                 <div className="text-center text-slate-400 py-6 font-semibold border-2 border-dashed border-slate-200 rounded-2xl">
-                  No coupons available.
+                  No active promotions.
                 </div>
               )}
             </div>

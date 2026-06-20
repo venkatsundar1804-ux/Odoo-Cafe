@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode, Home } from 'lucide-react';
+import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode, Home, Tag, Plus, Trash2 } from 'lucide-react';
 import { useOrderSyncStore } from '../../store/orderSyncStore';
+import { usePromoStore } from '../../store/promoStore';
 
 export default function EmployeeDashboard() {
   const navigate = useNavigate();
   const { orders, dispatchOrderToKds } = useOrderSyncStore();
+  const { promos, addPromo, removePromo } = usePromoStore();
+  
+  const [newPromoCode, setNewPromoCode] = useState('');
+  const [newPromoDiscount, setNewPromoDiscount] = useState('');
+  const [newPromoDesc, setNewPromoDesc] = useState('');
 
   const sendToKds = (id) => {
     dispatchOrderToKds(id);
@@ -221,6 +227,97 @@ export default function EmployeeDashboard() {
         </div>
 
       </div>
+
+      {/* Promo Code Management Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+        className="mt-12 bg-white/70 backdrop-blur-[40px] border border-white rounded-[2.5rem] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.03)]"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="bg-indigo-500 p-2.5 rounded-xl text-white shadow-md">
+            <Tag className="w-5 h-5" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-900">Promo Code Management</h2>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Create Promo Form */}
+          <div className="lg:col-span-1 bg-slate-50 border border-slate-200 rounded-[1.5rem] p-6">
+            <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-4">Create New Offer</h3>
+            <div className="space-y-4">
+              <input 
+                type="text" 
+                placeholder="Code (e.g. SUMMER20)" 
+                value={newPromoCode}
+                onChange={e => setNewPromoCode(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 uppercase"
+              />
+              <input 
+                type="number" 
+                placeholder="Discount % (e.g. 15)" 
+                value={newPromoDiscount}
+                onChange={e => setNewPromoDiscount(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
+              />
+              <input 
+                type="text" 
+                placeholder="Description" 
+                value={newPromoDesc}
+                onChange={e => setNewPromoDesc(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
+              />
+              <button 
+                onClick={() => {
+                  if(newPromoCode && newPromoDiscount) {
+                    addPromo(newPromoCode, newPromoDiscount, newPromoDesc);
+                    setNewPromoCode(''); setNewPromoDiscount(''); setNewPromoDesc('');
+                  }
+                }}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm px-4 py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> Publish Promo
+              </button>
+            </div>
+          </div>
+
+          {/* Active Promos List */}
+          <div className="lg:col-span-2 space-y-4">
+            <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-4">Active Promotions</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <AnimatePresence>
+                {promos.map(promo => (
+                  <motion.div 
+                    key={promo.code}
+                    initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                    className="bg-white border border-slate-200 p-5 rounded-[1.5rem] flex flex-col justify-between shadow-sm relative group"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="bg-indigo-100 text-indigo-700 font-black px-3 py-1 rounded-lg text-sm tracking-wider">
+                          {promo.code}
+                        </span>
+                        <span className="text-lg font-black text-slate-800">-{promo.discountPercent}%</span>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium">{promo.description}</p>
+                    </div>
+                    <button 
+                      onClick={() => removePromo(promo.code)}
+                      className="absolute top-4 right-4 p-2 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              {promos.length === 0 && (
+                <div className="col-span-full text-center text-slate-400 py-8 font-semibold border-2 border-dashed border-slate-200 rounded-2xl">
+                  No active promos found. Create one to boost sales!
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

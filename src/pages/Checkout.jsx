@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ShoppingBag, Plus, Minus, X } from 'lucide-react';
+import { ChevronLeft, ShoppingBag, Plus, Minus, X, Tag } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
 import { useTableStore } from '../store/tableStore';
 import { resolveImage } from '../utils/imageResolver';
@@ -8,21 +8,33 @@ import { ordersService } from '../services/ordersService';
 import PaymentModal from '../components/OrderView/PaymentModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useOrderSyncStore } from '../store/orderSyncStore';
+import { usePromoStore } from '../store/promoStore';
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { cart, addToCart, removeFromCart, getTotals, clearCart } = useCartStore();
+  const { promos } = usePromoStore();
   const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState(null);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [currentOrderId, setCurrentOrderId] = useState(null);
   
   const { subtotal } = getTotals();
   const shippingCost = cart.length > 0 ? 4.99 : 0;
-  const total = subtotal + shippingCost;
+  
+  const discountAmount = appliedPromo ? (subtotal * appliedPromo.discountPercent) / 100 : 0;
+  const total = subtotal - discountAmount + shippingCost;
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleApplyPromo = () => {
-    alert("Promo logic not implemented yet.");
+    if (!promoCode) return;
+    const validPromo = promos.find(p => p.code.toUpperCase() === promoCode.toUpperCase());
+    if (validPromo) {
+      setAppliedPromo(validPromo);
+    } else {
+      alert("Invalid or expired Promo Code");
+      setAppliedPromo(null);
+    }
   };
 
   const handleCheckout = async () => {
@@ -170,31 +182,71 @@ export default function Checkout() {
         </div>
 
         {/* Promo Code */}
-        <div className="flex items-center gap-2 mb-8">
-          <input 
-            type="text"
-            placeholder="Promo Code"
-            value={promoCode}
-            onChange={(e) => setPromoCode(e.target.value)}
-            className="flex-1 bg-white border-none rounded-2xl px-5 py-4 text-sm font-semibold text-slate-800 placeholder:text-slate-300 focus:outline-none shadow-[0_8px_20px_rgba(0,0,0,0.03)]"
-          />
-          <button 
-            onClick={handleApplyPromo}
-            className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm px-6 py-4 rounded-2xl transition shadow-[0_8px_16px_rgba(15,23,42,0.2)] cursor-pointer"
-          >
-            Apply
-          </button>
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <input 
+              type="text"
+              placeholder="Promo Code"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+              className="flex-1 bg-white border-none rounded-2xl px-5 py-4 text-sm font-semibold text-slate-800 placeholder:text-slate-300 focus:outline-none shadow-[0_8px_20px_rgba(0,0,0,0.03)] uppercase"
+            />
+            <button 
+              onClick={handleApplyPromo}
+              className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm px-6 py-4 rounded-2xl transition shadow-[0_8px_16px_rgba(15,23,42,0.2)] cursor-pointer"
+            >
+              Apply
+            </button>
+          </div>
+          
+          {/* Show available promos for quick select */}
+          {promos.length > 0 && !appliedPromo && (
+            <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+              {promos.map(promo => (
+                <button
+                  key={promo.code}
+                  onClick={() => {
+                    setPromoCode(promo.code);
+                    setAppliedPromo(promo);
+                  }}
+                  className="shrink-0 bg-emerald-50 border border-emerald-100 text-emerald-700 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap hover:bg-emerald-100 transition"
+                >
+                  {promo.code} (-{promo.discountPercent}%)
+                </button>
+              ))}
+            </div>
+          )}
+          
+          {appliedPromo && (
+            <div className="flex items-center justify-between bg-emerald-50 text-emerald-700 px-4 py-3 rounded-xl border border-emerald-100 text-sm font-bold">
+              <span className="flex items-center gap-2">
+                <Tag className="w-4 h-4" /> {appliedPromo.code} Applied!
+              </span>
+              <button 
+                onClick={() => { setAppliedPromo(null); setPromoCode(''); }}
+                className="text-emerald-900 hover:text-emerald-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Totals */}
         <div className="space-y-4 mb-8 text-sm px-1">
           <div className="flex justify-between font-bold">
             <span className="text-slate-600">Subtotal</span>
-            <span className="text-slate-800">₹{subtotal.toFixed(2)} <span className="text-[10px] text-slate-400 ml-1">INR</span></span>
+            <span className="text-slate-800">₹{subtotal.toFixed(2)}</span>
           </div>
+          {appliedPromo && (
+            <div className="flex justify-between font-bold text-emerald-600">
+              <span>Discount ({appliedPromo.discountPercent}%)</span>
+              <span>-₹{discountAmount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between font-bold">
             <span className="text-slate-600">Shipping</span>
-            <span className="text-slate-800">₹{shippingCost.toFixed(2)} <span className="text-[10px] text-slate-400 ml-1">INR</span></span>
+            <span className="text-slate-800">₹{shippingCost.toFixed(2)}</span>
           </div>
           <div className="flex justify-between font-black text-lg pt-2 border-t border-slate-200/50">
             <span className="text-slate-800">Bag Total</span>
