@@ -13,7 +13,16 @@ import analytics
 
 models.Base.metadata.create_all(bind=engine)
 
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(auth.router)
 app.include_router(analytics.router)
@@ -27,6 +36,16 @@ class ConnectionManager:
             await connection.send_text(message)
 
 manager = ConnectionManager()
+
+@app.websocket("/ws/kds")
+async def websocket_kds_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    manager.active_connections.append(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.active_connections.remove(websocket)
 
 @app.post("/api/orders/", response_model=schemas.Order)
 async def create_order(order_req: schemas.OrderCreate, db: Session = Depends(get_db)):
