@@ -58,12 +58,10 @@ export default function Dashboard() {
     fetchDashboardSummary(filters);
     fetchAiSummary();
     
-    // Simulate updating graphs and tables depending on the selected filter
     generateMockDataForFilters(period);
   }, [period, employee, session, selectedProduct, startDate, endDate, fetchDashboardSummary, fetchAiSummary]);
 
   const generateMockDataForFilters = (selectedPeriod) => {
-    // Generates mock data variants to make the dashboard feel active and responsive to filter changes
     let multiplier = 1;
     if (selectedPeriod === 'This Week') multiplier = 5.2;
     if (selectedPeriod === 'This Month') multiplier = 22.4;
@@ -117,41 +115,41 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-8 space-y-8 bg-slate-950 text-slate-100 min-h-screen">
+    <div className="p-8 space-y-8 bg-gradient-to-tr from-slate-50 via-slate-100 to-indigo-50/10 text-slate-800 min-h-screen font-sans animate-fade-in">
       
-      {/* Page Title & Export Actions */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-900 pb-6">
+      {/* Title & Actions */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/60 pb-6 shrink-0">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text text-transparent">
-            Manager Overview
+          <h1 className="text-3xl font-light tracking-tight text-slate-900">
+            Executive <span className="font-semibold text-indigo-950">Analytics</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">Live analytics, sales distributions, and AI predictions.</p>
+          <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Real-time cafe operations & forecasting</p>
         </div>
         <div className="flex gap-3">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-bold py-2.5 px-4 rounded-xl text-xs transition-colors cursor-pointer"
+            className="flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition-all hover:scale-105 shadow-sm cursor-pointer"
           >
-            <FileSpreadsheet size={14} className="text-emerald-500" /> Export CSV
+            <FileSpreadsheet size={14} className="text-emerald-600" /> Export CSV
           </button>
           <button
             onClick={() => alert("PDF report layout building via print preview...")}
-            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-bold py-2.5 px-4 rounded-xl text-xs transition-colors cursor-pointer"
+            className="flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition-all hover:scale-105 shadow-sm cursor-pointer"
           >
-            <FileText size={14} className="text-amber-500" /> Export PDF
+            <FileText size={14} className="text-indigo-600" /> Export PDF
           </button>
         </div>
       </div>
 
-      {/* Global Filtering Panel */}
-      <div className="bg-slate-900/50 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 grid grid-cols-1 md:grid-cols-4 gap-4 shadow-xl">
+      {/* Global Filter Dashboard (Glassmorphic) */}
+      <div className="bg-white/60 backdrop-blur-md border border-slate-200/80 rounded-3xl p-6 grid grid-cols-1 md:grid-cols-4 gap-5 shadow-sm">
         {/* Period Filter */}
         <div>
-          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mb-2">Reporting Period</label>
+          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold block mb-2">Period</label>
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 text-slate-200 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-amber-500 transition-colors"
+            className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-colors shadow-sm"
           >
             <option value="Today">Today</option>
             <option value="This Week">This Week</option>
@@ -162,13 +160,13 @@ export default function Dashboard() {
 
         {/* Employee Filter */}
         <div>
-          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mb-2">Employee</label>
+          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold block mb-2">Employee</label>
           <select
             value={employee}
             onChange={(e) => setEmployee(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 text-slate-200 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-amber-500 transition-colors"
+            className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-colors shadow-sm"
           >
-            <option value="">All Staff</option>
+            <option value="">All Employees</option>
             <option value="1">John Doe (Cashier)</option>
             <option value="2">Jane Smith (Manager)</option>
           </select>
@@ -176,11 +174,11 @@ export default function Dashboard() {
 
         {/* Session Filter */}
         <div>
-          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mb-2">POS Session</label>
+          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold block mb-2">POS Session</label>
           <select
             value={session}
             onChange={(e) => setSession(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 text-slate-200 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-amber-500 transition-colors"
+            className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-colors shadow-sm"
           >
             <option value="">All Sessions</option>
             <option value="1">Session #001 (Morning)</option>
@@ -190,11 +188,11 @@ export default function Dashboard() {
 
         {/* Product Filter */}
         <div>
-          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mb-2">Specific Product</label>
+          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold block mb-2">Product Filter</label>
           <select
             value={selectedProduct}
             onChange={(e) => setSelectedProduct(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 text-slate-200 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-amber-500 transition-colors"
+            className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-colors shadow-sm"
           >
             <option value="">All Products</option>
             {products.map(p => (
@@ -203,25 +201,25 @@ export default function Dashboard() {
           </select>
         </div>
 
-        {/* Conditional Custom Dates */}
+        {/* Custom Date Pickers */}
         {period === 'Custom' && (
-          <div className="md:col-span-4 grid grid-cols-2 gap-4 border-t border-slate-800/80 pt-4 mt-2">
+          <div className="md:col-span-4 grid grid-cols-2 gap-4 border-t border-slate-200/50 pt-4 mt-2">
             <div>
-              <label className="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mb-2">Start Date</label>
+              <label className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold block mb-2">Start Date</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 text-slate-200 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-amber-500 transition-colors"
+                className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-colors shadow-sm"
               />
             </div>
             <div>
-              <label className="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mb-2">End Date</label>
+              <label className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold block mb-2">End Date</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 text-slate-200 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-amber-500 transition-colors"
+                className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-colors shadow-sm"
               />
             </div>
           </div>
@@ -231,72 +229,72 @@ export default function Dashboard() {
       {/* Summary Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Total Revenue */}
-        <div className="bg-slate-900/40 border border-slate-800/60 p-6 rounded-2xl flex items-center justify-between shadow-lg">
+        <div className="bg-gradient-to-br from-indigo-650 to-indigo-500 text-white p-6 rounded-3xl flex items-center justify-between shadow-xl shadow-indigo-100">
           <div>
-            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Total Revenue</p>
-            <p className="text-3xl font-black font-mono text-emerald-400 mt-2">
-              ${(summary.revenue || 0).toFixed(2)}
+            <p className="text-[10px] text-indigo-100 uppercase font-extrabold tracking-widest opacity-80">Total Revenue</p>
+            <p className="text-3xl font-light font-mono mt-2.5">
+              $<span className="font-semibold">{(summary.revenue || 0).toFixed(2)}</span>
             </p>
           </div>
-          <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl">
-            <DollarSign className="w-6 h-6" />
+          <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
+            <DollarSign className="w-6 h-6 text-white" />
           </div>
         </div>
 
         {/* Total Orders */}
-        <div className="bg-slate-900/40 border border-slate-800/60 p-6 rounded-2xl flex items-center justify-between shadow-lg">
+        <div className="bg-gradient-to-br from-amber-500 to-orange-500 text-white p-6 rounded-3xl flex items-center justify-between shadow-xl shadow-amber-100">
           <div>
-            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Total Orders</p>
-            <p className="text-3xl font-black font-mono text-slate-100 mt-2">
-              {summary.total_orders || 0}
+            <p className="text-[10px] text-amber-100 uppercase font-extrabold tracking-widest opacity-80">Total Orders</p>
+            <p className="text-3xl font-light font-mono mt-2.5">
+              <span className="font-semibold">{summary.total_orders || 0}</span>
             </p>
           </div>
-          <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 p-4 rounded-2xl">
-            <ShoppingBag className="w-6 h-6" />
+          <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
+            <ShoppingBag className="w-6 h-6 text-white" />
           </div>
         </div>
 
         {/* Average Order Value */}
-        <div className="bg-slate-900/40 border border-slate-800/60 p-6 rounded-2xl flex items-center justify-between shadow-lg">
+        <div className="bg-gradient-to-br from-emerald-500 to-teal-650 text-white p-6 rounded-3xl flex items-center justify-between shadow-xl shadow-emerald-100">
           <div>
-            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Avg Order Value</p>
-            <p className="text-3xl font-black font-mono text-sky-400 mt-2">
-              ${(summary.average_order_value || 0).toFixed(2)}
+            <p className="text-[10px] text-emerald-100 uppercase font-extrabold tracking-widest opacity-80">Avg Order Value</p>
+            <p className="text-3xl font-light font-mono mt-2.5">
+              $<span className="font-semibold">{(summary.average_order_value || 0).toFixed(2)}</span>
             </p>
           </div>
-          <div className="bg-sky-500/10 border border-sky-500/20 text-sky-400 p-4 rounded-2xl">
-            <Percent className="w-6 h-6" />
+          <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
+            <Percent className="w-6 h-6 text-white" />
           </div>
         </div>
       </div>
 
-      {/* AI Daily Summary Briefing (Natural Language) */}
-      <div className="bg-gradient-to-r from-amber-600/10 via-slate-900/40 to-slate-900/40 border border-amber-500/20 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-        <div className="absolute right-6 top-6 text-amber-500 opacity-20">
-          <Sparkles size={80} />
+      {/* AI daily summary briefing (Glow layout) */}
+      <div className="bg-white border border-indigo-100 shadow-[0_0_20px_rgba(99,102,241,0.08)] rounded-3xl p-6 relative overflow-hidden transition-all duration-300 hover:shadow-[0_0_25px_rgba(99,102,241,0.18)]">
+        <div className="absolute right-6 top-6 text-indigo-500 opacity-[0.03]">
+          <Sparkles size={120} />
         </div>
-        <div className="flex items-center gap-2.5 mb-3 text-amber-400 font-bold text-sm">
-          <Sparkles size={16} className="animate-spin" style={{ animationDuration: '6s' }} />
-          <span>AI Manager Insights & Predictions</span>
+        <div className="flex items-center gap-2 mb-3 text-indigo-650 font-bold text-xs uppercase tracking-wider">
+          <Sparkles size={14} className="text-indigo-500 animate-pulse" />
+          <span>AI Business Insights</span>
         </div>
-        <p className="text-slate-300 text-xs leading-relaxed max-w-3xl">
+        <p className="text-slate-600 text-xs leading-relaxed max-w-4xl font-medium">
           {aiSummary}
         </p>
       </div>
 
-      {/* Graphs Grid */}
+      {/* Visual Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Graph 1: Sales Trend (Interactive Area SVG Chart) */}
-        <div className="bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between h-[340px]">
+        {/* Sales Trend (Clean responsive SVG layout) */}
+        <div className="bg-white/80 backdrop-blur-lg border border-slate-200/80 rounded-3xl p-6 flex flex-col justify-between h-[340px] shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-200 flex items-center gap-2">
+            <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
               Sales Trend
             </h2>
-            <span className="text-[10px] text-slate-500 font-mono">Revenue per interval</span>
+            <span className="text-[10px] text-slate-400 font-mono font-bold uppercase">Revenue Intervals</span>
           </div>
 
-          <div className="flex-1 flex items-end justify-between relative h-40 border-b border-l border-slate-800/60 pb-1 pl-4">
+          <div className="flex-1 flex items-end justify-between relative h-40 border-b border-l border-slate-200/60 pb-1 pl-4">
             {salesTrendData.map((d, index) => {
               const maxHeight = 160;
               const values = salesTrendData.map(v => v.value);
@@ -305,42 +303,39 @@ export default function Dashboard() {
 
               return (
                 <div key={index} className="flex flex-col items-center group flex-1">
-                  {/* Tooltip on hover */}
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950 border border-slate-800 text-[10px] text-amber-400 px-2 py-0.5 rounded absolute -top-4 font-mono font-bold">
+                  <span className="opacity-0 group-hover:opacity-100 transition-all duration-200 bg-slate-900 text-[10px] text-white px-2 py-0.5 rounded absolute -top-4 font-mono font-bold">
                     ${d.value.toFixed(2)}
                   </span>
-                  {/* Visual Bar Accent */}
                   <div
                     style={{ height: `${height}px` }}
-                    className="w-8 md:w-12 bg-gradient-to-t from-amber-600/10 to-amber-500/60 border-t border-x border-amber-500/40 rounded-t-lg transition-all duration-500 group-hover:from-amber-600/30 group-hover:to-amber-500"
+                    className="w-7 md:w-10 bg-gradient-to-t from-indigo-50 to-indigo-500 border-t border-x border-indigo-200 rounded-t-lg transition-all duration-300 group-hover:from-indigo-100 group-hover:to-indigo-600"
                   ></div>
-                  <span className="text-[10px] text-slate-500 font-semibold font-mono mt-2">{d.label}</span>
+                  <span className="text-[9px] text-slate-400 font-extrabold font-mono mt-2.5">{d.label}</span>
                 </div>
               );
             })}
           </div>
         </div>
 
-        {/* Graph 2: Top Categories (Proportional SVG Bars) */}
-        <div className="bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between h-[340px]">
+        {/* Sales Distribution (Proportional progress lines) */}
+        <div className="bg-white/80 backdrop-blur-lg border border-slate-200/80 rounded-3xl p-6 flex flex-col justify-between h-[340px] shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-200">
+            <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
               Sales Distribution
             </h2>
-            <span className="text-[10px] text-slate-500 font-mono">Category Share</span>
+            <span className="text-[10px] text-slate-400 font-mono font-bold uppercase">Category Share</span>
           </div>
 
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-4 justify-center flex flex-col">
             {categoryData.map((cat, index) => {
-              // Standard tailwind bar colors mapping
-              const colors = ['bg-amber-500', 'bg-sky-500', 'bg-emerald-500', 'bg-indigo-500'];
+              const colors = ['bg-indigo-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-500'];
               return (
                 <div key={index} className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-semibold text-slate-300">
+                  <div className="flex justify-between text-xs font-bold text-slate-600">
                     <span>{cat.name}</span>
                     <span className="text-slate-400 font-mono">{cat.value}%</span>
                   </div>
-                  <div className="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800">
+                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200/20">
                     <div
                       style={{ width: `${cat.value}%` }}
                       className={`h-full rounded-full transition-all duration-700 ${colors[index % colors.length]}`}
@@ -354,31 +349,31 @@ export default function Dashboard() {
 
       </div>
 
-      {/* Analytics Lists / Tables Grid */}
+      {/* Top Tables Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Table 1: Top Orders */}
-        <div className="bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 shadow-xl">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-200 mb-6">
+        <div className="bg-white/80 backdrop-blur-lg border border-slate-200/80 rounded-3xl p-6 shadow-sm">
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-6">
             Top Orders
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800/80 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                <tr className="border-b border-slate-100 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
                   <th className="py-3 px-3">Order ID</th>
                   <th className="py-3 px-3">Customer</th>
                   <th className="py-3 px-3">Items Count</th>
                   <th className="py-3 px-3 text-right">Bill Total</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/40">
+              <tbody className="divide-y divide-slate-100/50">
                 {topOrders.map((ord) => (
-                  <tr key={ord.id} className="hover:bg-slate-950/40 transition-colors text-xs text-slate-300">
-                    <td className="py-3.5 px-3 font-mono font-bold text-slate-100">#{ord.id}</td>
-                    <td className="py-3.5 px-3 font-semibold">{ord.customer}</td>
+                  <tr key={ord.id} className="hover:bg-slate-50/50 transition-colors text-xs text-slate-600">
+                    <td className="py-3.5 px-3 font-mono font-bold text-slate-900">#{ord.id}</td>
+                    <td className="py-3.5 px-3 font-bold">{ord.customer}</td>
                     <td className="py-3.5 px-3 font-mono text-slate-400">{ord.items} items</td>
-                    <td className="py-3.5 px-3 text-right font-mono font-bold text-amber-500">${ord.total.toFixed(2)}</td>
+                    <td className="py-3.5 px-3 text-right font-mono font-bold text-indigo-600">${ord.total.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -387,25 +382,25 @@ export default function Dashboard() {
         </div>
 
         {/* Table 2: Top Products */}
-        <div className="bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 shadow-xl">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-200 mb-6">
+        <div className="bg-white/80 backdrop-blur-lg border border-slate-200/80 rounded-3xl p-6 shadow-sm">
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-6">
             Top Products
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800/80 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                <tr className="border-b border-slate-100 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
                   <th className="py-3 px-3">Product Name</th>
                   <th className="py-3 px-3">Units Sold</th>
                   <th className="py-3 px-3 text-right">Total Sales</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/40">
+              <tbody className="divide-y divide-slate-100/50">
                 {topProducts.map((prod, idx) => (
-                  <tr key={idx} className="hover:bg-slate-950/40 transition-colors text-xs text-slate-300">
-                    <td className="py-3.5 px-3 font-semibold text-slate-100">{prod.name}</td>
+                  <tr key={idx} className="hover:bg-slate-50/50 transition-colors text-xs text-slate-600">
+                    <td className="py-3.5 px-3 font-bold text-slate-900">{prod.name}</td>
                     <td className="py-3.5 px-3 font-mono text-slate-400">{prod.sold} sold</td>
-                    <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-400">${prod.revenue.toFixed(2)}</td>
+                    <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-600">${prod.revenue.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
