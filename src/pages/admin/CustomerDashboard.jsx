@@ -1,8 +1,11 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CreditCard, Tag, Clock, Plus, Trash2, MapPin, CheckCircle2, ChevronRight, Award, ShoppingBag, ChefHat, Send } from 'lucide-react';
+import { CreditCard, Tag, Clock, Plus, Trash2, MapPin, CheckCircle2, ChevronRight, Award, ShoppingBag, ChefHat, Send, Home } from 'lucide-react';
 import { useOrderSyncStore } from '../../store/orderSyncStore';
 
 export default function CustomerDashboard() {
+  const navigate = useNavigate();
   const { orders } = useOrderSyncStore();
 
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -42,9 +45,18 @@ export default function CustomerDashboard() {
           </h1>
           <p className="text-sm text-slate-500 mt-1 font-medium">Welcome back! Here is your cafe history.</p>
         </div>
-        <div className="hidden sm:flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-2xl border border-amber-100 shadow-sm">
-          <Award className="w-5 h-5 text-amber-500" />
-          <span className="font-bold text-amber-700 text-sm">Gold Member</span>
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-2xl border border-amber-100 shadow-sm">
+            <Award className="w-5 h-5 text-amber-500" />
+            <span className="font-bold text-amber-700 text-sm">Gold Member</span>
+          </div>
+          <button 
+            onClick={() => navigate('/floor')}
+            className="p-3 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-slate-800 hover:text-white text-slate-700 transition cursor-pointer border border-slate-200/50 flex items-center justify-center group"
+            title="Back to Home"
+          >
+            <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          </button>
         </div>
       </motion.div>
 

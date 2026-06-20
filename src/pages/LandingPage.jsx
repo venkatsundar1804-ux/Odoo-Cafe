@@ -51,7 +51,10 @@ export default function LandingPage() {
   const recommendedFoods = [
     { ...mockProducts.find(p => p.name === 'Cappuccino'), tag: "Chef's Pick" },
     { ...mockProducts.find(p => p.name === 'Avocado Toast'), tag: "Healthy" },
-    { ...mockProducts.find(p => p.name === 'Chocolate Truffle Cake'), tag: "Bestseller" }
+    { ...mockProducts.find(p => p.name === 'Chocolate Truffle Cake'), tag: "Bestseller" },
+    { ...mockProducts.find(p => p.name === 'Farmhouse Pizza'), tag: "Trending" },
+    { ...mockProducts.find(p => p.name === 'Pink Sauce Pasta'), tag: "Must Try" },
+    { ...mockProducts.find(p => p.name === 'Cold Coffee'), tag: "Refreshing" }
   ].filter(p => p && p.name); // Filter out any missing items safely
 
   return (
@@ -190,20 +193,38 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.1)] p-8 md:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-8">
-              <div>
-                <div className="flex items-center gap-2 text-amber-400 font-black uppercase tracking-widest text-sm mb-3">
-                  <Tag className="w-5 h-5" /> Today's Special Offer
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.1)] p-8 md:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-2 text-amber-400 font-black uppercase tracking-widest text-sm mb-3">
+                    <Tag className="w-5 h-5" /> Today's Special Offer
+                  </div>
+                  <h2 className="text-2xl font-black tracking-tighter mb-2">Buy 1 Coffee, Get 1 Pastry Half Price</h2>
+                  <p className="text-slate-400 text-sm font-medium">Valid until 4:00 PM today.</p>
                 </div>
-                <h2 className="text-3xl font-black tracking-tighter mb-2">Buy 1 Coffee, Get 1 Pastry Half Price</h2>
-                <p className="text-slate-400 font-medium">Valid until 4:00 PM today. Applies automatically at checkout.</p>
+                <button 
+                  onClick={handleRevealTables}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-3 rounded-full font-black shadow-lg cursor-pointer transition-colors whitespace-nowrap text-sm"
+                >
+                  Claim Offer
+                </button>
               </div>
-              <button 
-                onClick={handleRevealTables}
-                className="bg-amber-500 hover:bg-amber-400 text-slate-900 px-8 py-4 rounded-full font-black shadow-lg cursor-pointer transition-colors whitespace-nowrap"
-              >
-                Claim Offer & Order
-              </button>
+
+              <div className="bg-gradient-to-r from-rose-600 to-red-500 rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.1)] p-8 md:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-2 text-rose-200 font-black uppercase tracking-widest text-sm mb-3">
+                    <Star className="w-5 h-5" /> Weekend Combo
+                  </div>
+                  <h2 className="text-2xl font-black tracking-tighter mb-2">Pizza & Mocktail Combo</h2>
+                  <p className="text-rose-100 text-sm font-medium">Save 20% when you order together.</p>
+                </div>
+                <button 
+                  onClick={handleRevealTables}
+                  className="bg-white hover:bg-rose-50 text-rose-600 px-6 py-3 rounded-full font-black shadow-lg cursor-pointer transition-colors whitespace-nowrap text-sm"
+                >
+                  Order Now
+                </button>
+              </div>
             </div>
           </motion.div>
 

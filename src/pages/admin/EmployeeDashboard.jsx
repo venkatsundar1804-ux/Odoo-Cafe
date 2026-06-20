@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode } from 'lucide-react';
+import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode, Home } from 'lucide-react';
 import { useOrderSyncStore } from '../../store/orderSyncStore';
 
 export default function EmployeeDashboard() {
+  const navigate = useNavigate();
   const { orders, dispatchOrderToKds } = useOrderSyncStore();
 
   const sendToKds = (id) => {
@@ -40,14 +42,23 @@ export default function EmployeeDashboard() {
           </h1>
           <p className="text-sm text-slate-500 mt-1 font-medium">Verify cash & route orders to the Kitchen.</p>
         </div>
-        <div className="hidden sm:flex items-center gap-2 bg-rose-50 border border-rose-100 px-4 py-2 rounded-2xl shadow-sm">
-          <div className="relative">
-            <AlertTriangle className="w-5 h-5 text-rose-500" />
-            {pendingOrders.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full animate-ping"></span>
-            )}
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-2 bg-rose-50 border border-rose-100 px-4 py-2 rounded-2xl shadow-sm">
+            <div className="relative">
+              <AlertTriangle className="w-5 h-5 text-rose-500" />
+              {pendingOrders.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full animate-ping"></span>
+              )}
+            </div>
+            <span className="font-bold text-rose-700 text-sm">{pendingOrders.length} Pending</span>
           </div>
-          <span className="font-bold text-rose-700 text-sm">{pendingOrders.length} Pending</span>
+          <button 
+            onClick={() => navigate('/floor')}
+            className="p-3 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-slate-800 hover:text-white text-slate-700 transition cursor-pointer border border-slate-200/50 flex items-center justify-center group"
+            title="Back to Home"
+          >
+            <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          </button>
         </div>
       </motion.div>
 

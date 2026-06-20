@@ -69,10 +69,11 @@ export default function Checkout() {
         {/* Header */}
         <header className="flex items-center justify-between mb-8">
           <button 
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-slate-200/50 rounded-full transition-colors cursor-pointer"
+            onClick={() => navigate('/pos')}
+            className="p-3 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-slate-800 hover:text-white text-slate-700 transition cursor-pointer border border-slate-200/50 flex items-center justify-center group"
+            title="Back to POS"
           >
-            <ChevronLeft className="w-6 h-6 text-slate-800" strokeWidth={2.5} />
+            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" strokeWidth={2.5} />
           </button>
           
           <h1 className="text-xl font-bold text-slate-800">Shopping Bag</h1>
