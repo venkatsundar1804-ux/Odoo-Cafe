@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Text
+from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime, timezone
 
 Base = declarative_base()
@@ -19,6 +19,7 @@ class Category(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     color = Column(String)
+    products = relationship("Product", back_populates="category")
 
 class Product(Base):
     __tablename__ = "products"
@@ -29,6 +30,7 @@ class Product(Base):
     unit_of_measure = Column(String, default="piece")
     tax_percentage = Column(Float, default=0.0)
     description = Column(String, nullable=True)
+    category = relationship("Category", back_populates="products")
 
 class Table(Base):
     __tablename__ = "tables"
@@ -46,6 +48,22 @@ class Order(Base):
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
     discount_amount = Column(Float, default=0.0)
     tax_amount = Column(Float, default=0.0)
+    coupon_code = Column(String, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    items = relationship("OrderItem", back_populates="order")
+    transactions = relationship("Transaction", back_populates="order")
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"))
+    product_id = Column(Integer, ForeignKey("products.id"))
+    product_name = Column(String)
+    quantity = Column(Integer)
+    unit_price = Column(Float)
+    line_total = Column(Float)
+    order = relationship("Order", back_populates="items")
+    product = relationship("Product")
 
 class Customer(Base):
     __tablename__ = "customers"
@@ -62,6 +80,16 @@ class Coupon(Base):
     value = Column(Float)
     is_active = Column(Boolean, default=True)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"))
+    payment_method = Column(String)  # 'cash', 'card', 'upi'
+    amount = Column(Float)
+    status = Column(String, default="Completed")  # 'Completed', 'Pending', 'Refunded'
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    order = relationship("Order", back_populates="transactions")
 
 class POSSession(Base):
     __tablename__ = "pos_sessions"

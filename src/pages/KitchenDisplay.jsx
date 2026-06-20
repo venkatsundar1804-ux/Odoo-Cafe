@@ -7,9 +7,13 @@ import api from '../api';
 
 export default function KitchenDisplay() {
   const { isConnected } = useKdsSocket();
-  const { orders, transitionKdsStatus, toggleItemStrike } = useOrderSyncStore();
+  const { orders, transitionKdsStatus, toggleItemStrike, fetchOrders } = useOrderSyncStore();
   const [prevOrderCount, setPrevOrderCount] = useState(0);
   const [newOrderAlert, setNewOrderAlert] = useState(false);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   // Monitor new orders to trigger pulse alert sound or animation
   useEffect(() => {
@@ -34,7 +38,11 @@ export default function KitchenDisplay() {
   const completedOrders = orders.filter((o) => o.status === 'Completed');
 
   return (
-    <div className="h-screen w-screen bg-slate-100 text-slate-800 flex flex-col overflow-hidden font-sans">
+    <motion.div 
+      animate={newOrderAlert ? { backgroundColor: ['#f8fafc', '#fee2e2', '#f8fafc'] } : { backgroundColor: '#f8fafc' }}
+      transition={{ duration: 0.8, repeat: 3 }}
+      className="h-screen w-screen text-slate-800 flex flex-col overflow-hidden font-sans"
+    >
       
       {/* High-Contrast Kitchen Header */}
       <header className="h-20 bg-white border-b-2 border-slate-200 flex items-center justify-between px-8 shrink-0 shadow-sm">
@@ -182,7 +190,7 @@ export default function KitchenDisplay() {
         </div>
 
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -218,23 +226,36 @@ function OrderCard({ order, onTransition, onToggleItem, cardClass, btnClass, bul
           >
             <div className="flex items-center gap-3 max-w-[80%]">
               {item.completed ? (
-                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-500 flex items-center justify-center shrink-0">
+                <motion.div 
+                  initial={{ scale: 0, rotate: -90 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-500 flex items-center justify-center shrink-0 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]"
+                >
                   <CheckCircle2 size={14} className="stroke-[3]" />
-                </div>
+                </motion.div>
               ) : (
                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${bulletClass.replace('text-', 'border-').replace('400', '300')} bg-slate-50`}>
                   <div className={`w-2 h-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${bulletClass.replace('text-', 'bg-')}`}></div>
                 </div>
               )}
-              <span
-                className={`text-base font-bold tracking-tight transition-all ${
-                  item.completed
-                    ? 'line-through text-slate-400 font-medium italic opacity-60'
-                    : 'text-slate-800 group-hover:text-slate-900'
-                }`}
-              >
-                {item.name}
-              </span>
+              <div className="relative">
+                <span
+                  className={`text-base font-bold tracking-tight transition-colors duration-300 ${
+                    item.completed ? 'text-slate-400 italic' : 'text-slate-800 group-hover:text-slate-900'
+                  }`}
+                >
+                  {item.name}
+                </span>
+                {item.completed && (
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="absolute left-0 top-1/2 h-[2px] bg-slate-400 -translate-y-1/2 origin-left"
+                  />
+                )}
+              </div>
             </div>
             <span
               className={`font-sans text-sm px-3 py-1 rounded-xl font-black ${

@@ -1,9 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Armchair, Coffee, Quote, Settings, LogIn, LogOut, User, MapPin, Tag, Star, ArrowRight } from 'lucide-react';
+import { Armchair, Coffee, Settings, LogIn, LogOut, User, MapPin, Tag, Star, ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
 import { useTableStore } from '../store/tableStore';
 import { useAuthStore } from '../store/authStore';
-import { mockProducts } from '../data/mockProducts';
 import { resolveImage } from '../utils/imageResolver';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -35,222 +34,243 @@ export default function LandingPage() {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+      transition: { staggerChildren: 0.05, delayChildren: 0.1 }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, scale: 0.9, y: 20 },
-    show: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+    hidden: { opacity: 0, scale: 0.95, y: 15 },
+    show: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 400, damping: 30 } }
   };
 
   const availableTables = tables.filter(t =>
     t.status === 'available' || (user && t.occupiedBy === user.name)
   );
 
-  const recommendedFoods = [
-    { ...mockProducts.find(p => p.name === 'Cappuccino'), tag: "Chef's Pick" },
-    { ...mockProducts.find(p => p.name === 'Avocado Toast'), tag: "Healthy" },
-    { ...mockProducts.find(p => p.name === 'Chocolate Truffle Cake'), tag: "Bestseller" },
-    { ...mockProducts.find(p => p.name === 'Farmhouse Pizza'), tag: "Trending" },
-    { ...mockProducts.find(p => p.name === 'Pink Sauce Pasta'), tag: "Must Try" },
-    { ...mockProducts.find(p => p.name === 'Cold Coffee'), tag: "Refreshing" },
-    { ...mockProducts.find(p => p.name === 'Chocolate Truffle Cake'), tag: "Bestseller" },
-    { ...mockProducts.find(p => p.name === 'Farmhouse Pizza'), tag: "Trending" },
-    { ...mockProducts.find(p => p.name === 'Pink Sauce Pasta'), tag: "Must Try" },
-  ].filter(p => p && p.name); // Filter out any missing items safely
+  const marqueeItems = [
+    { name: 'Cappuccino', tag: 'Classic' },
+    { name: 'Avocado Toast', tag: 'Healthy' },
+    { name: 'Chocolate Truffle Cake', tag: 'Bestseller' },
+    { name: 'Farmhouse Pizza', tag: 'Trending' },
+    { name: 'Cold Coffee', tag: 'Refreshing' },
+    { name: 'Pink Sauce Pasta', tag: 'Must Try' },
+    { name: 'Blueberry Pastry', tag: 'Dessert' },
+    { name: 'Caesar Salad', tag: 'Fresh' }
+  ];
 
   return (
     <motion.div
-      initial={{ opacity: 0, filter: 'blur(10px)' }}
-      animate={{ opacity: 1, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, filter: 'blur(10px)' }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="min-h-screen w-full bg-[#f8fafc] overflow-x-hidden font-sans relative"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+      className="min-h-screen w-full bg-slate-50 overflow-x-hidden font-sans text-slate-900"
     >
-
-      {/* Top Navigation */}
+      {/* ── Navigation ──────────────────────────────────────────────────────── */}
       <motion.nav
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="absolute top-0 left-0 w-full z-50 p-6 sm:px-10 flex justify-between items-center"
+        className="fixed top-0 left-0 w-full z-50 px-6 py-5 md:px-12 flex justify-between items-center bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm"
       >
-        <div className="text-white font-black text-2xl tracking-tighter drop-shadow-md flex items-center gap-3">
-          <div className="bg-amber-500 p-2 rounded-xl shadow-lg">
-            <Coffee className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-3">
+          <div className="bg-amber-600 p-2 rounded-xl text-white shadow-md">
+            <Coffee className="w-5 h-5" />
           </div>
-          <span className="hidden sm:inline">Odoo Cafe</span>
+          <span className="font-black tracking-tight text-xl text-slate-800">Odoo<span className="text-amber-600">Cafe</span></span>
         </div>
 
-        <div className="flex gap-4 items-center">
+        <div className="flex items-center gap-4">
           {user ? (
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-3 bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 text-white">
-                <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center shadow-inner">
-                  <User className="w-4 h-4 text-white" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-black tracking-widest opacity-80">Welcome Back</span>
-                  <span className="text-sm font-bold">{user.name}</span>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden md:flex items-center gap-3 px-4 py-2 rounded-full border border-slate-200 bg-white/50 text-slate-700 font-medium text-sm">
+                <User className="w-4 h-4 text-amber-600" />
+                <span>Hi, {user.name}</span>
               </div>
               <button
                 onClick={() => navigate(role === 'customer' ? '/admin/customer' : '/admin')}
-                className="flex items-center gap-2 bg-white text-slate-900 hover:bg-slate-100 px-6 py-3 rounded-2xl transition font-black text-sm shadow-[0_10px_30px_rgba(0,0,0,0.15)] cursor-pointer"
+                className="flex items-center gap-2 text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg transition font-bold text-sm"
               >
                 <Settings className="w-4 h-4" />
-                <span className="hidden sm:inline">Dashboard</span>
+                <span className="hidden md:inline">Dashboard</span>
               </button>
               <button
-                onClick={() => {
-                  logout();
-                  navigate('/');
-                }}
-                className="flex items-center gap-2 bg-rose-50 text-rose-600 hover:bg-rose-100 px-6 py-3 rounded-2xl transition font-black text-sm shadow-[0_10px_30px_rgba(225,29,72,0.15)] cursor-pointer"
+                onClick={() => { logout(); navigate('/'); }}
+                className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-full transition font-bold text-sm"
               >
                 <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Logout</span>
+                <span className="hidden md:inline">Logout</span>
               </button>
             </div>
           ) : (
             <button
               onClick={() => navigate('/login')}
-              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-3 rounded-2xl transition font-black text-sm shadow-[0_10px_30px_rgba(245,158,11,0.3)] cursor-pointer"
+              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-full transition font-bold text-sm shadow-lg"
             >
               <LogIn className="w-4 h-4" />
-              <span>Login / Sign Up</span>
+              <span>Login</span>
             </button>
           )}
         </div>
       </motion.nav>
 
-      {/* Hero Section */}
-      <section className="relative w-full h-[70vh] min-h-[600px] flex items-center justify-center overflow-hidden rounded-b-[4rem] shadow-2xl">
+      {/* ── Hero Section ────────────────────────────────────────────────────── */}
+      <section className="relative w-full min-h-[90vh] flex flex-col items-center justify-center pt-24 pb-12 px-6 overflow-hidden bg-slate-900 text-white selection:bg-amber-500 selection:text-white">
         <div className="absolute inset-0 z-0">
           <img
             src="/mockup_images/cafe_banner.png"
-            alt="Cafe Interior"
-            className="w-full h-full object-cover scale-105"
+            alt="Cafe Background"
+            className="w-full h-full object-cover opacity-40 scale-105"
           />
-          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-[2px]"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-900"></div>
+          {/* Subtle noise texture or radial gradient for depth */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-900/20 via-transparent to-transparent opacity-50 blur-2xl"></div>
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative z-10 text-center px-4 max-w-4xl mx-auto flex flex-col items-center mt-12"
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+          className="relative z-10 text-center max-w-5xl mx-auto flex flex-col items-center mt-12"
         >
-          <span className="bg-amber-500 text-slate-900 text-xs font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full mb-6 shadow-lg">
-            Experience the finest
-          </span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md mb-8">
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-bold tracking-[0.2em] uppercase text-amber-100">The New Standard</span>
+          </div>
 
-          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter drop-shadow-2xl mb-6">
-            Where Every Pour <br /> Tells a <span className="text-amber-400 italic font-serif">Story.</span>
+          <h1 className="text-6xl md:text-8xl lg:text-[7rem] font-black tracking-tighter leading-[0.95] mb-8 text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-200 to-slate-400">
+            Crafted for <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">Perfection.</span>
           </h1>
 
-          <p className="text-lg text-slate-200 font-medium max-w-xl mx-auto mb-10">
-            Skip the line. Select a table, browse our curated menu, and order directly from your device.
+          <p className="text-lg md:text-xl text-slate-300 font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
+            Experience seamless dining. Choose your perfect spot, explore our curated menu, and order directly from your device without the wait.
           </p>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleRevealTables}
-            className="flex items-center gap-3 bg-amber-500 hover:bg-amber-400 text-slate-900 px-8 py-4 rounded-full font-black text-lg shadow-[0_15px_40px_rgba(245,158,11,0.4)] cursor-pointer transition-colors"
-          >
-            <Armchair className="w-5 h-5" />
-            Dine In - Choose Table
-            <ArrowRight className="w-5 h-5" />
-          </motion.button>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleRevealTables}
+              className="flex items-center justify-center gap-3 bg-amber-500 hover:bg-amber-400 text-slate-900 px-8 py-4 rounded-full font-black text-lg shadow-[0_0_40px_rgba(245,158,11,0.3)] transition-all"
+            >
+              <Armchair className="w-5 h-5" />
+              Dine In - Select Table
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate('/login')}
+              className="flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-bold text-lg transition-all"
+            >
+              Order Takeaway
+              <ChevronRight className="w-5 h-5" />
+            </motion.button>
+          </div>
         </motion.div>
       </section>
 
-      {/* Main Content Area (Conditional) */}
-      <section className="relative z-20 -mt-10 max-w-6xl mx-auto px-4 pb-24" ref={tablesRef}>
+      {/* ── Infinite Marquee Section ────────────────────────────────────────── */}
+      <section className="py-12 bg-white border-b border-slate-100 overflow-hidden relative">
+        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white to-transparent z-10"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white to-transparent z-10"></div>
+        
+        <motion.div
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ ease: "linear", duration: 30, repeat: Infinity }}
+          className="flex whitespace-nowrap gap-8 px-4 w-max"
+        >
+          {/* Double the items to make the infinite scroll smooth */}
+          {[...marqueeItems, ...marqueeItems].map((item, idx) => (
+            <div 
+              key={idx} 
+              className="flex items-center gap-4 bg-slate-50 border border-slate-100 rounded-full pr-6 p-2 cursor-pointer hover:bg-slate-100 transition-colors"
+              onClick={() => navigate(`/pos?search=${encodeURIComponent(item.name)}`)}
+            >
+              <img src={resolveImage(item.name)} alt={item.name} className="w-12 h-12 rounded-full object-cover shadow-sm" />
+              <div>
+                <p className="font-bold text-slate-800 text-sm leading-tight">{item.name}</p>
+                <p className="text-[10px] uppercase tracking-wider font-bold text-amber-600">{item.tag}</p>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      </section>
+
+      {/* ── Main Content Area (Features & Tables) ─────────────────────────── */}
+      <section className="relative z-20 max-w-7xl mx-auto px-6 py-24" ref={tablesRef}>
 
         {!showTables ? (
-          /* Recommended Foods & Offers */
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-12"
           >
-            <div className="bg-white/80 backdrop-blur-[40px] rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.06)] border border-white p-8 md:p-12">
-              <div className="flex items-center gap-3 mb-8">
-                <Star className="w-6 h-6 text-amber-500" />
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Recommended for You</h2>
+            {/* Feature Grid */}
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">Elevate your experience.</h2>
+              <p className="text-lg text-slate-500 max-w-2xl mx-auto">Discover the perfect blend of artisanal quality and modern convenience.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+              <div className="bg-slate-900 rounded-[2.5rem] overflow-hidden group relative flex flex-col justify-end p-10 min-h-[400px]">
+                <div className="absolute inset-0">
+                  <img src="/mockup_images/Cake and Coffee Combo.jpg" alt="Coffee" className="w-full h-full object-cover opacity-50 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
+                </div>
+                <div className="relative z-10 text-white">
+                  <div className="bg-amber-500 w-12 h-12 rounded-full flex items-center justify-center mb-6">
+                    <Star className="w-6 h-6 text-slate-900" />
+                  </div>
+                  <h3 className="text-3xl font-black tracking-tight mb-3">Premium Quality</h3>
+                  <p className="text-slate-300 font-medium max-w-md">Sourced from the finest local ingredients and crafted with absolute precision by our expert chefs and baristas.</p>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {recommendedFoods.map(food => (
-                  <div
-                    key={food.id}
-                    onClick={() => navigate(`/pos?search=${encodeURIComponent(food.name)}`)}
-                    className="relative group overflow-hidden rounded-[2rem] shadow-sm hover:shadow-xl transition-shadow border border-slate-100 bg-white cursor-pointer"
-                  >
-                    <div className="h-48 overflow-hidden relative">
-                      <img src={resolveImage(food.name)} alt={food.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      <div className="absolute top-4 left-4 bg-amber-500 text-white text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-lg">
-                        {food.tag}
-                      </div>
-                    </div>
-                    <div className="p-3">
-                      <h3 className="font-bold text-slate-800 text-lg mb-1">{food.name}</h3>
-                      <p className="text-emerald-600 font-mono font-bold">₹{food.price.toFixed(2)}</p>
-                    </div>
+              <div className="bg-emerald-900 rounded-[2.5rem] overflow-hidden group relative flex flex-col justify-end p-10 min-h-[400px]">
+                <div className="absolute inset-0">
+                  <img src="/mockup_images/Farmhouse Pizza.jpg" alt="Pizza" className="w-full h-full object-cover opacity-50 group-hover:scale-105 group-hover:opacity-60 transition-all duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-emerald-900 via-emerald-900/60 to-transparent"></div>
+                </div>
+                <div className="relative z-10 text-white">
+                  <div className="bg-white w-12 h-12 rounded-full flex items-center justify-center mb-6">
+                    <Tag className="w-6 h-6 text-emerald-900" />
                   </div>
-                ))}
+                  <h3 className="text-3xl font-black tracking-tight mb-3">Exclusive Offers</h3>
+                  <p className="text-emerald-100 font-medium max-w-md">Join our loyalty program to unlock special discounts, secret menu items, and priority seating.</p>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.1)] p-8 md:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6">
-                <div>
-                  <div className="flex items-center gap-2 text-amber-400 font-black uppercase tracking-widest text-sm mb-3">
-                    <Tag className="w-5 h-5" /> Today's Special Offer
-                  </div>
-                  <h2 className="text-2xl font-black tracking-tighter mb-2">Buy 1 Coffee, Get 1 Pastry Half Price</h2>
-                  <p className="text-slate-400 text-sm font-medium">Valid until 4:00 PM today.</p>
-                </div>
+            {/* Smart Promotions Banner */}
+            <div className="bg-gradient-to-r from-amber-100 to-amber-50 rounded-[2.5rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 border border-amber-200/50 shadow-sm">
+              <div className="flex-1">
+                <span className="text-amber-600 font-black tracking-widest text-sm uppercase mb-2 block">Today's Highlight</span>
+                <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-4">Afternoon Delight Combo</h2>
+                <p className="text-slate-600 text-lg mb-6 max-w-xl">Pair any signature coffee with a fresh pastry and save 20%. The perfect mid-day pick-me-up.</p>
                 <button
                   onClick={handleRevealTables}
-                  className="bg-amber-500 hover:bg-amber-400 text-slate-900 px-6 py-3 rounded-full font-black shadow-lg cursor-pointer transition-colors whitespace-nowrap text-sm"
+                  className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3.5 rounded-full font-bold shadow-lg transition flex items-center gap-2"
                 >
-                  Claim Offer
+                  Dine In Now <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
-
-              <div className="bg-gradient-to-r from-rose-600 to-red-500 rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.1)] p-8 md:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6">
-                <div>
-                  <div className="flex items-center gap-2 text-rose-200 font-black uppercase tracking-widest text-sm mb-3">
-                    <Star className="w-5 h-5" /> Weekend Combo
-                  </div>
-                  <h2 className="text-2xl font-black tracking-tighter mb-2">Pizza & Mocktail Combo</h2>
-                  <p className="text-rose-100 text-sm font-medium">Save 20% when you order together.</p>
-                </div>
-                <button
-                  onClick={handleRevealTables}
-                  className="bg-white hover:bg-rose-50 text-rose-600 px-6 py-3 rounded-full font-black shadow-lg cursor-pointer transition-colors whitespace-nowrap text-sm"
-                >
-                  Order Now
-                </button>
+              <div className="w-full md:w-1/3 flex justify-center relative">
+                <div className="absolute inset-0 bg-amber-200 rounded-full blur-3xl opacity-50"></div>
+                <img src="/mockup_images/Cappuccino.jpg" alt="Combo" className="relative z-10 w-48 h-48 md:w-64 md:h-64 object-cover rounded-full border-8 border-white shadow-2xl" />
               </div>
             </div>
           </motion.div>
-
         ) : (
           /* Table Selection Grid */
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white/80 backdrop-blur-[40px] rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.06)] border border-white p-8 md:p-12"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Select an Open Table</h2>
-              <p className="text-slate-500 font-medium mt-2 text-base">Click a table below to start your digital order</p>
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-4">Choose your space.</h2>
+              <p className="text-lg text-slate-500 font-medium">Select an available table below to begin your order.</p>
             </div>
 
             <motion.div
@@ -264,34 +284,42 @@ export default function LandingPage() {
                   <motion.div
                     key={table.id}
                     variants={itemVariants}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    layout
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.03, y: -4 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => handleTableSelect(table)}
-                    className="relative overflow-hidden rounded-[2rem] p-6 border-2 border-emerald-100 hover:border-emerald-300 cursor-pointer transition-all duration-300 flex flex-col justify-between h-48 group bg-white shadow-[0_10px_30px_rgba(16,185,129,0.05)] hover:shadow-[0_20px_40px_rgba(16,185,129,0.15)]"
+                    className={`relative overflow-hidden rounded-[2rem] p-6 cursor-pointer transition-all duration-300 flex flex-col justify-between h-52 group shadow-sm hover:shadow-xl border-2 ${
+                      table.occupiedBy === user?.name 
+                      ? 'bg-slate-900 border-slate-900 text-white' 
+                      : 'bg-white border-slate-100 hover:border-amber-400 text-slate-900'
+                    }`}
                   >
-                    <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full blur-3xl transition-opacity duration-300 opacity-60 bg-emerald-100 group-hover:bg-emerald-200"></div>
-
-                    <div className="flex justify-between items-start relative z-10">
-                      <span className="text-5xl font-black tracking-tighter text-slate-800 group-hover:text-emerald-700 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <span className="text-4xl font-black tracking-tighter">
                         {table.number}
                       </span>
+                      {table.occupiedBy === user?.name ? (
+                        <div className="bg-white/20 text-white p-2 rounded-full">
+                          <User className="w-5 h-5" />
+                        </div>
+                      ) : (
+                        <div className="bg-slate-50 group-hover:bg-amber-100 text-slate-400 group-hover:text-amber-600 p-2 rounded-full transition-colors">
+                          <Armchair className="w-5 h-5" />
+                        </div>
+                      )}
                     </div>
 
-                    <div className="mt-auto relative z-10">
+                    <div className="mt-auto">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-slate-500 text-sm font-bold">
-                          <Armchair size={16} className={table.occupiedBy === user?.name ? "text-rose-500" : "text-emerald-500"} />
-                          <span>{table.seats} Seats</span>
+                        <div className={`text-sm font-bold ${table.occupiedBy === user?.name ? 'text-slate-300' : 'text-slate-500'}`}>
+                          {table.seats} Seats
                         </div>
                         {table.occupiedBy === user?.name ? (
-                          <div className="bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm border border-rose-100">
+                          <div className="bg-white text-slate-900 px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest">
                             Your Table
                           </div>
                         ) : (
-                          <div className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm">
-                            Sit Here
+                          <div className="bg-amber-100 text-amber-700 opacity-0 group-hover:opacity-100 px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest transition-opacity">
+                            Select
                           </div>
                         )}
                       </div>
@@ -301,18 +329,33 @@ export default function LandingPage() {
               </AnimatePresence>
 
               {availableTables.length === 0 && (
-                <div className="col-span-full py-20 text-center flex flex-col items-center">
-                  <div className="bg-rose-50 text-rose-500 p-4 rounded-full mb-4">
+                <div className="col-span-full py-24 text-center flex flex-col items-center bg-slate-50 rounded-[2.5rem] border border-slate-100">
+                  <div className="bg-slate-200 text-slate-400 p-4 rounded-full mb-4">
                     <MapPin className="w-8 h-8" />
                   </div>
-                  <h3 className="text-xl font-black text-slate-800">We're fully booked!</h3>
-                  <p className="text-slate-500 mt-2">All tables are currently occupied. Please check back shortly.</p>
+                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">Fully Booked</h3>
+                  <p className="text-slate-500 mt-2 font-medium max-w-sm">All tables are currently occupied. Please check back shortly or consider ordering for takeaway.</p>
                 </div>
               )}
             </motion.div>
           </motion.div>
         )}
       </section>
+      
+      {/* Footer */}
+      <footer className="bg-white border-t border-slate-100 py-12 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <Coffee className="w-5 h-5 text-amber-500" />
+            <span className="font-bold text-slate-800">OdooCafe © 2026</span>
+          </div>
+          <div className="flex gap-6 text-sm font-bold text-slate-400">
+            <span className="hover:text-slate-800 cursor-pointer transition">Privacy Policy</span>
+            <span className="hover:text-slate-800 cursor-pointer transition">Terms of Service</span>
+            <span className="hover:text-slate-800 cursor-pointer transition">Contact Us</span>
+          </div>
+        </div>
+      </footer>
     </motion.div>
   );
 }

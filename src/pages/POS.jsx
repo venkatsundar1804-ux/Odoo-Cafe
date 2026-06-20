@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCartStore } from '../store/cartStore';
 import { mockCategories } from '../data/mockCategories';
 import { mockProducts } from '../data/mockProducts';
-import { motion, AnimatePresence } from 'framer-motion';
+import { fetchProductsFromDB, fetchCategoriesFromDB } from '../data/dataProvider';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { resolveImage } from '../utils/imageResolver';
+import { Check } from 'lucide-react';
 import { 
   Search, 
   ChevronLeft,
@@ -24,7 +26,7 @@ export default function POS() {
   const initialCategory = searchParams.get('category') || 'All';
 
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState(mockCategories);
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   
@@ -37,15 +39,76 @@ export default function POS() {
   const [sortOrder, setSortOrder] = useState('default'); // 'default' | 'price_asc' | 'price_desc' | 'name_asc'
   const [isSortOpen, setIsSortOpen] = useState(false);
 
+  // ── Cart Animation State ──────────────────────────────────────────
+  const [flyingItems, setFlyingItems] = useState([]);
+  const [toast, setToast] = useState(null);
+  const [cartBounce, setCartBounce] = useState(0);
+  const cartIconRef = useRef(null);
+  const toastTimeoutRef = useRef(null);
+
   const navigate = useNavigate();
   const { addToCart, cart } = useCartStore();
   const cartItemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
+  // ── Animated Add To Cart Handler ──────────────────────────────────
+  const handleAddToCart = useCallback((product, event) => {
+    // 1. Add to store
+    addToCart(product);
+
+    // 2. Trigger cart badge bounce
+    setCartBounce(prev => prev + 1);
+
+    // 3. Show toast
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setToast({ name: product.name, price: product.price, id: Date.now() });
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 2000);
+
+    // 4. Launch flying thumbnail
+    if (!cartIconRef.current || !event) return;
+    const cartRect = cartIconRef.current.getBoundingClientRect();
+
+    // Get click origin — use the event target's image if possible, otherwise event coords
+    let startX, startY;
+    const img = event.currentTarget.querySelector('img');
+    if (img) {
+      const imgRect = img.getBoundingClientRect();
+      startX = imgRect.left + imgRect.width / 2;
+      startY = imgRect.top + imgRect.height / 2;
+    } else {
+      startX = event.clientX;
+      startY = event.clientY;
+    }
+
+    const flyId = Date.now() + Math.random();
+    setFlyingItems(prev => [
+      ...prev,
+      {
+        id: flyId,
+        name: product.name,
+        startX,
+        startY,
+        endX: cartRect.left + cartRect.width / 2,
+        endY: cartRect.top + cartRect.height / 2,
+      }
+    ]);
+
+    // Remove flying item after animation completes
+    setTimeout(() => {
+      setFlyingItems(prev => prev.filter(f => f.id !== flyId));
+    }, 700);
+  }, [addToCart]);
+
   useEffect(() => {
-    // Rely completely on the dynamic data provider (mockProducts / mockCategories)
-    // so that all 86 products and 15 categories load without needing the DB.
-    setProducts(mockProducts);
-    setCategories(mockCategories);
+    // Fetch products and categories from the database API
+    const loadData = async () => {
+      const [dbProducts, dbCategories] = await Promise.all([
+        fetchProductsFromDB(),
+        fetchCategoriesFromDB()
+      ]);
+      setProducts(dbProducts.length > 0 ? dbProducts : mockProducts);
+      setCategories(dbCategories.length > 0 ? dbCategories : mockCategories);
+    };
+    loadData();
   }, []);
 
   const filteredProducts = products.filter(product => {
@@ -314,15 +377,25 @@ export default function POS() {
               </button>
               
               <button 
+                ref={cartIconRef}
                 onClick={() => navigate('/checkout')}
                 className="p-4 bg-white/70 backdrop-blur shadow-sm rounded-2xl hover:bg-white transition cursor-pointer border border-slate-200/50 relative"
               >
                 <ShoppingBag className="w-5 h-5 text-slate-700" />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-slate-800 text-white text-[10px] font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md">
-                    {cartItemCount}
-                  </span>
-                )}
+                <AnimatePresence mode="wait">
+                  {cartItemCount > 0 && (
+                    <motion.span 
+                      key={cartBounce}
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      exit={{ scale: 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                      className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-lg"
+                    >
+                      {cartItemCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </button>
             </div>
           </div>
@@ -395,14 +468,22 @@ export default function POS() {
                           </div>
 
                           <div className="flex items-center gap-6">
-                            <button 
-                              onClick={() => {
-                                addToCart(activeProduct);
-                              }}
-                              className="flex items-center gap-2 bg-slate-800 text-white px-10 py-4 rounded-2xl font-bold hover:bg-slate-900 transition shadow-[0_15px_30px_rgba(15,23,42,0.15)] cursor-pointer text-sm tracking-widest uppercase hover:-translate-y-1"
+                            <motion.button 
+                              onClick={(e) => handleAddToCart(activeProduct, e)}
+                              whileTap={{ scale: 0.92 }}
+                              className="relative flex items-center gap-3 bg-slate-800 text-white px-10 py-4 rounded-2xl font-bold hover:bg-slate-900 transition shadow-[0_15px_30px_rgba(15,23,42,0.15)] cursor-pointer text-sm tracking-widest uppercase hover:-translate-y-1 overflow-hidden"
                             >
+                              <Plus className="w-4 h-4" />
                               Add To Cart
-                            </button>
+                              {/* Ripple effect on click */}
+                              <motion.span
+                                key={cartBounce}
+                                initial={{ scale: 0, opacity: 0.5 }}
+                                animate={{ scale: 4, opacity: 0 }}
+                                transition={{ duration: 0.6, ease: 'easeOut' }}
+                                className="absolute inset-0 m-auto w-8 h-8 bg-amber-400 rounded-full pointer-events-none"
+                              />
+                            </motion.button>
                           </div>
                         </motion.div>
                       </div>
@@ -479,8 +560,8 @@ export default function POS() {
                         key={product.id}
                         variants={gridItemVariants}
                         whileHover={{ scale: 1.03, y: -5 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => addToCart(product)}
+                        whileTap={{ scale: 0.93 }}
+                        onClick={(e) => handleAddToCart(product, e)}
                         className="bg-white/80 backdrop-blur border border-slate-200/60 rounded-[2rem] p-5 flex flex-col justify-between cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] group"
                       >
                         <div className="w-full flex justify-center mb-4">
@@ -509,6 +590,73 @@ export default function POS() {
             )}
           </AnimatePresence>
         </div>
+
+        {/* ── Flying Product Thumbnails Overlay ─────────────────────── */}
+        <AnimatePresence>
+          {flyingItems.map(item => (
+            <motion.div
+              key={item.id}
+              initial={{
+                position: 'fixed',
+                left: item.startX - 24,
+                top: item.startY - 24,
+                width: 48,
+                height: 48,
+                opacity: 1,
+                scale: 1,
+                zIndex: 9999,
+                pointerEvents: 'none',
+              }}
+              animate={{
+                left: item.endX - 12,
+                top: item.endY - 12,
+                width: 24,
+                height: 24,
+                opacity: 0.6,
+                scale: 0.4,
+              }}
+              exit={{ opacity: 0, scale: 0 }}
+              transition={{
+                duration: 0.6,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              style={{ position: 'fixed', zIndex: 9999, pointerEvents: 'none' }}
+            >
+              <img
+                src={resolveImage(item.name)}
+                alt=""
+                className="w-full h-full rounded-full object-cover shadow-[0_8px_25px_rgba(0,0,0,0.3)] border-2 border-white"
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {/* ── Toast Notification ────────────────────────────────────── */}
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, y: 30, x: '-50%', scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, x: '-50%', scale: 1 }}
+              exit={{ opacity: 0, y: -20, x: '-50%', scale: 0.9 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              className="fixed bottom-8 left-1/2 z-[9999] flex items-center gap-3 bg-slate-900/95 backdrop-blur-xl text-white px-6 py-3.5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10"
+            >
+              <motion.div
+                initial={{ scale: 0, rotate: -90 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.1, type: 'spring', stiffness: 500 }}
+                className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shrink-0"
+              >
+                <Check className="w-4 h-4 text-white" strokeWidth={3} />
+              </motion.div>
+              <div>
+                <p className="font-bold text-sm leading-tight">{toast.name}</p>
+                <p className="text-xs text-slate-400 mt-0.5">Added to cart · ₹{toast.price}</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
     </motion.div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   IndianRupee, 
   ShoppingBag, 
@@ -148,7 +149,25 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-8 space-y-8 text-slate-800 font-sans animate-fade-in">
+    <div className="min-h-screen bg-slate-50 relative overflow-hidden font-sans text-slate-800 pb-24">
+      {/* Background Ambience */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] max-w-[700px] max-h-[700px] rounded-full bg-indigo-200/40 blur-[120px]" 
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.5, 1], rotate: [0, -90, 0] }}
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          className="absolute top-[20%] -right-[10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full bg-rose-200/40 blur-[100px]" 
+        />
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 p-4 sm:p-8 space-y-8 max-w-7xl mx-auto"
+      >
       
       {/* Title & Actions */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/60 pb-6 shrink-0">
@@ -262,47 +281,59 @@ export default function Dashboard() {
       {/* Summary Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Total Revenue */}
-        <div className="bg-gradient-to-br from-indigo-650 to-indigo-500 text-white p-6 rounded-3xl flex items-center justify-between shadow-xl shadow-indigo-100">
+        <motion.div 
+          whileHover={{ y: -5 }}
+          className="bg-gradient-to-br from-[#8380C4] to-indigo-500 text-white p-6 rounded-[2rem] flex items-center justify-between shadow-[0_15px_30px_rgba(131,128,196,0.3)] transition-shadow"
+        >
           <div>
-            <p className="text-[10px] text-indigo-100 uppercase font-extrabold tracking-widest opacity-80">Total Revenue</p>
+            <p className="text-[10px] text-indigo-100 uppercase font-extrabold tracking-widest opacity-90">Total Revenue</p>
             <p className="text-3xl font-light font-mono mt-2.5">
               ₹<span className="font-semibold">{(summary.total_revenue || 0).toFixed(2)}</span>
             </p>
           </div>
-          <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
+          <div className="bg-white/20 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/20">
             <IndianRupee className="w-6 h-6 text-white" />
           </div>
-        </div>
+        </motion.div>
 
         {/* Total Orders */}
-        <div className="bg-gradient-to-br from-amber-500 to-orange-500 text-white p-6 rounded-3xl flex items-center justify-between shadow-xl shadow-amber-100">
+        <motion.div 
+          whileHover={{ y: -5 }}
+          className="bg-gradient-to-br from-amber-400 to-orange-500 text-white p-6 rounded-[2rem] flex items-center justify-between shadow-[0_15px_30px_rgba(245,158,11,0.3)] transition-shadow"
+        >
           <div>
-            <p className="text-[10px] text-amber-100 uppercase font-extrabold tracking-widest opacity-80">Total Orders</p>
+            <p className="text-[10px] text-amber-100 uppercase font-extrabold tracking-widest opacity-90">Total Orders</p>
             <p className="text-3xl font-light font-mono mt-2.5">
               <span className="font-semibold">{summary.total_orders || 0}</span>
             </p>
           </div>
-          <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
+          <div className="bg-white/20 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/20">
             <ShoppingBag className="w-6 h-6 text-white" />
           </div>
-        </div>
+        </motion.div>
 
         {/* Average Order Value */}
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-650 text-white p-6 rounded-3xl flex items-center justify-between shadow-xl shadow-emerald-100">
+        <motion.div 
+          whileHover={{ y: -5 }}
+          className="bg-gradient-to-br from-emerald-400 to-teal-500 text-white p-6 rounded-[2rem] flex items-center justify-between shadow-[0_15px_30px_rgba(16,185,129,0.3)] transition-shadow"
+        >
           <div>
-            <p className="text-[10px] text-emerald-100 uppercase font-extrabold tracking-widest opacity-80">Avg Order Value</p>
+            <p className="text-[10px] text-emerald-100 uppercase font-extrabold tracking-widest opacity-90">Avg Order Value</p>
             <p className="text-3xl font-light font-mono mt-2.5">
               ₹<span className="font-semibold">{(summary.average_order_value || 0).toFixed(2)}</span>
             </p>
           </div>
-          <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
+          <div className="bg-white/20 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/20">
             <Percent className="w-6 h-6 text-white" />
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* AI daily summary briefing (Glow layout) */}
-      <div className="bg-white border border-indigo-100 shadow-[0_0_20px_rgba(99,102,241,0.08)] rounded-3xl p-6 relative overflow-hidden transition-all duration-300 hover:shadow-[0_0_25px_rgba(99,102,241,0.18)]">
+      <motion.div 
+        whileHover={{ scale: 1.01 }}
+        className="bg-white/80 backdrop-blur-xl border border-indigo-100 shadow-[0_15px_40px_rgba(131,128,196,0.1)] rounded-[2rem] p-8 relative overflow-hidden"
+      >
         <div className="absolute right-6 top-6 text-indigo-500 opacity-[0.03]">
           <Sparkles size={120} />
         </div>
@@ -310,10 +341,10 @@ export default function Dashboard() {
           <Sparkles size={14} className="text-indigo-500 animate-pulse" />
           <span>AI Business Insights</span>
         </div>
-        <p className="text-slate-600 text-xs leading-relaxed max-w-4xl font-medium">
+        <p className="text-slate-600 text-sm leading-relaxed max-w-4xl font-medium relative z-10">
           {aiSummary}
         </p>
-      </div>
+      </motion.div>
 
       {/* Visual Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -443,6 +474,7 @@ export default function Dashboard() {
 
       </div>
 
+      </motion.div>
     </div>
   );
 }

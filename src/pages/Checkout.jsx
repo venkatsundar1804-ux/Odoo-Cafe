@@ -84,27 +84,29 @@ export default function Checkout() {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, x: 50, filter: 'blur(10px)' }}
-      animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, x: -50, filter: 'blur(10px)' }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="min-h-screen w-full bg-[#ebf0f5] flex items-center justify-center p-4 font-sans relative overflow-hidden"
-    >
+    <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-4 font-sans relative overflow-hidden">
       
-      {/* Decorative background blobs */}
-      <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] bg-white/40 rounded-full blur-[80px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-white/40 rounded-full blur-[100px]" />
+      {/* Cinematic Background Ambience */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] max-w-[800px] max-h-[800px] rounded-full bg-sky-200/50 blur-[120px]" 
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.5, 1], rotate: [0, -90, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-[20%] -right-[10%] w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] rounded-full bg-amber-200/50 blur-[100px]" 
+        />
+      </div>
 
       {/* Main Checkout Device Frame */}
       <motion.div 
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        initial={{ y: 50, opacity: 0, scale: 0.95 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full max-w-[420px] bg-[#f0f3f8] rounded-[3rem] p-8 pb-10 flex flex-col"
-        style={{
-          boxShadow: '-20px -20px 60px rgba(255,255,255,0.8), 20px 20px 60px rgba(170,182,209,0.5)'
-        }}
+        className="relative z-10 w-full max-w-[420px] bg-white/60 backdrop-blur-3xl border border-white/80 rounded-[3rem] p-8 pb-10 flex flex-col shadow-[0_20px_60px_rgba(131,128,196,0.15)]"
       >
         
         {/* Header */}
@@ -168,8 +170,7 @@ export default function Checkout() {
 
                   {/* Item Image */}
                   <div 
-                    className="w-20 h-20 bg-white rounded-[1.25rem] flex items-center justify-center shrink-0 p-2"
-                    style={{ boxShadow: '0 8px 20px rgba(0,0,0,0.04)' }}
+                    className="w-20 h-20 bg-white/80 backdrop-blur-md rounded-[1.25rem] flex items-center justify-center shrink-0 p-2 border border-slate-100 shadow-[0_8px_20px_rgba(0,0,0,0.04)]"
                   >
                     <img 
                       src={resolveImage(item.name)} 
@@ -218,14 +219,16 @@ export default function Checkout() {
               placeholder="Promo Code"
               value={promoCode}
               onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-              className="flex-1 bg-white border-none rounded-2xl px-5 py-4 text-sm font-semibold text-slate-800 placeholder:text-slate-300 focus:outline-none shadow-[0_8px_20px_rgba(0,0,0,0.03)] uppercase"
+              className="flex-1 bg-white/80 backdrop-blur-md border border-white rounded-2xl px-5 py-4 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-400 shadow-[0_8px_20px_rgba(0,0,0,0.03)] uppercase transition-colors"
             />
-            <button 
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleApplyPromo}
-              className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm px-6 py-4 rounded-2xl transition shadow-[0_8px_16px_rgba(15,23,42,0.2)] cursor-pointer"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-6 py-4 rounded-2xl transition shadow-[0_8px_16px_rgba(79,70,229,0.2)] cursor-pointer"
             >
               Apply
-            </button>
+            </motion.button>
           </div>
           
           {/* Show available promos for quick select */}
@@ -295,7 +298,7 @@ export default function Checkout() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleCheckout}
-          className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-base py-5 rounded-[1.5rem] transition shadow-[0_15px_30px_rgba(15,23,42,0.2)] cursor-pointer tracking-wide"
+          className="w-full bg-gradient-to-r from-[#8380C4] to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-base py-5 rounded-[1.5rem] transition shadow-[0_15px_30px_rgba(131,128,196,0.3)] cursor-pointer tracking-wide"
         >
           Proceed To Checkout
         </motion.button>
@@ -310,6 +313,8 @@ export default function Checkout() {
         }}
         totalAmount={total}
         orderId={currentOrderId}
+        appliedPromo={appliedPromo}
+        discountAmount={discountAmount}
         onPaymentSuccess={async (paymentMethod) => {
           // Send payment confirmation to backend
           await ordersService.payOrder(currentOrderId, paymentMethod, {});
@@ -329,6 +334,6 @@ export default function Checkout() {
           clearCart();
         }}
       />
-    </motion.div>
+    </div>
   );
 }

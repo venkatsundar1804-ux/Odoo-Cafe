@@ -59,7 +59,7 @@ function AnimatedRoutes() {
         <Route path="/login" element={<AuthPage />} />
         <Route path="/floor" element={<LandingPage />} />
         <Route path="/kds" element={
-          <ProtectedRoute allowedRoles={['employee', 'admin']}>
+          <ProtectedRoute allowedRoles={['employee', 'admin', 'kds']}>
             <KitchenDisplay />
           </ProtectedRoute>
         } />

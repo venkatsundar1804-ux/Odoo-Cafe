@@ -94,24 +94,58 @@ def get_ai_daily_summary(db: Session = Depends(get_db)):
     ).scalar()
     total_revenue = float(total_revenue_result) if total_revenue_result else 0.0
 
-    best_selling_name = "Butter Croissant" # Default fallback for the hackathon
-    if hasattr(models, 'OrderItem'):
-        top_item = db.query(
-            models.OrderItem.product_id, 
-            func.sum(models.OrderItem.quantity).label('total_qty')
-        ).group_by(models.OrderItem.product_id).order_by(
-            func.sum(models.OrderItem.quantity).desc()
-        ).first()
+    best_selling_name = "Cappuccino" # Default fallback
+    top_item = db.query(
+        models.OrderItem.product_id, 
+        func.sum(models.OrderItem.quantity).label('total_qty')
+    ).group_by(models.OrderItem.product_id).order_by(
+        func.sum(models.OrderItem.quantity).desc()
+    ).first()
 
-        if top_item:
-            product = db.query(models.Product).filter(models.Product.id == top_item.product_id).first()
-            if product:
-                best_selling_name = product.name
+    if top_item:
+        product = db.query(models.Product).filter(models.Product.id == top_item.product_id).first()
+        if product:
+            best_selling_name = product.name
+
+    # Count unique customers
+    total_customers = db.query(func.count(models.Customer.id)).scalar() or 0
 
     summary_text = (
         f"Today was a fantastic shift! You processed {total_orders} orders generating "
-        f"${total_revenue:.2f} in revenue. Your top-selling item was the {best_selling_name}. "
+        f"₹{total_revenue:.2f} in revenue. Your top-selling item was the {best_selling_name}. "
+        f"You served {total_customers} registered customers. "
         "Keep up the great work during the afternoon rush!"
     )
 
     return {"summary": summary_text}
+
+@router.get("/api/reports/live-stats")
+def get_live_stats(db: Session = Depends(get_db)):
+    """Returns live stats computed from the database for the admin dashboard."""
+    total_revenue_result = db.query(func.sum(models.Order.total_amount)).filter(
+        models.Order.status.in_(["Paid", "Completed"])
+    ).scalar()
+    total_revenue = float(total_revenue_result) if total_revenue_result else 0.0
+
+    total_orders = db.query(func.count(models.Order.id)).scalar() or 0
+    paid_orders = db.query(func.count(models.Order.id)).filter(
+        models.Order.status.in_(["Paid", "Completed"])
+    ).scalar() or 0
+
+    total_customers = db.query(func.count(models.Customer.id)).scalar() or 0
+    total_products = db.query(func.count(models.Product.id)).scalar() or 0
+    active_coupons = db.query(func.count(models.Coupon.id)).filter(models.Coupon.is_active == True).scalar() or 0
+
+    avg_order_value = 0.0
+    if paid_orders > 0:
+        avg_order_value = total_revenue / paid_orders
+
+    return {
+        "total_revenue": round(total_revenue, 2),
+        "total_orders": total_orders,
+        "paid_orders": paid_orders,
+        "average_order_value": round(avg_order_value, 2),
+        "total_customers": total_customers,
+        "total_products": total_products,
+        "active_coupons": active_coupons
+    }

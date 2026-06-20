@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Coffee, ShieldCheck, QrCode, Monitor, Sparkles } from 'lucide-react';
 import { getCfdWsUrl } from '../config';
 import { useCfdStore } from '../store/cfdStore';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CustomerDisplay() {
   const [searchParams] = useSearchParams();
@@ -134,25 +135,38 @@ function OrderView({ orderData }) {
             Your Order
           </h3>
           {orderData.items.length === 0 ? (
-            <div className="h-[60%] flex flex-col items-center justify-center text-slate-600 space-y-2">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="h-[60%] flex flex-col items-center justify-center text-slate-600 space-y-2"
+            >
               <Coffee size={40} className="stroke-[1.5]" />
               <span className="text-xs">Welcome! Add items to begin.</span>
-            </div>
+            </motion.div>
           ) : (
-            orderData.items.map((item, idx) => (
-              <div key={idx} className="flex justify-between items-center py-1">
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-slate-100">{item.name}</span>
-                  <span className="text-[10px] text-slate-500 font-mono mt-0.5">₹{item.price.toFixed(2)} each</span>
-                </div>
-                <div className="flex items-center gap-6">
-                  <span className="text-xs font-mono text-slate-400 font-semibold">x{item.quantity}</span>
-                  <span className="w-16 text-right font-mono font-bold text-slate-200 text-sm">
-                    ₹{(item.price * item.quantity).toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            ))
+            <AnimatePresence>
+              {orderData.items.map((item) => (
+                <motion.div 
+                  key={item.product_id || item.name} 
+                  layout
+                  initial={{ opacity: 0, x: -20, scale: 0.95 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: 20, scale: 0.9 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="flex justify-between items-center py-2 border-b border-slate-900/50"
+                >
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-slate-100">{item.name}</span>
+                    <span className="text-[10px] text-slate-500 font-mono mt-0.5">₹{item.price?.toFixed(2) || '0.00'} each</span>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <span className="text-xs font-mono text-slate-400 font-bold bg-slate-900 px-2 py-0.5 rounded-md">x{item.quantity}</span>
+                    <span className="w-16 text-right font-mono font-black text-slate-100 text-sm">
+                      ₹{((item.price || 0) * item.quantity).toFixed(2)}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           )}
         </div>
 
@@ -193,12 +207,15 @@ function PaymentView({ orderData }) {
           Payment Process
         </span>
         <h2 className="text-lg font-bold text-slate-300">Scan to Pay</h2>
-        <p className="text-2xl font-black font-mono text-amber-500 mt-2 mb-6">
+        <p className="text-2xl font-black font-mono text-amber-500 mt-2">
           Total: ₹{orderData.total.toFixed(2)}
         </p>
-
-        {/* UPI QR Display */}
-        <div className="bg-white p-4 rounded-2xl shadow-lg mb-6">
+        {orderData.discountAmount > 0 && orderData.coupon_code && (
+          <p className="text-emerald-400 text-xs font-bold bg-emerald-500/10 px-3 py-1 rounded-full mt-2 mb-4 border border-emerald-500/20">
+            {orderData.coupon_code} Applied (-₹{orderData.discountAmount.toFixed(2)})
+          </p>
+        )}
+        <div className={`bg-white p-4 rounded-2xl shadow-lg ${orderData.discountAmount > 0 && orderData.coupon_code ? 'mb-6' : 'mb-6 mt-4'}`}>
           <img 
             src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`upi://pay?pa=venkatvallai2004@okhdfcbank&pn=Odoo%20Cafe&am=${orderData.total}`)}`}
             alt="Payment QR"

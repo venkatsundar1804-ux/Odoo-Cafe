@@ -1,26 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Trash2, CheckCircle2, XCircle, CreditCard, Landmark, DollarSign } from 'lucide-react';
 import Modal from '../../components/Modal';
+import api from '../../api';
 
 export default function Payments() {
-  const [methods, setMethods] = useState([
-    { id: 1, name: 'Cash', status: 'Active', type: 'Cash' },
-    { id: 2, name: 'Digital/Card Terminal', status: 'Active', type: 'Card' },
-    { id: 3, name: 'UPI Dynamic QR', status: 'Active', type: 'UPI' },
-  ]);
+  const [methods, setMethods] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newMethodName, setNewMethodName] = useState('');
   const [newMethodStatus, setNewMethodStatus] = useState(true); // true = Active
 
-  const toggleStatus = (id) => {
-    setMethods(methods.map(m => 
-      m.id === id ? { ...m, status: m.status === 'Active' ? 'Inactive' : 'Active' } : m
-    ));
+  // Fetch payment methods from DB on mount
+  useEffect(() => {
+    const loadMethods = async () => {
+      setIsLoading(true);
+      try {
+        const response = await api.get('/payment-methods');
+        setMethods(response.data.map(m => ({
+          ...m,
+          status: m.is_active ? 'Active' : 'Inactive',
+          type: m.name.toLowerCase().includes('cash') ? 'Cash' :
+                m.name.toLowerCase().includes('upi') || m.name.toLowerCase().includes('qr') ? 'UPI' : 'Card'
+        })));
+      } catch (err) {
+        console.warn("Failed to fetch payment methods, using defaults", err);
+        setMethods([
+          { id: 1, name: 'Cash', status: 'Active', type: 'Cash', is_active: true },
+          { id: 2, name: 'Digital/Card Terminal', status: 'Active', type: 'Card', is_active: true },
+          { id: 3, name: 'UPI Dynamic QR', status: 'Active', type: 'UPI', is_active: true },
+        ]);
+      }
+      setIsLoading(false);
+    };
+    loadMethods();
+  }, []);
+
+  const toggleStatus = async (id) => {
+    try {
+      const response = await api.put(`/payment-methods/${id}/toggle`);
+      const updated = response.data;
+      setMethods(methods.map(m => 
+        m.id === id ? { ...m, status: updated.is_active ? 'Active' : 'Inactive', is_active: updated.is_active } : m
+      ));
+    } catch (err) {
+      console.error("Failed to toggle payment method", err);
+    }
   };
 
-  const deleteMethod = (id) => {
-    setMethods(methods.filter(m => m.id !== id));
+  const deleteMethod = async (id) => {
+    try {
+      await api.delete(`/payment-methods/${id}`);
+      setMethods(methods.filter(m => m.id !== id));
+    } catch (err) {
+      console.error("Failed to delete payment method", err);
+    }
   };
 
   const getIcon = (type) => {
@@ -32,22 +66,27 @@ export default function Payments() {
     }
   };
 
-  const handleAddPaymentMethod = (e) => {
+  const handleAddPaymentMethod = async (e) => {
     e.preventDefault();
     if (!newMethodName.trim()) return;
 
-    // TODO: Connect to API
-    // Make a POST request to create payment method here.
-    
-    const newMethod = {
-      id: Date.now(),
-      name: newMethodName,
-      status: newMethodStatus ? 'Active' : 'Inactive',
-      type: newMethodName.toLowerCase().includes('cash') ? 'Cash' : 
-            newMethodName.toLowerCase().includes('upi') || newMethodName.toLowerCase().includes('qr') ? 'UPI' : 'Card'
-    };
+    try {
+      const response = await api.post('/payment-methods', {
+        name: newMethodName,
+        is_active: newMethodStatus
+      });
+      const created = response.data;
+      const newMethod = {
+        ...created,
+        status: created.is_active ? 'Active' : 'Inactive',
+        type: created.name.toLowerCase().includes('cash') ? 'Cash' : 
+              created.name.toLowerCase().includes('upi') || created.name.toLowerCase().includes('qr') ? 'UPI' : 'Card'
+      };
+      setMethods([...methods, newMethod]);
+    } catch (err) {
+      console.error("Failed to create payment method", err);
+    }
 
-    setMethods([...methods, newMethod]);
     setNewMethodName('');
     setNewMethodStatus(true);
     setIsModalOpen(false);
@@ -70,59 +109,63 @@ export default function Payments() {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-slate-100 bg-slate-55/50">
-              <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Payment Method</th>
-              <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
-              <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {methods.map((method) => (
-              <tr key={method.id} className="hover:bg-slate-50/50 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                      {getIcon(method.type)}
-                    </div>
-                    <span className="font-semibold text-slate-900">{method.name}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <button 
-                    onClick={() => toggleStatus(method.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all ${
-                      method.status === 'Active' 
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' 
-                        : 'bg-rose-50 text-rose-700 border border-rose-100'
-                    }`}
-                  >
-                    {method.status === 'Active' ? (
-                      <>
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Active</span>
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="w-3.5 h-3.5 text-rose-600" />
-                        <span>Inactive</span>
-                      </>
-                    )}
-                  </button>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button 
-                    onClick={() => deleteMethod(method.id)}
-                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="w-4.5 h-4.5" />
-                  </button>
-                </td>
+        {isLoading ? (
+          <div className="text-center py-8 text-slate-400 font-medium">Loading payment methods...</div>
+        ) : (
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-55/50">
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Payment Method</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {methods.map((method) => (
+                <tr key={method.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+                        {getIcon(method.type)}
+                      </div>
+                      <span className="font-semibold text-slate-900">{method.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <button 
+                      onClick={() => toggleStatus(method.id)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all ${
+                        method.status === 'Active' 
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' 
+                          : 'bg-rose-50 text-rose-700 border border-rose-100'
+                      }`}
+                    >
+                      {method.status === 'Active' ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Active</span>
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                          <span>Inactive</span>
+                        </>
+                      )}
+                    </button>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button 
+                      onClick={() => deleteMethod(method.id)}
+                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-4.5 h-4.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* Modal system for adding payment methods */}

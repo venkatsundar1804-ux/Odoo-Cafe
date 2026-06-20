@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
+from datetime import datetime
 
 class Token(BaseModel):
     access_token: str
@@ -50,6 +51,15 @@ class OrderItemCreate(BaseModel):
     name: Optional[str] = None
     price: Optional[float] = None
 
+class OrderItemResponse(BaseModel):
+    id: int
+    product_id: int
+    product_name: str
+    quantity: int
+    unit_price: float
+    line_total: float
+    model_config = ConfigDict(from_attributes=True)
+
 class OrderCreate(BaseModel):
     table_id: Optional[int] = None
     customer_id: Optional[int] = None
@@ -64,4 +74,49 @@ class Order(BaseModel):
     tax_amount: float
     discount_amount: float
     status: str
+    coupon_code: Optional[str] = None
+    created_at: Optional[datetime] = None
+    items: List[OrderItemResponse] = []
     model_config = ConfigDict(from_attributes=True)
+
+class TransactionCreate(BaseModel):
+    order_id: int
+    payment_method: str
+    amount: float
+    status: Optional[str] = "Completed"
+
+class TransactionResponse(BaseModel):
+    id: int
+    order_id: int
+    payment_method: str
+    amount: float
+    status: str
+    created_at: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class ProductResponse(BaseModel):
+    id: int
+    name: str
+    price: float
+    category_id: Optional[int] = None
+    category_name: Optional[str] = None
+    unit_of_measure: Optional[str] = None
+    tax_percentage: Optional[float] = None
+    description: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class CategoryResponse(BaseModel):
+    id: int
+    name: str
+    color: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class PaymentMethodResponse(BaseModel):
+    id: int
+    name: str
+    is_active: bool
+    model_config = ConfigDict(from_attributes=True)
+
+class PaymentMethodCreate(BaseModel):
+    name: str
+    is_active: Optional[bool] = True

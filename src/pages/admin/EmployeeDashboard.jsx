@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode, Home, Tag, Plus, Trash2, RefreshCw, CreditCard } from 'lucide-react';
@@ -6,12 +6,18 @@ import { useOrderSyncStore } from '../../store/orderSyncStore';
 import { usePromoStore } from '../../store/promoStore';
 import { useTableStore } from '../../store/tableStore';
 import { useAuthStore } from '../../store/authStore';
+import { useKdsSocket } from '../../hooks/useKdsSocket';
 
 export default function EmployeeDashboard() {
   const navigate = useNavigate();
-  const { orders, dispatchOrderToKds, markDelivered } = useOrderSyncStore();
+  const { isConnected } = useKdsSocket(); // Listen to backend WebSocket
+  const { orders, dispatchOrderToKds, markDelivered, fetchOrders } = useOrderSyncStore();
   const { promos, addPromo, removePromo } = usePromoStore();
   const { resetTables } = useTableStore();
+  
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
   
   const [newPromoCode, setNewPromoCode] = useState('');
   const [newPromoDiscount, setNewPromoDiscount] = useState('');
@@ -30,7 +36,7 @@ export default function EmployeeDashboard() {
 
   const pendingOrders = orders.filter(o => o.status === 'pending');
   // Combine all orders that have left the 'pending' state
-  const liveKitchenOrders = orders.filter(o => ['sent', 'Preparing', 'Completed'].includes(o.status));
+  const liveKitchenOrders = orders.filter(o => ['sent', 'To Cook', 'Preparing', 'Completed'].includes(o.status));
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -43,10 +49,25 @@ export default function EmployeeDashboard() {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
-      className="p-4 sm:p-8 space-y-8 text-slate-800 font-sans pb-24"
-    >
+    <div className="min-h-screen bg-slate-50 relative overflow-hidden font-sans">
+      {/* Background Ambience */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] max-w-[700px] max-h-[700px] rounded-full bg-amber-200/40 blur-[120px]" 
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.5, 1], rotate: [0, -90, 0] }}
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          className="absolute top-[20%] -right-[10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full bg-emerald-200/40 blur-[100px]" 
+        />
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
+        className="relative z-10 p-4 sm:p-8 space-y-8 text-slate-800 pb-24 max-w-7xl mx-auto"
+      >
       {/* Title */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -116,44 +137,45 @@ export default function EmployeeDashboard() {
                   key={order.id}
                   variants={itemVariants}
                   exit={{ opacity: 0, scale: 0.95, x: 50, transition: { duration: 0.2 } }}
-                  layout
-                  className="bg-white/80 backdrop-blur-[40px] border border-white rounded-[2rem] p-6 shadow-[0_15px_35px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.06)] transition-shadow flex flex-col sm:flex-row justify-between gap-6 relative overflow-hidden"
+                  className="bg-slate-900 border border-slate-800 rounded-[2rem] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.3)] hover:shadow-[0_25px_60px_rgba(15,23,42,0.4)] transition-shadow flex flex-col sm:flex-row justify-between gap-6 relative overflow-hidden group"
                 >
                   {/* Left accent bar */}
-                  <div className="absolute left-0 top-0 bottom-0 w-2 bg-amber-400"></div>
+                  <div className="absolute left-0 top-0 bottom-0 w-2 bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)]"></div>
+                  
+                  <div className="absolute right-0 top-0 w-32 h-32 bg-amber-500/5 rounded-full blur-[40px] pointer-events-none group-hover:bg-amber-500/10 transition-colors"></div>
 
-                  <div className="pl-4">
+                  <div className="pl-4 relative z-10">
                     <div className="flex flex-wrap items-center gap-3 mb-4">
-                      <span className="font-black text-slate-900 font-mono text-xl">{order.id}</span>
-                      <span className="bg-slate-100 border border-slate-200 text-slate-700 text-[11px] uppercase font-black px-2.5 py-1 rounded-lg tracking-wider">
+                      <span className="font-black text-white font-mono text-xl">{order.id}</span>
+                      <span className="bg-slate-800 border border-slate-700 text-slate-300 text-[11px] uppercase font-black px-2.5 py-1 rounded-lg tracking-wider">
                         {order.table}
                       </span>
-                      <span className="flex items-center gap-1 text-[11px] text-amber-700 font-bold bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-lg">
+                      <span className="flex items-center gap-1 text-[11px] text-amber-400 font-bold bg-amber-400/10 border border-amber-400/20 px-2.5 py-1 rounded-lg">
                         <Clock className="w-3.5 h-3.5" /> {order.time}
                       </span>
-                      <span className="flex items-center gap-1 text-[11px] text-indigo-700 font-bold bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg uppercase tracking-wider">
-                        {order.paymentMethod === 'cash' ? <Banknote className="w-3.5 h-3.5" /> : <QrCode className="w-3.5 h-3.5" />}
+                      <span className="flex items-center gap-1 text-[11px] text-slate-300 font-bold bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg uppercase tracking-wider">
+                        {order.paymentMethod === 'cash' ? <Banknote className="w-3.5 h-3.5 text-emerald-400" /> : <QrCode className="w-3.5 h-3.5" />}
                         {order.paymentMethod}
                       </span>
                     </div>
-                    <ul className="text-sm font-bold text-slate-600 space-y-1.5">
+                    <ul className="text-sm font-bold text-slate-400 space-y-1.5">
                       {order.items.map((item, idx) => (
                         <li key={idx} className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
                           {item.name}
                         </li>
                       ))}
                     </ul>
                   </div>
                   
-                  <div className="flex sm:flex-col justify-end gap-3 shrink-0">
+                  <div className="flex sm:flex-col justify-end gap-3 shrink-0 relative z-10">
                     <motion.button 
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => sendToKds(order.id)}
-                      className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-4 rounded-[1.25rem] font-bold text-sm transition shadow-[0_8px_20px_rgba(15,23,42,0.2)] cursor-pointer"
+                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 px-6 py-4 rounded-[1.25rem] font-black uppercase tracking-wider text-xs transition shadow-[0_8px_20px_rgba(245,158,11,0.3)] cursor-pointer"
                     >
-                      <ChefHat className="w-4 h-4" /> Confirm & Dispatch
+                      <ChefHat className="w-4 h-4" /> Dispatch
                     </motion.button>
                   </div>
                 </motion.div>
@@ -187,13 +209,13 @@ export default function EmployeeDashboard() {
                   key={order.id}
                   variants={itemVariants}
                   layout
-                  className={`bg-white/50 backdrop-blur-sm border rounded-[1.5rem] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between opacity-90 hover:opacity-100 transition-all gap-4 ${
-                    order.status === 'Completed' ? 'border-emerald-300 bg-emerald-50/30' : 'border-slate-200'
+                  className={`bg-white/60 backdrop-blur-3xl border rounded-[1.5rem] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between opacity-95 hover:opacity-100 transition-all gap-4 shadow-[0_8px_30px_rgba(0,0,0,0.04)] ${
+                    order.status === 'Completed' ? 'border-emerald-200 bg-emerald-50/60 shadow-[0_15px_30px_rgba(16,185,129,0.15)]' : 'border-slate-200'
                   }`}
                 >
                   <div className="flex items-center gap-5">
                     <div className={`p-3 rounded-[1rem] border ${
-                      order.status === 'Completed' ? 'bg-emerald-100 border-emerald-200 text-emerald-600' :
+                      order.status === 'Completed' ? 'bg-emerald-500 border-emerald-400 text-white shadow-[0_4px_15px_rgba(16,185,129,0.4)]' :
                       order.status === 'Preparing' ? 'bg-amber-100 border-amber-200 text-amber-600' :
                       'bg-slate-100 border-slate-200 text-slate-600'
                     }`}>
@@ -203,7 +225,7 @@ export default function EmployeeDashboard() {
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-black text-slate-800 text-base">{order.id} <span className="text-slate-400 font-bold text-xs ml-1">{order.table}</span></p>
                         {['qr', 'card', 'netbanking', 'wallet'].includes(order.paymentMethod) && (
-                          <span className="bg-indigo-100 text-indigo-700 text-[9px] uppercase font-black px-1.5 py-0.5 rounded border border-indigo-200 flex items-center gap-1">
+                          <span className="bg-white/80 text-slate-600 text-[9px] uppercase font-black px-1.5 py-0.5 rounded border border-slate-200 flex items-center gap-1 shadow-sm">
                             {order.paymentMethod === 'qr' ? <QrCode className="w-2.5 h-2.5" /> : 
                              order.paymentMethod === 'card' ? <CreditCard className="w-2.5 h-2.5" /> : 
                              <Send className="w-2.5 h-2.5" />}
@@ -237,14 +259,16 @@ export default function EmployeeDashboard() {
                   
                   <div className="flex items-center gap-3 w-full sm:w-auto">
                     {order.status === 'Completed' && (
-                      <button 
+                      <motion.button 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => markDelivered(order.id)}
-                        className="flex-1 sm:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-sm transition cursor-pointer"
+                        className="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-[0_4px_15px_rgba(16,185,129,0.3)] transition cursor-pointer"
                       >
                         Mark Delivered
-                      </button>
+                      </motion.button>
                     )}
-                    <p className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 ml-auto sm:ml-0">
+                    <p className="text-xs font-bold text-slate-500 bg-white/80 px-3 py-2.5 rounded-xl border border-slate-200 shadow-sm ml-auto sm:ml-0">
                       {order.items.length} items
                     </p>
                   </div>
@@ -435,6 +459,7 @@ export default function EmployeeDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
