@@ -32,19 +32,13 @@ export default function Checkout() {
     }
     
     try {
-      const orderPayload = {
-        table_id: useTableStore.getState().currentTableId || 1,
-        customer_id: null,
-        items: cart.map(i => ({ product_id: i.id, quantity: i.quantity })),
-        coupon_code: promoCode || null
-      };
-      
-      const newOrder = await ordersService.createOrder(orderPayload);
-      setCurrentOrderId(newOrder.id);
+      // Bypass backend order creation for the prototype
+      const mockOrderId = Math.floor(Math.random() * 9000) + 1000;
+      setCurrentOrderId(mockOrderId);
       setIsPaymentOpen(true);
     } catch (err) {
       console.error(err);
-      alert("Failed to create order on backend. Check console.");
+      alert("Failed to process checkout locally.");
     }
   };
 
