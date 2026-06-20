@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle } from 'lucide-react';
+import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode } from 'lucide-react';
 
 export default function EmployeeDashboard() {
   const [orders, setOrders] = useState([
-    { id: 'ORD-2099', table: 'T-12', items: ['2x Espresso', '1x Croissant'], time: '2 mins ago', status: 'pending' },
-    { id: 'ORD-2100', table: 'T-04', items: ['1x Iced Latte', '1x Avocado Toast'], time: '5 mins ago', status: 'pending' },
-    { id: 'ORD-2101', table: 'Takeaway', items: ['3x Cappuccino'], time: '8 mins ago', status: 'pending' }
+    { id: 'ORD-2099', table: 'T-12', items: ['2x Espresso', '1x Croissant'], time: '2 mins ago', status: 'pending', paymentMethod: 'cash' },
+    { id: 'ORD-2100', table: 'T-04', items: ['1x Iced Latte', '1x Avocado Toast'], time: '5 mins ago', status: 'pending', paymentMethod: 'cash' },
+    { id: 'ORD-2101', table: 'Takeaway', items: ['3x Cappuccino'], time: '8 mins ago', status: 'sent', paymentMethod: 'qr' }
   ]);
 
   const sendToKds = (id) => {
@@ -57,6 +57,10 @@ export default function EmployeeDashboard() {
                       <span className="flex items-center gap-1 text-[10px] text-amber-600 font-bold bg-amber-50 px-2 py-1 rounded-md">
                         <Clock className="w-3 h-3" /> {order.time}
                       </span>
+                      <span className="flex items-center gap-1 text-[10px] text-indigo-600 font-bold bg-indigo-50 px-2 py-1 rounded-md uppercase tracking-wider">
+                        {order.paymentMethod === 'cash' ? <Banknote className="w-3 h-3" /> : <QrCode className="w-3 h-3" />}
+                        {order.paymentMethod}
+                      </span>
                     </div>
                     <ul className="text-sm font-medium text-slate-600 space-y-1">
                       {order.items.map((item, idx) => <li key={idx}>• {item}</li>)}
@@ -68,7 +72,7 @@ export default function EmployeeDashboard() {
                       onClick={() => sendToKds(order.id)}
                       className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-[0_4px_14px_rgba(15,23,42,0.3)] cursor-pointer"
                     >
-                      <ChefHat className="w-4 h-4" /> Send to KDS
+                      <ChefHat className="w-4 h-4" /> Confirm Cash & Send
                     </button>
                   </div>
                 </motion.div>
@@ -93,7 +97,14 @@ export default function EmployeeDashboard() {
                     <CheckCircle2 className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-800 text-sm">{order.id} <span className="text-slate-400 ml-2 font-normal text-xs">{order.table}</span></p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-slate-800 text-sm">{order.id} <span className="text-slate-400 font-normal text-xs ml-1">{order.table}</span></p>
+                      {order.paymentMethod === 'qr' && (
+                        <span className="bg-indigo-100 text-indigo-600 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                          <QrCode className="w-2.5 h-2.5" /> Auto-Sent
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-emerald-600 font-bold uppercase tracking-wider mt-0.5">Cooking...</p>
                   </div>
                 </div>
