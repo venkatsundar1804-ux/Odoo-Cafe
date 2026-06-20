@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useCartStore } from '../store/cartStore';
-import { Coffee, Plus, Minus, Clock } from 'lucide-react';
+import { Coffee, Plus, Minus, Clock, Trash } from 'lucide-react';
 
 export default function POS() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedTableId] = useState(1); // Placeholder until we build table selection
+  const [selectedTableId] = useState(1); 
+  
   const { cart, addToCart, removeFromCart, getTotals, clearCart } = useCartStore();
   const { subtotal, tax, total } = getTotals();
 
