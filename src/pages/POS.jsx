@@ -35,21 +35,10 @@ export default function POS() {
   const cartItemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [prodRes, catRes] = await Promise.all([
-          axios.get('http://localhost:8000/api/products'),
-          axios.get('http://localhost:8000/api/categories')
-        ]);
-        setProducts(prodRes.data);
-        setCategories(catRes.data);
-      } catch (err) {
-        console.error("Failed to fetch POS data, using mock categories & products");
-        setProducts(mockProducts);
-        setCategories(mockCategories);
-      }
-    };
-    fetchData();
+    // Rely completely on the dynamic data provider (mockProducts / mockCategories)
+    // so that all 86 products and 15 categories load without needing the DB.
+    setProducts(mockProducts);
+    setCategories(mockCategories);
   }, []);
 
   const filteredProducts = products.filter(product => {
