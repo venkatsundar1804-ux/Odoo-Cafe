@@ -5,3 +5,42 @@
 body {
   @apply bg-slate-50 text-slate-800 antialiased min-h-screen font-sans;
 }
+
+/* Auth Page Variables & Theming */
+:root {
+  --color-odoo-periwinkle: #8380C4;
+  --color-odoo-peach: #FFD4A6;
+  --color-odoo-pink: #FFEBF6;
+  --color-bg-panel: rgba(255, 255, 255, 0.4);
+}
+
+/* Light-Theme Glassmorphism */
+.glass-panel {
+  background-color: var(--color-bg-panel);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(131, 128, 196, 0.15); 
+  border-radius: 1rem;
+}
+
+/* Premium Gradient Button Utility */
+.btn-gradient {
+  background: linear-gradient(135deg, #8380C4 0%, #A3A0D8 100%);
+  color: white;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(135deg, #FFD4A6 0%, #FFB570 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 212, 166, 0.6);
+  color: #fff;
+}
+
+/* Input fields with slight transparency */
+.odoo-input {
+  @apply w-full border-2 border-[#8380C4]/20 rounded-xl px-4 py-3 bg-white/50 text-[#8380C4] placeholder-[#8380C4]/50 focus:outline-none focus:border-[#8380C4] transition-all font-medium;
+}

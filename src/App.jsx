@@ -9,6 +9,7 @@ import FloorSelection from './pages/FloorSelection';
 import POS from './pages/POS';
 import Checkout from './pages/Checkout';
 import Payment from './pages/Payment';
+import AuthPage from './pages/AuthPage';
 import { useTableStore } from './store/tableStore';
 
 // Pre-route check to force table selection
@@ -30,7 +31,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<div className="p-4">Auth Page</div>} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/login" element={<Navigate to="/auth" replace />} />
+        <Route path="/register" element={<Navigate to="/auth" replace />} />
         <Route path="/floor" element={<FloorSelection />} />
         
         {/* Our Cinematic POS screen */}
