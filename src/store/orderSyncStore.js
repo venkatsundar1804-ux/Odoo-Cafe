@@ -16,29 +16,7 @@ export const useOrderSyncStore = create((set) => {
   };
 
   return {
-    orders: [
-      { 
-        id: 'ORD-2099', 
-        table: 'T-12', 
-        items: [
-          { product_id: 1, name: '2x Espresso', quantity: 2, completed: false }, 
-          { product_id: 2, name: '1x Croissant', quantity: 1, completed: false }
-        ], 
-        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
-        status: 'pending', 
-        paymentMethod: 'cash' 
-      },
-      { 
-        id: 'ORD-2101', 
-        table: 'Takeaway', 
-        items: [
-          { product_id: 3, name: '3x Cappuccino', quantity: 3, completed: false }
-        ], 
-        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
-        status: 'sent', 
-        paymentMethod: 'qr' 
-      }
-    ],
+    orders: [],
 
     addOrder: (order) => set((state) => {
       const newOrders = [...state.orders, order];

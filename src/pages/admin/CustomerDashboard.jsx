@@ -1,23 +1,21 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CreditCard, Tag, Clock, Plus, Trash2, MapPin, CheckCircle2, ChevronRight, Award } from 'lucide-react';
+import { CreditCard, Tag, Clock, Plus, Trash2, MapPin, CheckCircle2, ChevronRight, Award, ShoppingBag } from 'lucide-react';
+import { useOrderSyncStore } from '../../store/orderSyncStore';
 
 export default function CustomerDashboard() {
-  const [paymentMethods, setPaymentMethods] = useState([
-    { id: 1, type: 'Visa', last4: '4242', exp: '12/26' },
-    { id: 2, type: 'Mastercard', last4: '8888', exp: '04/25' }
-  ]);
+  const { orders } = useOrderSyncStore();
 
-  const pastOrders = [
-    { id: 'ORD-1029', date: 'Oct 24, 2023', total: 45.50, items: 3, status: 'Completed' },
-    { id: 'ORD-1015', date: 'Oct 21, 2023', total: 12.00, items: 1, status: 'Completed' },
-    { id: 'ORD-0988', date: 'Oct 15, 2023', total: 89.90, items: 6, status: 'Completed' }
-  ];
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const coupons = [];
 
-  const coupons = [
-    { id: 1, code: 'WELCOME20', discount: '20% OFF', validUntil: 'Dec 31, 2023' },
-    { id: 2, code: 'FREELATTE', discount: 'Free Coffee', validUntil: 'Nov 15, 2023' }
-  ];
+  const pastOrders = orders.map(o => ({
+    id: o.id,
+    date: o.date || new Date().toLocaleDateString(),
+    total: o.total || 0,
+    items: o.items.reduce((sum, item) => sum + item.quantity, 0),
+    status: o.status
+  }));
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -93,6 +91,12 @@ export default function CustomerDashboard() {
                   </div>
                 </motion.div>
               ))}
+              {pastOrders.length === 0 && (
+                <div className="text-center text-slate-400 py-10 font-semibold border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2">
+                  <ShoppingBag className="w-8 h-8 opacity-50 mb-2" />
+                  No past orders found.
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
@@ -136,6 +140,11 @@ export default function CustomerDashboard() {
                   </motion.div>
                 ))}
               </AnimatePresence>
+              {paymentMethods.length === 0 && (
+                <div className="text-center text-slate-400 py-6 font-semibold border-2 border-dashed border-slate-200 rounded-2xl">
+                  No payment methods saved.
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -167,6 +176,11 @@ export default function CustomerDashboard() {
                   </div>
                 </motion.div>
               ))}
+              {coupons.length === 0 && (
+                <div className="text-center text-slate-400 py-6 font-semibold border-2 border-dashed border-slate-200 rounded-2xl">
+                  No coupons available.
+                </div>
+              )}
             </div>
           </motion.div>
 

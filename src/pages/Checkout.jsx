@@ -232,7 +232,9 @@ export default function Checkout() {
             id: `ORD-${currentOrderId}`,
             table: `T-${useTableStore.getState().currentTableId || 1}`,
             items: cart.map(i => ({ product_id: i.id, name: `${i.quantity}x ${i.name}`, quantity: i.quantity, completed: false })),
+            total: total,
             time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            date: new Date().toLocaleDateString(),
             status: paymentMethod === 'upi' ? 'sent' : 'pending',
             paymentMethod: paymentMethod === 'upi' ? 'qr' : paymentMethod
           });
