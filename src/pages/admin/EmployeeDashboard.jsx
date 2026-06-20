@@ -11,7 +11,8 @@ export default function EmployeeDashboard() {
   };
 
   const pendingOrders = orders.filter(o => o.status === 'pending');
-  const sentOrders = orders.filter(o => o.status === 'sent');
+  // Combine all orders that have left the 'pending' state
+  const liveKitchenOrders = orders.filter(o => ['sent', 'Preparing', 'Completed'].includes(o.status));
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -123,25 +124,31 @@ export default function EmployeeDashboard() {
           </motion.div>
         </div>
 
-        {/* Sent / Processing */}
+        {/* Live Kitchen Tracking */}
         <div className="space-y-6">
           <div className="flex items-center gap-3 pl-2">
-            <h2 className="text-sm font-black uppercase tracking-widest text-slate-500">Sent to Kitchen</h2>
-            <span className="bg-slate-200 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-full">{sentOrders.length}</span>
+            <h2 className="text-sm font-black uppercase tracking-widest text-slate-500">Live Kitchen Tracking</h2>
+            <span className="bg-slate-200 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-full">{liveKitchenOrders.length}</span>
           </div>
           
           <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-4">
             <AnimatePresence mode="popLayout">
-              {sentOrders.map(order => (
+              {liveKitchenOrders.map(order => (
                 <motion.div 
                   key={order.id}
                   variants={itemVariants}
                   layout
-                  className="bg-white/50 backdrop-blur-sm border border-slate-200 rounded-[1.5rem] p-5 flex items-center justify-between opacity-80 hover:opacity-100 transition-opacity"
+                  className={`bg-white/50 backdrop-blur-sm border rounded-[1.5rem] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between opacity-90 hover:opacity-100 transition-all gap-4 ${
+                    order.status === 'Completed' ? 'border-emerald-300 bg-emerald-50/30' : 'border-slate-200'
+                  }`}
                 >
                   <div className="flex items-center gap-5">
-                    <div className="bg-emerald-100 border border-emerald-200 text-emerald-600 p-3 rounded-[1rem]">
-                      <CheckCircle2 className="w-6 h-6" />
+                    <div className={`p-3 rounded-[1rem] border ${
+                      order.status === 'Completed' ? 'bg-emerald-100 border-emerald-200 text-emerald-600' :
+                      order.status === 'Preparing' ? 'bg-amber-100 border-amber-200 text-amber-600' :
+                      'bg-slate-100 border-slate-200 text-slate-600'
+                    }`}>
+                      {order.status === 'Completed' ? <CheckCircle2 className="w-6 h-6" /> : <ChefHat className="w-6 h-6" />}
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
@@ -152,13 +159,37 @@ export default function EmployeeDashboard() {
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-emerald-600 font-bold uppercase tracking-wider flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Processing in Kitchen
+                      
+                      {/* Dynamic Status Display */}
+                      <p className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${
+                        order.status === 'Completed' ? 'text-emerald-600' : 
+                        order.status === 'Preparing' ? 'text-amber-600' : 
+                        'text-slate-500'
+                      }`}>
+                        {order.status === 'Completed' ? (
+                          <>
+                            <CheckCircle2 className="w-3 h-3" /> Ready to Serve
+                          </>
+                        ) : order.status === 'Preparing' ? (
+                          <>
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> Preparing in Kitchen
+                          </>
+                        ) : (
+                          <>
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse"></span> Waiting in Queue
+                          </>
+                        )}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                  
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    {order.status === 'Completed' && (
+                      <button className="flex-1 sm:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-sm transition">
+                        Mark Delivered
+                      </button>
+                    )}
+                    <p className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 ml-auto sm:ml-0">
                       {order.items.length} items
                     </p>
                   </div>
@@ -166,13 +197,13 @@ export default function EmployeeDashboard() {
               ))}
             </AnimatePresence>
             
-            {sentOrders.length === 0 && (
+            {liveKitchenOrders.length === 0 && (
               <motion.div 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 className="bg-white/20 border-2 border-slate-200 border-dashed rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-slate-400 text-center"
               >
                 <ChefHat className="w-10 h-10 mb-2 text-slate-300" />
-                <p className="font-semibold text-sm">No orders currently cooking.</p>
+                <p className="font-semibold text-sm">No orders currently tracking.</p>
               </motion.div>
             )}
           </motion.div>
