@@ -17,23 +17,30 @@ import {
   Coffee,
   ChevronLeft,
   Users,
-  ChefHat
+  ChefHat,
+  LogOut
 } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
 
 export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { role, logout } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const menuItems = [
-    { name: 'Analytics', path: '/admin', icon: LayoutDashboard },
-    { name: 'Customer Portal', path: '/admin/customer', icon: Users },
-    { name: 'Order Dispatch', path: '/admin/dispatch', icon: ChefHat },
-    { name: 'Products', path: '/admin/products', icon: ShoppingBag },
-    { name: 'Payments', path: '/admin/payments', icon: CreditCard },
-    { name: 'Coupons', path: '/admin/coupons', icon: Tag },
+  const allMenuItems = [
+    { name: 'Analytics', path: '/admin', icon: LayoutDashboard, roles: ['employee'] },
+    { name: 'Customer Portal', path: '/admin/customer', icon: Users, roles: ['customer'] },
+    { name: 'Order Dispatch', path: '/admin/dispatch', icon: ChefHat, roles: ['employee'] },
+    { name: 'Products', path: '/admin/products', icon: ShoppingBag, roles: ['employee'] },
+    { name: 'Payments', path: '/admin/payments', icon: CreditCard, roles: ['employee'] },
+    { name: 'Coupons', path: '/admin/coupons', icon: Tag, roles: ['employee'] },
   ];
+
+  // If no role is set, we might default to employee for demo purposes, or force login
+  const currentRole = role || 'employee';
+  const menuItems = allMenuItems.filter(item => item.roles.includes(currentRole));
 
   return (
     <div className="h-screen w-full bg-slate-50 overflow-hidden flex items-center justify-center p-4 sm:p-8 font-sans relative">
@@ -97,8 +104,20 @@ export default function AdminLayout() {
 
           {/* Right Side: Profile & Sidebar Toggle */}
           <div className="flex items-center gap-3">
-            <button className="p-2.5 bg-white/60 hover:bg-white text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors shadow-sm cursor-pointer" title="Profile">
-              <User className="w-4 h-4" />
+            <div className="flex flex-col items-end mr-2 hidden sm:flex">
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">{currentRole}</span>
+              <span className="text-[10px] text-slate-400 font-medium">Logged in</span>
+            </div>
+            
+            <button 
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="p-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-colors shadow-sm cursor-pointer" 
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
             </button>
             
             <button 

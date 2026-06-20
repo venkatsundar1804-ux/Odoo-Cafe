@@ -16,6 +16,7 @@ import CustomerDisplay from './pages/CustomerDisplay';
 import CustomerManagement from './pages/CustomerManagement';
 import POS from './pages/POS';
 import Checkout from './pages/Checkout';
+import AuthPage from './pages/AuthPage';
 import { useTableStore } from './store/tableStore';
 
 // Table selection guard
@@ -39,7 +40,7 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/login" element={<div className="p-4">Auth Page</div>} />
+        <Route path="/login" element={<AuthPage />} />
         <Route path="/floor" element={<LandingPage />} />
         <Route path="/kds" element={<KitchenDisplay />} />
         <Route path="/cfd" element={<CustomerDisplay />} />
