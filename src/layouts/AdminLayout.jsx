@@ -1,5 +1,6 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShoppingBag, 
   FolderTree, 
@@ -12,11 +13,14 @@ import {
   PlusSquare, 
   Armchair, 
   User, 
-  Menu 
+  Menu,
+  Coffee,
+  ChevronLeft
 } from 'lucide-react';
 
 export default function AdminLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -28,96 +32,123 @@ export default function AdminLayout() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-800 font-sans">
-      {/* Top Header Bar */}
-      <header className="h-16 border-b border-slate-200 flex items-center justify-between px-6 bg-white z-20">
-        {/* Left Side: Logo & Search */}
-        <div className="flex items-center gap-4">
-          <div className="px-4 py-2 bg-amber-700 text-white font-bold rounded-xl text-sm flex items-center justify-center tracking-wider shadow-sm">
-            Logo
+    <div className="h-screen w-full bg-slate-50 overflow-hidden flex items-center justify-center p-4 sm:p-8 font-sans relative">
+      
+      {/* Abstract Artistic Background Shapes */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-5%] w-[45%] h-[55%] bg-orange-100/60 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[10%] w-[35%] h-[40%] bg-teal-50/60 rounded-full blur-[100px]" />
+        <div className="absolute top-[20%] right-[-5%] w-[25%] h-[35%] bg-rose-50/50 rounded-full blur-[90px]" />
+      </div>
+
+      {/* Glassy Transparent Screen Container */}
+      <div className="relative w-full h-full max-w-[1600px] bg-white/70 backdrop-blur-[80px] rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-200/60 overflow-hidden flex flex-col z-10">
+        
+        {/* Top Header Bar */}
+        <header className="h-20 border-b border-slate-200/50 flex items-center justify-between px-8 bg-white/40 shrink-0">
+          {/* Left Side: Logo & Search */}
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3 text-slate-800 font-black text-xl tracking-tighter">
+              <div className="bg-amber-500 text-white p-2 rounded-xl shadow-md">
+                <Coffee className="w-5 h-5" />
+              </div>
+              <span>Odoo Cafe</span>
+            </div>
+            
+            <div className="relative w-80 hidden md:block">
+              <input 
+                type="text" 
+                placeholder="Search analytics..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-2.5 bg-white/60 border border-slate-200/80 rounded-2xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-sm transition-all shadow-sm"
+              />
+              <Search className="w-4 h-4 text-slate-400 absolute left-4 top-3.5" />
+            </div>
           </div>
-          
-          <div className="relative w-80">
-            <input 
-              type="text" 
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-4 pr-10 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-sm transition-all"
-            />
-            <Search className="w-4 h-4 text-slate-400 absolute right-3 top-3" />
+
+          {/* Center: Action Buttons */}
+          <div className="flex items-center gap-3">
+            <button className="p-2.5 bg-white/60 hover:bg-white text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors shadow-sm cursor-pointer" title="Cash Register">
+              <Calculator className="w-4 h-4" />
+            </button>
+            
+            <button className="p-2.5 bg-white/60 hover:bg-white text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors shadow-sm cursor-pointer" title="Edit Session">
+              <Pencil className="w-4 h-4" />
+            </button>
+            
+            <button className="p-2.5 bg-white/60 hover:bg-white text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors shadow-sm cursor-pointer" title="Add Item">
+              <PlusSquare className="w-4 h-4" />
+            </button>
+
+            <button 
+              onClick={() => navigate('/floor')}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white/60 hover:bg-white text-slate-700 hover:text-slate-900 font-bold rounded-xl border border-slate-200/50 text-xs transition-colors shadow-sm cursor-pointer ml-2" 
+              title="Return to POS"
+            >
+              <ChevronLeft className="w-4 h-4 text-amber-600" />
+              <span>Back to POS</span>
+            </button>
           </div>
+
+          {/* Right Side: Profile & Sidebar Toggle */}
+          <div className="flex items-center gap-3">
+            <button className="p-2.5 bg-white/60 hover:bg-white text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors shadow-sm cursor-pointer" title="Profile">
+              <User className="w-4 h-4" />
+            </button>
+            
+            <button 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl transition-colors shadow-md cursor-pointer" 
+              title="Toggle Sidebar Menu"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+          </div>
+        </header>
+
+        {/* Main Body Layout */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar */}
+          <AnimatePresence>
+            {isSidebarOpen && (
+              <motion.aside 
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 280, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                className="bg-white/40 border-r border-slate-200/50 p-6 flex flex-col gap-2 shrink-0 overflow-y-auto custom-scrollbar"
+              >
+                <div className="text-[10px] uppercase font-black tracking-widest text-slate-400 mb-4 pl-2">Admin Panel</div>
+                <nav className="flex flex-col gap-2">
+                  {menuItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path;
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.path}
+                        className={`flex items-center gap-3 px-4 py-3.5 rounded-[1rem] text-sm font-bold transition-all ${
+                          isActive
+                            ? 'bg-amber-500 text-white shadow-[0_4px_14px_rgba(245,158,11,0.3)]'
+                            : 'text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-sm'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span className="whitespace-nowrap">{item.name}</span>
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </motion.aside>
+            )}
+          </AnimatePresence>
+
+          {/* Main Content */}
+          <main className="flex-1 overflow-y-auto bg-transparent custom-scrollbar relative">
+            <Outlet />
+          </main>
         </div>
 
-        {/* Center: Action Buttons */}
-        <div className="flex items-center gap-2">
-          <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors cursor-pointer" title="Cash Register">
-            <Calculator className="w-5 h-5" />
-          </button>
-          
-          <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors cursor-pointer" title="Edit Session">
-            <Pencil className="w-5 h-5" />
-          </button>
-          
-          <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors cursor-pointer" title="Add Item">
-            <PlusSquare className="w-5 h-5" />
-          </button>
-
-          <button className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-800 font-bold rounded-xl border border-slate-200/55 text-xs transition-colors cursor-pointer" title="Table Selection">
-            <Armchair className="w-4 h-4 text-amber-600" />
-            <span>12 V</span>
-          </button>
-        </div>
-
-        {/* Right Side: Profile & Sidebar Toggle */}
-        <div className="flex items-center gap-2">
-          <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors cursor-pointer" title="Profile">
-            <User className="w-5 h-5" />
-          </button>
-          
-          <button 
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors cursor-pointer" 
-            title="Toggle Sidebar Menu"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-        </div>
-      </header>
-
-      {/* Main Body Layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        {isSidebarOpen && (
-          <aside className="w-64 bg-white border-r border-slate-200 p-4 flex flex-col gap-2 shrink-0 transition-all duration-300">
-            <div className="px-3 mb-6 mt-2 font-bold text-slate-900 text-lg">Odoo Cafe</div>
-            <nav className="flex flex-col gap-1">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                      isActive
-                        ? 'bg-amber-50 text-amber-700'
-                        : 'text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </nav>
-          </aside>
-        )}
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-slate-50">
-          <Outlet />
-        </main>
       </div>
     </div>
   );

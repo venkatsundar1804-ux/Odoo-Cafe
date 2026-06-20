@@ -115,7 +115,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-8 space-y-8 bg-gradient-to-tr from-slate-50 via-slate-100 to-indigo-50/10 text-slate-800 min-h-screen font-sans animate-fade-in">
+    <div className="p-8 space-y-8 text-slate-800 font-sans animate-fade-in">
       
       {/* Title & Actions */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/60 pb-6 shrink-0">
