@@ -180,6 +180,10 @@ export default function POS() {
             {activeProduct ? (
               <motion.div 
                 key={activeProduct.id}
+                custom={direction}
+                initial="initial"
+                animate="animate"
+                exit="exit"
                 className="flex-1 flex flex-col md:flex-row items-center gap-12 lg:gap-24"
               >
                 {/* Left Side: Massive Hero Image */}
