@@ -7,7 +7,7 @@ import { usePromoStore } from '../../store/promoStore';
 
 export default function EmployeeDashboard() {
   const navigate = useNavigate();
-  const { orders, dispatchOrderToKds } = useOrderSyncStore();
+  const { orders, dispatchOrderToKds, markDelivered } = useOrderSyncStore();
   const { promos, addPromo, removePromo } = usePromoStore();
   
   const [newPromoCode, setNewPromoCode] = useState('');
@@ -67,6 +67,22 @@ export default function EmployeeDashboard() {
           </button>
         </div>
       </motion.div>
+
+      {/* Tabs */}
+      <div className="flex bg-slate-200/50 p-1.5 rounded-2xl w-fit">
+        <button 
+          onClick={() => navigate('/admin/dispatch')}
+          className="px-8 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-slate-800 shadow-sm"
+        >
+          Dispatch
+        </button>
+        <button 
+          onClick={() => navigate('/admin/customer')}
+          className="px-8 py-2.5 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-700"
+        >
+          Customer Portal
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         
@@ -202,7 +218,10 @@ export default function EmployeeDashboard() {
                   
                   <div className="flex items-center gap-3 w-full sm:w-auto">
                     {order.status === 'Completed' && (
-                      <button className="flex-1 sm:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-sm transition">
+                      <button 
+                        onClick={() => markDelivered(order.id)}
+                        className="flex-1 sm:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-sm transition cursor-pointer"
+                      >
                         Mark Delivered
                       </button>
                     )}

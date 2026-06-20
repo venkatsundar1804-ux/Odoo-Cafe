@@ -58,6 +58,12 @@ export const useOrderSyncStore = create(
           syncToOtherTabs(newOrders);
           return { orders: newOrders };
         }),
+
+        markDelivered: (orderId) => set((state) => {
+          const newOrders = state.orders.map(o => o.id === orderId ? { ...o, status: 'Delivered' } : o);
+          syncToOtherTabs(newOrders);
+          return { orders: newOrders };
+        }),
       };
     },
     {
