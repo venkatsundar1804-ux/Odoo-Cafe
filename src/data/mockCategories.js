@@ -1,102 +1,62 @@
 export const mockCategories = [
   {
     "id": 1,
-    "name": "Beverages",
-    "color": "#F59E0B"
+    "name": "Beverages"
   },
   {
     "id": 2,
-    "name": "Coffee",
-    "color": "#F97316"
+    "name": "Breakfast"
   },
   {
     "id": 3,
-    "name": "Tea",
-    "color": "#EF4444"
+    "name": "Sandwiches"
   },
   {
     "id": 4,
-    "name": "Breakfast",
-    "color": "#DC2626"
+    "name": "Burgers"
   },
   {
     "id": 5,
-    "name": "Sandwiches",
-    "color": "#22C55E"
+    "name": "Pizzas"
   },
   {
     "id": 6,
-    "name": "Burgers",
-    "color": "#84CC16"
+    "name": "Pasta"
   },
   {
     "id": 7,
-    "name": "Pasta",
-    "color": "#EAB308"
+    "name": "Wraps"
   },
   {
     "id": 8,
-    "name": "Pizzas",
-    "color": "#F43F5E"
+    "name": "Salads"
   },
   {
     "id": 9,
-    "name": "Wraps",
-    "color": "#FB7185"
+    "name": "Soups"
   },
   {
     "id": 10,
-    "name": "Salads",
-    "color": "#A16207"
+    "name": "Fries & Sides"
   },
   {
     "id": 11,
-    "name": "Fries",
-    "color": "#8B5CF6"
+    "name": "Snacks"
   },
   {
     "id": 12,
-    "name": "Snacks",
-    "color": "#6366F1"
+    "name": "Pastries"
   },
   {
     "id": 13,
-    "name": "Pastries",
-    "color": "#06B6D4"
+    "name": "Cakes"
   },
   {
     "id": 14,
-    "name": "Desserts",
-    "color": "#EC4899"
+    "name": "Desserts"
   },
   {
     "id": 15,
-    "name": "Ice Cream",
-    "color": "#D946EF"
-  },
-  {
-    "id": 16,
-    "name": "Bakery",
-    "color": "#C084FC"
-  },
-  {
-    "id": 17,
-    "name": "Mocktails",
-    "color": "#14B8A6"
-  },
-  {
-    "id": 18,
-    "name": "Fresh Juices",
-    "color": "#3B82F6"
-  },
-  {
-    "id": 19,
-    "name": "Smoothies",
-    "color": "#10B981"
-  },
-  {
-    "id": 20,
-    "name": "Combos",
-    "color": "#F59E0B"
+    "name": "Combos"
   }
 ];
