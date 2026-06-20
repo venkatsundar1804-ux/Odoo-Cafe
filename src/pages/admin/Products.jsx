@@ -5,8 +5,8 @@ import { useAdminStore } from '../../store/adminStore';
 import { mockCategoryItems } from '../../data/mockCategoryItems';
 
 export default function Products() {
-  // Zustand Admin Store for Categories
-  const { categories, isLoading: isCategoriesLoading, fetchCategories } = useAdminStore();
+  // Zustand Admin Store for Categories and Products
+  const { categories, products, isLoading: isCategoriesLoading, fetchCategories, fetchProducts } = useAdminStore();
 
   // Modals Local State
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -18,7 +18,8 @@ export default function Products() {
 
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
+    fetchProducts();
+  }, [fetchCategories, fetchProducts]);
 
   // Category Actions
   const handleAddCategory = (e) => {
@@ -42,14 +43,14 @@ export default function Products() {
 
   // Open Items Modal when Category is clicked
   const handleCategoryClick = (category) => {
-    // Find the category items reference matching by category name or ID
-    const match = mockCategoryItems.find(
-      item => item.categoryId === category.id || item.categoryName.toLowerCase() === category.name.toLowerCase()
+    // Filter products from the store
+    const categoryProducts = products.filter(
+      p => p.category_id === category.id || (p.category && p.category.toLowerCase() === category.name.toLowerCase())
     );
     
     setSelectedCategory({
       ...category,
-      items: match ? match.itemTypes : []
+      items: categoryProducts.map(p => p.name)
     });
     setIsItemsModalOpen(true);
   };
