@@ -1,12 +1,23 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useCartStore } from '../store/cartStore';
-import { Coffee, Plus, Minus, Clock, Trash } from 'lucide-react';
+import { 
+  Plus, 
+  Minus, 
+  Search, 
+  Calculator, 
+  Pencil, 
+  PlusSquare, 
+  Armchair, 
+  User, 
+  Menu 
+} from 'lucide-react';
 
 export default function POS() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedTableId] = useState(1); 
+  const [searchQuery, setSearchQuery] = useState('');
   
   const { cart, addToCart, removeFromCart, getTotals, clearCart } = useCartStore();
   const { subtotal, tax, total } = getTotals();
@@ -48,41 +59,86 @@ export default function POS() {
     fetchData();
   }, []);
 
+  const filteredProducts = products.filter(product => 
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="h-screen flex flex-col bg-gray-950 text-gray-100 overflow-hidden">
+    <div className="h-screen flex flex-col bg-slate-50 text-slate-800 font-sans overflow-hidden">
       {/* Header */}
-      <header className="h-16 border-b border-gray-800 flex items-center justify-between px-6 bg-gray-900">
-        <div className="flex items-center gap-2 text-amber-500 font-bold text-xl">
-          <Coffee /> Odoo Cafe POS
+      <header className="h-16 border-b border-slate-200 flex items-center justify-between px-6 bg-white">
+        {/* Left Side: Logo & Search */}
+        <div className="flex items-center gap-4">
+          <div className="px-4 py-2 bg-amber-700 text-white font-bold rounded-xl text-sm flex items-center justify-center tracking-wider shadow-sm">
+            Logo
+          </div>
+          
+          <div className="relative w-80">
+            <input 
+              type="text" 
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-4 pr-10 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-sm transition-all"
+            />
+            <Search className="w-4 h-4 text-slate-400 absolute right-3 top-3" />
+          </div>
         </div>
-        <div className="flex items-center gap-4 text-sm text-gray-400">
-          <Clock className="w-4 h-4" />
-          {new Date().toLocaleTimeString()}
+
+        {/* Center: Interactive Action Buttons */}
+        <div className="flex items-center gap-2">
+          <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors cursor-pointer" title="Cash Register">
+            <Calculator className="w-5 h-5" />
+          </button>
+          
+          <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors cursor-pointer" title="Edit Session">
+            <Pencil className="w-5 h-5" />
+          </button>
+          
+          <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors cursor-pointer" title="Add Item">
+            <PlusSquare className="w-5 h-5" />
+          </button>
+
+          <button className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-800 font-bold rounded-xl border border-slate-200/55 text-xs transition-colors cursor-pointer" title="Table Selection">
+            <Armchair className="w-4 h-4 text-amber-600" />
+            <span>12 V</span>
+          </button>
+        </div>
+
+        {/* Right Side: Profile & Menu Drawer Trigger */}
+        <div className="flex items-center gap-2">
+          <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors cursor-pointer" title="Profile">
+            <User className="w-5 h-5" />
+          </button>
+          
+          <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors cursor-pointer" title="Admin Menu">
+            <Menu className="w-5 h-5" />
+          </button>
         </div>
       </header>
 
       {/* Main Grid */}
       <div className="flex-1 grid grid-cols-[200px_1fr_350px] overflow-hidden">
         {/* Col 1: Categories */}
-        <aside className="border-r border-gray-800 p-4 space-y-2 overflow-y-auto">
+        <aside className="border-r border-slate-200 p-4 space-y-2 overflow-y-auto bg-white">
           {categories.map(cat => (
-            <button key={cat.id} className="w-full text-left px-4 py-3 rounded-lg bg-gray-900 hover:bg-gray-800 transition-colors border border-gray-800 text-sm font-medium">
+            <button key={cat.id} className="w-full text-left px-4 py-3 rounded-xl bg-slate-50 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60 text-sm font-semibold text-slate-700 transition-colors cursor-pointer">
               {cat.name}
             </button>
           ))}
         </aside>
 
         {/* Col 2: Products */}
-        <main className="p-6 overflow-y-auto grid grid-cols-3 gap-4 auto-rows-min">
-          {products.map(product => (
-            <div key={product.id} className="bg-gray-900 p-4 rounded-xl border border-gray-800 flex flex-col justify-between hover:border-amber-500/50 transition-colors">
+        <main className="p-6 overflow-y-auto grid grid-cols-3 gap-4 auto-rows-min bg-slate-50">
+          {filteredProducts.map(product => (
+            <div key={product.id} className="bg-white p-4 rounded-2xl border border-slate-200/60 flex flex-col justify-between hover:border-amber-500/50 hover:shadow-sm transition-all duration-200">
               <div>
-                <h3 className="font-semibold text-white">{product.name}</h3>
-                <p className="text-amber-500 font-bold mt-1">₹{product.price}</p>
+                <h3 className="font-semibold text-slate-800">{product.name}</h3>
+                <p className="text-amber-600 font-bold mt-1">₹{product.price}</p>
               </div>
               <button 
                 onClick={() => addToCart(product)}
-                className="w-full mt-4 bg-gray-800 hover:bg-amber-600 py-2 rounded-lg text-sm transition-colors cursor-pointer"
+                className="w-full mt-4 bg-slate-50 hover:bg-amber-600 hover:text-white text-slate-750 font-semibold py-2 rounded-xl text-sm transition-colors border border-slate-200/80 hover:border-amber-600 cursor-pointer"
               >
                 Add to Cart
               </button>
@@ -91,26 +147,26 @@ export default function POS() {
         </main>
 
         {/* Col 3: Cart */}
-        <aside className="border-l border-gray-800 bg-gray-900 flex flex-col">
+        <aside className="border-l border-slate-200 bg-white flex flex-col">
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {cart.map(item => (
-              <div key={item.id} className="flex justify-between items-center bg-gray-950 p-3 rounded-lg border border-gray-800">
-                <span className="text-sm font-medium">{item.name}</span>
+              <div key={item.id} className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                <span className="text-sm font-semibold text-slate-800">{item.name}</span>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => removeFromCart(item.id)} className="p-1 hover:text-red-400 cursor-pointer"><Minus size={14}/></button>
-                  <span className="text-xs font-mono">{item.quantity}</span>
-                  <button onClick={() => addToCart(item)} className="p-1 hover:text-green-400 cursor-pointer"><Plus size={14}/></button>
+                  <button onClick={() => removeFromCart(item.id)} className="p-1 hover:text-rose-600 transition-colors cursor-pointer"><Minus size={14}/></button>
+                  <span className="text-xs font-bold font-mono text-slate-700">{item.quantity}</span>
+                  <button onClick={() => addToCart(item)} className="p-1 hover:text-emerald-600 transition-colors cursor-pointer"><Plus size={14}/></button>
                 </div>
               </div>
             ))}
           </div>
-          <div className="p-4 border-t border-gray-800 bg-gray-900 space-y-2">
-            <div className="flex justify-between text-sm text-gray-400"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between text-sm text-gray-400"><span>Tax (5%)</span><span>₹{tax.toFixed(2)}</span></div>
-            <div className="flex justify-between font-bold text-lg border-t border-gray-800 pt-2"><span>Total</span><span>₹{total.toFixed(2)}</span></div>
+          <div className="p-4 border-t border-slate-200 bg-white space-y-2">
+            <div className="flex justify-between text-sm text-slate-500"><span>Subtotal</span><span className="font-semibold text-slate-700">₹{subtotal.toFixed(2)}</span></div>
+            <div className="flex justify-between text-sm text-slate-500"><span>Tax (5%)</span><span className="font-semibold text-slate-700">₹{tax.toFixed(2)}</span></div>
+            <div className="flex justify-between font-bold text-lg border-t border-slate-200 pt-2 text-slate-900"><span>Total</span><span>₹{total.toFixed(2)}</span></div>
             <button
               onClick={processCheckout}
-              className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-lg mt-2 cursor-pointer"
+              className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl mt-2 cursor-pointer shadow-md shadow-amber-900/10 transition-colors"
             >
               Send to Kitchen
             </button>
