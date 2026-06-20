@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Armchair, Coffee, Quote, Settings, LogIn, User, MapPin, Tag, Star, ArrowRight } from 'lucide-react';
 import { useTableStore } from '../store/tableStore';
 import { useAuthStore } from '../store/authStore';
+import { mockProducts } from '../data/mockProducts';
+import { resolveImage } from '../utils/imageResolver';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LandingPage() {
@@ -47,10 +49,10 @@ export default function LandingPage() {
   );
 
   const recommendedFoods = [
-    { id: 1, name: 'Truffle Croissant', price: 6.50, img: '/mockup_images/cafe_banner.png', tag: 'Chef\'s Pick' },
-    { id: 2, name: 'Iced Matcha Latte', price: 5.00, img: '/mockup_images/cafe_banner.png', tag: 'Bestseller' },
-    { id: 3, name: 'Avocado Toast', price: 12.00, img: '/mockup_images/cafe_banner.png', tag: 'Healthy' },
-  ];
+    { ...mockProducts.find(p => p.name === 'Cappuccino'), tag: "Chef's Pick" },
+    { ...mockProducts.find(p => p.name === 'Avocado Toast'), tag: "Healthy" },
+    { ...mockProducts.find(p => p.name === 'Chocolate Truffle Cake'), tag: "Bestseller" }
+  ].filter(p => p && p.name); // Filter out any missing items safely
 
   return (
     <motion.div 
@@ -168,16 +170,20 @@ export default function LandingPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {recommendedFoods.map(food => (
-                  <div key={food.id} className="relative group overflow-hidden rounded-[2rem] shadow-sm hover:shadow-xl transition-shadow border border-slate-100 bg-white">
+                  <div 
+                    key={food.id} 
+                    onClick={() => navigate(`/pos?search=${encodeURIComponent(food.name)}`)}
+                    className="relative group overflow-hidden rounded-[2rem] shadow-sm hover:shadow-xl transition-shadow border border-slate-100 bg-white cursor-pointer"
+                  >
                     <div className="h-48 overflow-hidden relative">
-                      <img src={food.img} alt={food.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <img src={resolveImage(food.name)} alt={food.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       <div className="absolute top-4 left-4 bg-amber-500 text-white text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-lg">
                         {food.tag}
                       </div>
                     </div>
                     <div className="p-6">
                       <h3 className="font-bold text-slate-800 text-lg mb-1">{food.name}</h3>
-                      <p className="text-emerald-600 font-mono font-bold">${food.price.toFixed(2)}</p>
+                      <p className="text-emerald-600 font-mono font-bold">₹{food.price.toFixed(2)}</p>
                     </div>
                   </div>
                 ))}

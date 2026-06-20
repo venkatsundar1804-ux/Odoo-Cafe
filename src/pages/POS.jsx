@@ -24,7 +24,7 @@ export default function POS() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState(mockCategories);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(1);
