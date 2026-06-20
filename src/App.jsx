@@ -13,6 +13,7 @@ export default function App() {
         <Route path="/pos" element={<POS />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Home />} />
+          <Route path="products" element={<POS />} />
           <Route path="categories" element={<CategoryAdmin />} />
           <Route path="payments" element={<Payments />} />
           <Route path="coupons" element={<Coupons />} />
