@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShieldCheck, CreditCard, Smartphone, Building2, Wallet, X, Loader2, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, CreditCard, Smartphone, Building2, X, Loader2, CheckCircle2 } from 'lucide-react';
 import { ordersService } from '../../services/ordersService';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -135,15 +135,7 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
                     </div>
                   </button>
 
-                  <button onClick={() => handlePay('wallet')} className="w-full flex items-center gap-4 p-3 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors group">
-                    <div className="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-white group-hover:border-blue-200 group-hover:shadow-sm transition-all shrink-0">
-                      <Wallet className="w-5 h-5 text-slate-600 group-hover:text-blue-600" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-bold text-slate-800 text-sm">Wallets</h3>
-                      <p className="text-xs text-slate-500">Amazon Pay, Freecharge, etc.</p>
-                    </div>
-                  </button>
+
                 </div>
               </motion.div>
             )}

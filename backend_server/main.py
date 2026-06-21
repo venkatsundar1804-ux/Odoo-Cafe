@@ -83,7 +83,8 @@ async def create_order(order_req: schemas.OrderCreate, db: Session = Depends(get
         order_details_for_kds.append({
             "product_id": item.product_id,
             "product_name": p_name,
-            "quantity": item.quantity
+            "quantity": item.quantity,
+            "price": p_price
         })
 
         order_items_to_create.append(models.OrderItem(
@@ -147,6 +148,7 @@ async def create_order(order_req: schemas.OrderCreate, db: Session = Depends(get
         "order_id": db_order.id,
         "table_id": db_order.table_id,
         "status": db_order.status,
+        "total_amount": final_total,
         "items": order_details_for_kds
     }
     await manager.broadcast(json.dumps(kds_payload))

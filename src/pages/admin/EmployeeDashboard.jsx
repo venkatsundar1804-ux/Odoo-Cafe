@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode, Home, Tag, Plus, Trash2, RefreshCw, CreditCard } from 'lucide-react';
+import { ChefHat, CheckCircle2, Clock, Send, AlertTriangle, Banknote, QrCode, Home, Tag, Plus, Trash2, RefreshCw, CreditCard, Bell, X } from 'lucide-react';
 import { useOrderSyncStore } from '../../store/orderSyncStore';
 import { usePromoStore } from '../../store/promoStore';
 import { useTableStore } from '../../store/tableStore';
@@ -18,17 +18,57 @@ export default function EmployeeDashboard() {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  const [notification, setNotification] = useState(null);
+  const prevOrdersRef = useRef({});
+
+  // Monitor for new orders and KDS updates
+  useEffect(() => {
+    if (orders.length === 0) return;
+    
+    let alertMsg = null;
+    
+    // Check if total orders increased (new order arrived)
+    const prevCount = Object.keys(prevOrdersRef.current).length;
+    if (orders.length > prevCount && prevCount > 0) {
+      alertMsg = 'New order received from customer!';
+    } else {
+      // Check for status updates from KDS
+      for (const order of orders) {
+        const prevStatus = prevOrdersRef.current[order.id];
+        if (prevStatus && prevStatus !== order.status) {
+          if (order.status === 'Preparing') alertMsg = `Kitchen started preparing Order #${order.id}`;
+          if (order.status === 'Completed') alertMsg = `Order #${order.id} is ready to serve!`;
+        }
+      }
+    }
+
+    if (alertMsg) {
+      setNotification(alertMsg);
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav');
+      audio.volume = 0.2;
+      audio.play().catch(() => {});
+      setTimeout(() => setNotification(null), 5000);
+    }
+
+    // Save current state
+    const currentMap = {};
+    orders.forEach(o => { currentMap[o.id] = o.status; });
+    prevOrdersRef.current = currentMap;
+  }, [orders]);
   
   const [newPromoCode, setNewPromoCode] = useState('');
   const [newPromoDiscount, setNewPromoDiscount] = useState('');
   const [newPromoDesc, setNewPromoDesc] = useState('');
+  const [newPromoType, setNewPromoType] = useState('percentage');
   
   const { sessionId, openSession, closeSession } = useAuthStore();
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [closingAmount, setClosingAmount] = useState('');
 
   const cashOrders = orders.filter(o => o.paymentMethod === 'cash');
-  const expectedCash = cashOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+  const getOrderTotal = (o) => o.total || o.total_amount || (o.items ? o.items.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 1)), 0) : 0);
+  const expectedCash = cashOrders.reduce((sum, o) => sum + getOrderTotal(o), 0);
 
   const sendToKds = (id) => {
     dispatchOrderToKds(id);
@@ -63,6 +103,23 @@ export default function EmployeeDashboard() {
           className="absolute top-[20%] -right-[10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full bg-emerald-200/40 blur-[100px]" 
         />
       </div>
+
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: -50, x: '-50%' }}
+            className="fixed top-8 left-1/2 z-50 flex items-center gap-3 bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-[0_10px_40px_rgba(79,70,229,0.4)] min-w-[300px] max-w-md w-max"
+          >
+            <Bell className="w-6 h-6 animate-bounce" />
+            <span className="font-bold">{notification}</span>
+            <button onClick={() => setNotification(null)} className="ml-auto p-1 hover:bg-indigo-700 rounded-full transition cursor-pointer">
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.div 
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
@@ -314,9 +371,23 @@ export default function EmployeeDashboard() {
                 onChange={e => setNewPromoCode(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 uppercase"
               />
+              <div className="flex bg-slate-200/50 p-1 rounded-xl">
+                <button
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${newPromoType === 'percentage' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
+                  onClick={() => setNewPromoType('percentage')}
+                >
+                  Percentage (%)
+                </button>
+                <button
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${newPromoType === 'flat' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
+                  onClick={() => setNewPromoType('flat')}
+                >
+                  Flat Amount (₹)
+                </button>
+              </div>
               <input 
                 type="number" 
-                placeholder="Discount % (e.g. 15)" 
+                placeholder={newPromoType === 'percentage' ? "Discount % (e.g. 15)" : "Flat Amount ₹ (e.g. 100)"}
                 value={newPromoDiscount}
                 onChange={e => setNewPromoDiscount(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500"
@@ -331,7 +402,7 @@ export default function EmployeeDashboard() {
               <button 
                 onClick={() => {
                   if(newPromoCode && newPromoDiscount) {
-                    addPromo(newPromoCode, newPromoDiscount, newPromoDesc);
+                    addPromo({ code: newPromoCode, value: parseFloat(newPromoDiscount), discount_type: newPromoType, description: newPromoDesc });
                     setNewPromoCode(''); setNewPromoDiscount(''); setNewPromoDesc('');
                   }
                 }}
@@ -349,7 +420,7 @@ export default function EmployeeDashboard() {
               <AnimatePresence>
                 {promos.map(promo => (
                   <motion.div 
-                    key={promo.code}
+                    key={promo.id || promo.code}
                     initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
                     className="bg-white border border-slate-200 p-5 rounded-[1.5rem] flex flex-col justify-between shadow-sm relative group"
                   >
@@ -358,12 +429,12 @@ export default function EmployeeDashboard() {
                         <span className="bg-indigo-100 text-indigo-700 font-black px-3 py-1 rounded-lg text-sm tracking-wider">
                           {promo.code}
                         </span>
-                        <span className="text-lg font-black text-slate-800">-{promo.discountPercent}%</span>
+                        <span className="text-lg font-black text-slate-800">-{promo.value}{promo.discount_type === 'percentage' ? '%' : '₹'}</span>
                       </div>
                       <p className="text-xs text-slate-500 font-medium">{promo.description}</p>
                     </div>
                     <button 
-                      onClick={() => removePromo(promo.code)}
+                      onClick={() => removePromo(promo.id)}
                       className="absolute top-4 right-4 p-2 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />

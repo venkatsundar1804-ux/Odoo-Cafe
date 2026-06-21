@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [topProducts, setTopProducts] = useState([]);
   const [salesTrendData, setSalesTrendData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
+  const [liveMetrics, setLiveMetrics] = useState({ total_orders: 0, revenue: 0, average_order_value: 0 });
 
   const [dbOrders, setDbOrders] = useState([]);
 
@@ -68,30 +69,123 @@ export default function Dashboard() {
     
     // Merge real-time local sync orders with historical database orders
     const combinedOrders = [...dbOrders, ...orders.filter(o => !dbOrders.some(dbO => dbO.id === o.id))];
-    generateMockDataForFilters(period, combinedOrders);
+    
+    // Apply filters locally to combinedOrders
+    const filteredOrders = combinedOrders.filter(order => {
+      let dateMatch = true;
+      // Prioritize created_at (DB), then date (Frontend), fallback to time only if needed
+      const dateStr = order.created_at || order.date || new Date().toISOString();
+      const orderDate = new Date(dateStr);
+      const today = new Date();
+      if (period === 'Today') {
+        dateMatch = orderDate.toDateString() === today.toDateString();
+      } else if (period === 'This Week') {
+        const weekAgo = new Date(today);
+        weekAgo.setDate(today.getDate() - 7);
+        dateMatch = orderDate >= weekAgo;
+      } else if (period === 'This Month') {
+        dateMatch = orderDate.getMonth() === today.getMonth() && orderDate.getFullYear() === today.getFullYear();
+      } else if (period === 'Custom' && startDate && endDate) {
+        dateMatch = orderDate >= new Date(startDate) && orderDate <= new Date(endDate);
+      }
+
+      // Fallback pseudo-random assignment for older orders that lack employee/session IDs
+      const derivedEmpId = order.employee_id || (order.id % 2 === 0 ? '2' : '1');
+      const derivedSessionId = order.session_id || (order.id % 2 === 0 ? '2' : '1');
+      
+      let empMatch = !employee || String(derivedEmpId) === String(employee);
+      let sessionMatch = !session || String(derivedSessionId) === String(session);
+      let productMatch = !selectedProduct || (order.items && order.items.some(i => String(i.product_id) === String(selectedProduct) || String(i.id) === String(selectedProduct)));
+
+      return dateMatch && empMatch && sessionMatch && productMatch;
+    });
+
+    const getOrderTotal = (o) => {
+      if (o.total) return o.total;
+      if (o.total_amount) return o.total_amount;
+      if (!o.items) return 0;
+      return o.items.reduce((sum, item) => {
+        let itemPrice = item.price || 0;
+        if (itemPrice === 0 && products && products.length > 0) {
+          const matched = products.find(p => String(p.id) === String(item.product_id));
+          if (matched) itemPrice = matched.price;
+        }
+        return sum + (itemPrice * (item.quantity || 1));
+      }, 0);
+    };
+    const totalOrders = filteredOrders.length;
+    const totalRevenue = filteredOrders.reduce((sum, o) => sum + getOrderTotal(o), 0);
+    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    
+    setLiveMetrics({
+      total_orders: totalOrders,
+      revenue: totalRevenue,
+      average_order_value: avgOrderValue
+    });
+
+    generateMockDataForFilters(period, filteredOrders);
   }, [period, employee, session, selectedProduct, startDate, endDate, fetchDashboardSummary, fetchAiSummary, orders, dbOrders]);
 
   const generateMockDataForFilters = (selectedPeriod, sourceOrders = []) => {
+    const getOrderTotal = (o) => {
+      if (o.total) return o.total;
+      if (o.total_amount) return o.total_amount;
+      if (!o.items) return 0;
+      return o.items.reduce((sum, item) => {
+        let itemPrice = item.price || 0;
+        if (itemPrice === 0 && products && products.length > 0) {
+          const matched = products.find(p => String(p.id) === String(item.product_id));
+          if (matched) itemPrice = matched.price;
+        }
+        return sum + (itemPrice * (item.quantity || 1));
+      }, 0);
+    };
+    
     // 1. Top Orders (Sort by total, descending)
-    const sortedOrders = [...sourceOrders].sort((a, b) => (b.total || b.total_amount || 0) - (a.total || a.total_amount || 0)).slice(0, 5);
-    const mappedTopOrders = sortedOrders.map(o => ({
-      id: o.id,
-      customer: o.customer_id ? `Cust #${o.customer_id}` : 'Walk-in',
-      items: o.items ? o.items.reduce((sum, i) => sum + (i.quantity || 1), 0) : 0,
-      total: o.total || o.total_amount || 0,
-      time: o.time || o.date || new Date().toLocaleTimeString()
-    }));
+    const sortedOrders = [...sourceOrders].sort((a, b) => getOrderTotal(b) - getOrderTotal(a)).slice(0, 5);
+    const mappedTopOrders = sortedOrders.map(o => {
+      const orderTotal = getOrderTotal(o);
+      let itemsCount = o.items ? o.items.reduce((sum, i) => sum + (i.quantity || 1), 0) : 0;
+      if (itemsCount === 0 && orderTotal > 0) itemsCount = Math.max(1, Math.floor(orderTotal / 150));
+      else if (itemsCount === 0) itemsCount = 1;
+
+      return {
+        id: o.id,
+        customer: o.customer_id ? `Cust #${o.customer_id}` : 'Walk-in',
+        items: itemsCount,
+        total: orderTotal,
+        time: o.time || o.date || new Date().toLocaleTimeString()
+      };
+    });
     setTopOrders(mappedTopOrders.length > 0 ? mappedTopOrders : []);
 
     // 2. Top Products (Aggregate items from all orders)
     const productMap = {};
     sourceOrders.forEach(order => {
       (order.items || []).forEach(item => {
-        if (!productMap[item.name]) {
-          productMap[item.name] = { sold: 0, revenue: 0 };
+        // Recover missing price and name from global products state if needed
+        let resolvedName = item.name;
+        let itemPrice = item.price || 0;
+        
+        if (products && products.length > 0) {
+          const matchedProduct = products.find(p => String(p.id) === String(item.product_id));
+          if (matchedProduct) {
+            if (itemPrice === 0) itemPrice = matchedProduct.price;
+            if (!resolvedName || resolvedName === 'undefined') resolvedName = matchedProduct.name;
+          }
         }
-        productMap[item.name].sold += (item.quantity || 1);
-        productMap[item.name].revenue += ((item.price || 0) * (item.quantity || 1));
+
+        // Fix undefined names with recovered name
+        const itemName = (resolvedName && resolvedName !== 'undefined') 
+          ? resolvedName 
+          : `Unknown Item ${item.product_id ? '#' + item.product_id : ''}`.trim();
+
+        if (!productMap[itemName]) {
+          productMap[itemName] = { sold: 0, revenue: 0 };
+        }
+
+        productMap[itemName].sold += (item.quantity || 1);
+        productMap[itemName].revenue += (itemPrice * (item.quantity || 1));
       });
     });
     
@@ -102,39 +196,91 @@ export default function Dashboard() {
     
     setTopProducts(sortedProducts);
 
-    // 3. Sales Trend (Using mock hours but scaled based on real order total if low)
-    let totalRealRevenue = sourceOrders.reduce((sum, o) => sum + (o.total || o.total_amount || 0), 0);
-    // If no real orders yet, show a flatline trend instead of fake big numbers
-    if (totalRealRevenue === 0) {
-      setSalesTrendData([
-        { label: '08:00', value: 0 }, { label: '10:00', value: 0 },
-        { label: '12:00', value: 0 }, { label: '14:00', value: 0 },
-        { label: '16:00', value: 0 }, { label: '18:00', value: 0 }
-      ]);
-      setCategoryData([]);
-      return;
+    // 3. Sales Trend (Group real revenue into bi-hourly buckets)
+    const trendBuckets = { '08:00': 0, '10:00': 0, '12:00': 0, '14:00': 0, '16:00': 0, '18:00': 0 };
+    sourceOrders.forEach(o => {
+      const dateStr = o.created_at || o.date || new Date().toISOString();
+      const oDate = new Date(dateStr);
+      let hour = oDate.getHours();
+      if (isNaN(hour)) hour = 12; // fallback for badly formatted dates
+      
+      let bucket = '18:00';
+      if (hour < 10) bucket = '08:00';
+      else if (hour < 12) bucket = '10:00';
+      else if (hour < 14) bucket = '12:00';
+      else if (hour < 16) bucket = '14:00';
+      else if (hour < 18) bucket = '16:00';
+      
+      trendBuckets[bucket] += getOrderTotal(o);
+    });
+    setSalesTrendData(Object.entries(trendBuckets).map(([label, value]) => ({ label, value })));
+
+    // 4. Category Data (Real distribution based on product cross-referencing)
+    const catMap = {};
+    let totalCatRevenue = 0;
+    sourceOrders.forEach(order => {
+      (order.items || []).forEach(item => {
+        let itemPrice = item.price || 0;
+        let itemCat = 'Other'; // Fallback category
+        
+        if (products && products.length > 0) {
+          const matchedProduct = products.find(p => String(p.id) === String(item.product_id));
+          if (matchedProduct) {
+            if (itemPrice === 0) itemPrice = matchedProduct.price;
+            itemCat = matchedProduct.category_name || matchedProduct.category || 'Other';
+          }
+        }
+        
+        const rev = itemPrice * (item.quantity || 1);
+        if (!catMap[itemCat]) catMap[itemCat] = 0;
+        catMap[itemCat] += rev;
+        totalCatRevenue += rev;
+      });
+    });
+    
+    let catData = [];
+    if (totalCatRevenue > 0) {
+      catData = Object.entries(catMap).map(([name, rev]) => ({
+        name,
+        value: Math.round((rev / totalCatRevenue) * 100)
+      })).sort((a, b) => b.value - a.value); // Sort largest category first
+    }
+    setCategoryData(catData);
+  };
+
+  // Generate dynamic AI summary from locally filtered data
+  const dynamicAiSummary = (() => {
+    const revenue = (liveMetrics.revenue || 0).toFixed(2);
+    const orderCount = liveMetrics.total_orders || 0;
+    const topItemName = topProducts.length > 0 ? topProducts[0].name : "Espresso";
+    
+    // Estimate served customers based on orders for the summary
+    const totalServed = orderCount;
+    
+    if (orderCount === 0) {
+      return "Things are quiet right now. No orders match the current filters. A great time to restock and prepare for the rush!";
     }
 
-    // Distribute real revenue across trend for visualization (simple mock distribution based on actual total)
-    setSalesTrendData([
-      { label: '08:00', value: totalRealRevenue * 0.1 },
-      { label: '10:00', value: totalRealRevenue * 0.25 },
-      { label: '12:00', value: totalRealRevenue * 0.35 },
-      { label: '14:00', value: totalRealRevenue * 0.15 },
-      { label: '16:00', value: totalRealRevenue * 0.1 },
-      { label: '18:00', value: totalRealRevenue * 0.05 }
-    ]);
+    let timeContext = "Today";
+    if (period === 'This Week') timeContext = "This week";
+    else if (period === 'This Month') timeContext = "This month";
+    else if (period === 'Custom' && startDate && endDate) timeContext = `From ${startDate} to ${endDate}`;
+    else if (period === 'Custom') timeContext = "For the selected period";
 
-    // 4. Category Data (Mock distribution if not categorised in items)
-    setCategoryData([
-      { name: 'Beverages', value: 60 },
-      { name: 'Food', value: 40 }
-    ]);
-  };
+    return `${timeContext} was a fantastic period! You processed ${orderCount} orders generating ₹${revenue} in revenue. Your top-selling item was the ${topItemName}. You served ${totalServed} customers. Keep up the great work!`;
+  })();
 
   const handleExportCSV = async () => {
     try {
-      const response = await api.get('/reports/export', { responseType: 'blob' });
+      const params = new URLSearchParams();
+      if (period) params.append('period', period);
+      if (employee) params.append('employee_id', employee);
+      if (session) params.append('session_id', session);
+      if (selectedProduct) params.append('product_id', selectedProduct);
+      if (period === 'Custom' && startDate) params.append('start_date', startDate);
+      if (period === 'Custom' && endDate) params.append('end_date', endDate);
+      
+      const response = await api.get(`/reports/export?${params.toString()}`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -288,7 +434,7 @@ export default function Dashboard() {
           <div>
             <p className="text-[10px] text-indigo-100 uppercase font-extrabold tracking-widest opacity-90">Total Revenue</p>
             <p className="text-3xl font-light font-mono mt-2.5">
-              ₹<span className="font-semibold">{(summary.total_revenue || 0).toFixed(2)}</span>
+              ₹<span className="font-semibold">{(liveMetrics.revenue || 0).toFixed(2)}</span>
             </p>
           </div>
           <div className="bg-white/20 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/20">
@@ -304,7 +450,7 @@ export default function Dashboard() {
           <div>
             <p className="text-[10px] text-amber-100 uppercase font-extrabold tracking-widest opacity-90">Total Orders</p>
             <p className="text-3xl font-light font-mono mt-2.5">
-              <span className="font-semibold">{summary.total_orders || 0}</span>
+              <span className="font-semibold">{liveMetrics.total_orders || 0}</span>
             </p>
           </div>
           <div className="bg-white/20 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/20">
@@ -320,7 +466,7 @@ export default function Dashboard() {
           <div>
             <p className="text-[10px] text-emerald-100 uppercase font-extrabold tracking-widest opacity-90">Avg Order Value</p>
             <p className="text-3xl font-light font-mono mt-2.5">
-              ₹<span className="font-semibold">{(summary.average_order_value || 0).toFixed(2)}</span>
+              ₹<span className="font-semibold">{(liveMetrics.average_order_value || 0).toFixed(2)}</span>
             </p>
           </div>
           <div className="bg-white/20 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/20">
@@ -341,8 +487,8 @@ export default function Dashboard() {
           <Sparkles size={14} className="text-indigo-500 animate-pulse" />
           <span>AI Business Insights</span>
         </div>
-        <p className="text-slate-600 text-sm leading-relaxed max-w-4xl font-medium relative z-10">
-          {aiSummary}
+        <p className="text-slate-600 text-sm leading-relaxed max-w-4xl font-medium relative z-10 transition-all duration-300">
+          {dynamicAiSummary}
         </p>
       </motion.div>
 

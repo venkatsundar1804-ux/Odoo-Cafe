@@ -14,7 +14,9 @@ router = APIRouter()
 
 @router.get("/api/reports/summary")
 def get_reports_summary(db: Session = Depends(get_db)):
-    total_revenue_result = db.query(func.sum(models.Order.total_amount)).filter(models.Order.status == "Paid").scalar()
+    total_revenue_result = db.query(func.sum(models.Order.total_amount)).filter(
+        models.Order.status.in_(["Paid", "Completed", "Delivered"])
+    ).scalar()
     total_revenue = float(total_revenue_result) if total_revenue_result else 0.0
 
     total_orders = db.query(func.count(models.Order.id)).scalar() or 0
@@ -56,7 +58,7 @@ def redirect_to_self_order(token: str, db: Session = Depends(get_db)):
 @router.get("/api/reports/export")
 def export_sales_csv(db: Session = Depends(get_db)):
     orders = db.query(models.Order).filter(
-        models.Order.status.in_(["Paid", "Completed"])
+        models.Order.status.in_(["Paid", "Completed", "Delivered"])
     ).all()
 
     output = io.StringIO()
@@ -86,11 +88,11 @@ def export_sales_csv(db: Session = Depends(get_db)):
 @router.get("/api/reports/ai-summary")
 def get_ai_daily_summary(db: Session = Depends(get_db)):
     total_orders = db.query(func.count(models.Order.id)).filter(
-        models.Order.status.in_(["Paid", "Completed"])
+        models.Order.status.in_(["Paid", "Completed", "Delivered"])
     ).scalar() or 0
     
     total_revenue_result = db.query(func.sum(models.Order.total_amount)).filter(
-        models.Order.status.in_(["Paid", "Completed"])
+        models.Order.status.in_(["Paid", "Completed", "Delivered"])
     ).scalar()
     total_revenue = float(total_revenue_result) if total_revenue_result else 0.0
 
@@ -123,13 +125,13 @@ def get_ai_daily_summary(db: Session = Depends(get_db)):
 def get_live_stats(db: Session = Depends(get_db)):
     """Returns live stats computed from the database for the admin dashboard."""
     total_revenue_result = db.query(func.sum(models.Order.total_amount)).filter(
-        models.Order.status.in_(["Paid", "Completed"])
+        models.Order.status.in_(["Paid", "Completed", "Delivered"])
     ).scalar()
     total_revenue = float(total_revenue_result) if total_revenue_result else 0.0
 
     total_orders = db.query(func.count(models.Order.id)).scalar() or 0
     paid_orders = db.query(func.count(models.Order.id)).filter(
-        models.Order.status.in_(["Paid", "Completed"])
+        models.Order.status.in_(["Paid", "Completed", "Delivered"])
     ).scalar() or 0
 
     total_customers = db.query(func.count(models.Customer.id)).scalar() or 0

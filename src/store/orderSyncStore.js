@@ -36,6 +36,7 @@ export const useOrderSyncStore = create(
                 product_id: i.product_id,
                 name: i.product_name || `Item ${i.product_id}`,
                 quantity: i.quantity,
+                price: i.unit_price || 0,
                 completed: false
               })) : []
             }));

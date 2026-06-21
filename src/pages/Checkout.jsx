@@ -323,7 +323,7 @@ export default function Checkout() {
           useOrderSyncStore.getState().addOrder({
             id: currentOrderId,
             table: `T-${useTableStore.getState().currentTableId || 1}`,
-            items: cart.map(i => ({ product_id: i.id, name: `${i.quantity}x ${i.name}`, quantity: i.quantity, completed: false })),
+            items: cart.map(i => ({ product_id: i.id, name: `${i.quantity}x ${i.name}`, quantity: i.quantity, price: i.price, completed: false })),
             total: total,
             time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
             date: new Date().toLocaleDateString(),

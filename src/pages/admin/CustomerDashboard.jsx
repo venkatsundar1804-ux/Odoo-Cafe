@@ -11,7 +11,7 @@ export default function CustomerDashboard() {
 
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [paymentMethods, setPaymentMethods] = useState([]);
+
   const [notification, setNotification] = useState(null);
   const prevOrdersRef = useRef({});
 
@@ -49,11 +49,19 @@ export default function CustomerDashboard() {
       // Sort by id descending (most recent first)
       mapped.sort((a, b) => b.id - a.id);
       
-      // Check for newly delivered orders (compare with previous state)
+      // Check for status changes (compare with previous state)
       mapped.forEach(o => {
         const prev = prevOrdersRef.current[o.id];
-        if (prev && prev !== 'Delivered' && o.status === 'Delivered') {
-          setNotification(`Order #${o.id} has been delivered! Enjoy!`);
+        if (prev && prev !== o.status) {
+          if (o.status === 'Delivered') {
+            setNotification(`Order #${o.id} has been delivered! Enjoy!`);
+          } else if (o.status === 'Preparing') {
+            setNotification(`Order #${o.id} is now being prepared!`);
+          } else if (o.status === 'Completed') {
+            setNotification(`Order #${o.id} is ready to serve!`);
+          } else if (o.status === 'sent' || o.status === 'To Cook') {
+            setNotification(`Order #${o.id} has been received by the kitchen!`);
+          }
           setTimeout(() => setNotification(null), 5000);
         }
       });
@@ -348,49 +356,7 @@ export default function CustomerDashboard() {
         {/* Right Column: Payments & Coupons */}
         <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-8">
           
-          {/* Payment Methods */}
-          <motion.div variants={itemVariants} className="bg-white/70 backdrop-blur-[40px] border border-white rounded-[2.5rem] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.03)]">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="bg-indigo-500 p-2.5 rounded-xl text-white shadow-md">
-                  <CreditCard className="w-5 h-5" />
-                </div>
-                <h2 className="text-xl font-black text-slate-800">Wallet</h2>
-              </div>
-              <button className="p-2 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 transition">
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <AnimatePresence>
-                {paymentMethods.map(pm => (
-                  <motion.div 
-                    key={pm.id} 
-                    initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-                    className="flex items-center justify-between p-5 bg-gradient-to-br from-slate-800 to-slate-900 text-white rounded-[1.5rem] shadow-lg relative overflow-hidden group"
-                  >
-                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
-                    <div className="relative z-10">
-                      <p className="font-black text-base">{pm.type}</p>
-                      <p className="text-xs font-mono text-slate-300 mt-1 tracking-widest">**** **** **** {pm.last4}</p>
-                    </div>
-                    <button 
-                      onClick={() => setPaymentMethods(prev => prev.filter(p => p.id !== pm.id))}
-                      className="relative z-10 p-2.5 bg-white/10 hover:bg-rose-500 text-white rounded-xl transition cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              {paymentMethods.length === 0 && (
-                <div className="text-center text-slate-400 py-6 font-semibold border-2 border-dashed border-slate-200 rounded-2xl">
-                  No payment methods saved.
-                </div>
-              )}
-            </div>
-          </motion.div>
+
 
           {/* Coupons */}
           <motion.div variants={itemVariants} className="bg-white/70 backdrop-blur-[40px] border border-white rounded-[2.5rem] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.03)]">

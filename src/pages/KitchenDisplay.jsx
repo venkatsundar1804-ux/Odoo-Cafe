@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChefHat, Wifi, WifiOff, Clock, Armchair, CheckCircle2, Circle } from 'lucide-react';
+import { ChefHat, Wifi, WifiOff, Clock, Armchair, CheckCircle2, Flame, PackageCheck, UtensilsCrossed, Bell } from 'lucide-react';
 import { useOrderSyncStore } from '../store/orderSyncStore';
 import { useKdsSocket } from '../hooks/useKdsSocket';
 import api from '../api';
@@ -39,55 +39,61 @@ export default function KitchenDisplay() {
 
   return (
     <motion.div 
-      animate={newOrderAlert ? { backgroundColor: ['#f8fafc', '#fee2e2', '#f8fafc'] } : { backgroundColor: '#f8fafc' }}
+      animate={newOrderAlert ? { backgroundColor: ['#0f172a', '#450a0a', '#0f172a'] } : { backgroundColor: '#0f172a' }}
       transition={{ duration: 0.8, repeat: 3 }}
-      className="h-screen w-screen text-slate-800 flex flex-col overflow-hidden font-sans"
+      className="h-screen w-screen flex flex-col overflow-hidden font-sans text-slate-100 selection:bg-amber-500 selection:text-white"
     >
       
-      {/* High-Contrast Kitchen Header */}
-      <header className="h-20 bg-white border-b-2 border-slate-200 flex items-center justify-between px-8 shrink-0 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="bg-red-500 p-2.5 rounded-xl text-white">
-            <ChefHat className="w-7 h-7" />
+      {/* ── Premium High-Contrast Header ──────────────────────────────────────── */}
+      <header className="h-24 bg-slate-900/80 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-8 shrink-0 shadow-2xl z-20">
+        <div className="flex items-center gap-4">
+          <div className="bg-gradient-to-br from-amber-500 to-amber-600 p-3 rounded-2xl text-slate-900 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+            <ChefHat className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-slate-900">KITCHEN MONITOR</h1>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-extrabold mt-0.5">Real-time Order Processing</p>
+            <h1 className="text-3xl font-black tracking-tighter text-white">Kitchen Display</h1>
+            <p className="text-[11px] text-amber-500 uppercase tracking-[0.2em] font-bold mt-0.5">Live Order Execution</p>
           </div>
         </div>
 
         {/* Live Indicator */}
         <div className="flex items-center gap-6">
-          {newOrderAlert && (
-            <div className="animate-bounce bg-red-600 text-white text-xs font-black uppercase px-4 py-2 rounded-xl shadow-lg shadow-red-200 tracking-wider">
-              🔔 NEW TICKET ARRIVED!
-            </div>
-          )}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-500 uppercase">Status:</span>
+          <AnimatePresence>
+            {newOrderAlert && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                className="flex items-center gap-2 bg-rose-500 text-white text-xs font-black uppercase px-5 py-2.5 rounded-full shadow-[0_0_30px_rgba(244,63,94,0.6)] tracking-wider"
+              >
+                <Bell className="w-4 h-4 animate-bounce" /> New Ticket Arrived
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div className="flex items-center gap-3 bg-slate-800/50 p-1.5 pr-4 rounded-full border border-white/5">
             {isConnected ? (
-              <span className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full text-xs font-black">
-                <Wifi size={14} className="animate-pulse" /> LIVE CONNECTED
-              </span>
+              <div className="flex items-center gap-2 text-emerald-400 bg-emerald-400/10 px-4 py-2 rounded-full text-xs font-black tracking-widest border border-emerald-400/20">
+                <Wifi size={14} className="animate-pulse" /> LIVE
+              </div>
             ) : (
-              <span className="flex items-center gap-1.5 text-red-700 bg-red-50 border border-red-200 px-3.5 py-1.5 rounded-full text-xs font-black">
-                <WifiOff size={14} /> SYSTEM DISCONNECTED
-              </span>
+              <div className="flex items-center gap-2 text-rose-400 bg-rose-400/10 px-4 py-2 rounded-full text-xs font-black tracking-widest border border-rose-400/20">
+                <WifiOff size={14} /> OFFLINE
+              </div>
             )}
           </div>
         </div>
       </header>
 
-      {/* Columns Grid */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 p-6 min-h-0 bg-slate-50">
+      {/* ── Main Columns Grid ─────────────────────────────────────────────────── */}
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 p-6 min-h-0 relative z-10">
         
-        {/* Column 1: To Cook (Light Red theme) */}
-        <div className="flex flex-col h-full bg-white border-2 border-slate-200 rounded-2xl overflow-hidden shadow-md">
-          <div className="bg-red-50 border-b-2 border-red-100 p-4 shrink-0 flex justify-between items-center">
-            <h2 className="text-base font-black uppercase tracking-widest text-red-700 flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-red-650 animate-ping"></span> To Cook
+        {/* Column 1: To Cook */}
+        <div className="flex flex-col h-full bg-slate-800/40 backdrop-blur-md border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl">
+          <div className="bg-gradient-to-r from-rose-500/20 to-transparent p-5 shrink-0 flex justify-between items-center border-b border-rose-500/20">
+            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-rose-400 flex items-center gap-3">
+              <UtensilsCrossed className="w-5 h-5 text-rose-500" /> Incoming
             </h2>
-            <span className="bg-red-200/60 text-red-800 font-mono text-sm font-black px-3 py-0.5 rounded-full border border-red-300/40">
+            <span className="bg-rose-500 text-white font-mono text-xs font-black px-3 py-1 rounded-full shadow-[0_0_15px_rgba(244,63,94,0.4)]">
               {toCookOrders.length}
             </span>
           </div>
@@ -97,33 +103,31 @@ export default function KitchenDisplay() {
                 <motion.div
                   key={order.id}
                   layoutId={order.id.toString()}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, x: -20 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 >
                   <OrderCard 
                     order={order} 
                     onTransition={transitionKdsStatus} 
                     onToggleItem={toggleItemStrike} 
-                    cardClass="bg-white border-2 border-red-200/60 shadow-[0_10px_20px_rgba(239,68,68,0.05)] hover:border-red-400 hover:shadow-[0_15px_30px_rgba(239,68,68,0.1)]"
-                    btnClass="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-red-500/30"
-                    bulletClass="text-red-400"
-                    headerBg="bg-red-50/50"
+                    cardTheme="rose"
                   />
                 </motion.div>
               ))}
             </AnimatePresence>
+            {toCookOrders.length === 0 && <EmptyState icon={UtensilsCrossed} title="No Incoming Tickets" />}
           </div>
         </div>
 
-        {/* Column 2: Preparing (Light Amber theme) */}
-        <div className="flex flex-col h-full bg-white border-2 border-slate-200 rounded-2xl overflow-hidden shadow-md">
-          <div className="bg-amber-50 border-b-2 border-amber-100 p-4 shrink-0 flex justify-between items-center">
-            <h2 className="text-base font-black uppercase tracking-widest text-amber-700 flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-amber-550 animate-pulse"></span> Preparing
+        {/* Column 2: Preparing */}
+        <div className="flex flex-col h-full bg-slate-800/40 backdrop-blur-md border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl">
+          <div className="bg-gradient-to-r from-amber-500/20 to-transparent p-5 shrink-0 flex justify-between items-center border-b border-amber-500/20">
+            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-amber-400 flex items-center gap-3">
+              <Flame className="w-5 h-5 text-amber-500 animate-pulse" /> Preparing
             </h2>
-            <span className="bg-amber-200/60 text-amber-800 font-mono text-sm font-black px-3 py-0.5 rounded-full border border-amber-300/40">
+            <span className="bg-amber-500 text-slate-900 font-mono text-xs font-black px-3 py-1 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.4)]">
               {preparingOrders.length}
             </span>
           </div>
@@ -133,33 +137,31 @@ export default function KitchenDisplay() {
                 <motion.div
                   key={order.id}
                   layoutId={order.id.toString()}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, x: -20 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 >
                   <OrderCard 
                     order={order} 
                     onTransition={transitionKdsStatus} 
                     onToggleItem={toggleItemStrike} 
-                    cardClass="bg-white border-2 border-amber-200/60 shadow-[0_10px_20px_rgba(245,158,11,0.05)] hover:border-amber-400 hover:shadow-[0_15px_30px_rgba(245,158,11,0.1)]"
-                    btnClass="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-amber-500/30"
-                    bulletClass="text-amber-400"
-                    headerBg="bg-amber-50/50"
+                    cardTheme="amber"
                   />
                 </motion.div>
               ))}
             </AnimatePresence>
+            {preparingOrders.length === 0 && <EmptyState icon={Flame} title="Kitchen is clear" />}
           </div>
         </div>
 
-        {/* Column 3: Completed (Light Green theme) */}
-        <div className="flex flex-col h-full bg-white border-2 border-slate-200 rounded-2xl overflow-hidden shadow-md">
-          <div className="bg-emerald-55/60 border-b-2 border-emerald-100 p-4 shrink-0 flex justify-between items-center">
-            <h2 className="text-base font-black uppercase tracking-widest text-emerald-700 flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-emerald-500"></span> Completed
+        {/* Column 3: Completed */}
+        <div className="flex flex-col h-full bg-slate-800/20 backdrop-blur-md border border-white/5 rounded-[2rem] overflow-hidden shadow-xl">
+          <div className="bg-gradient-to-r from-emerald-500/10 to-transparent p-5 shrink-0 flex justify-between items-center border-b border-emerald-500/10">
+            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-emerald-400 flex items-center gap-3">
+              <PackageCheck className="w-5 h-5 text-emerald-500" /> Ready
             </h2>
-            <span className="bg-emerald-200/60 text-emerald-800 font-mono text-sm font-black px-3 py-0.5 rounded-full border border-emerald-300/40">
+            <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono text-xs font-black px-3 py-1 rounded-full">
               {completedOrders.length}
             </span>
           </div>
@@ -169,23 +171,22 @@ export default function KitchenDisplay() {
                 <motion.div
                   key={order.id}
                   layoutId={order.id.toString()}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, x: 20 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 >
                   <OrderCard 
                     order={order} 
                     onTransition={transitionKdsStatus} 
                     onToggleItem={toggleItemStrike} 
-                    cardClass="bg-white border-2 border-emerald-200/60 shadow-[0_10px_20px_rgba(16,185,129,0.05)] hover:border-emerald-400 hover:shadow-[0_15px_30px_rgba(16,185,129,0.1)] opacity-70"
-                    bulletClass="text-emerald-400"
+                    cardTheme="emerald"
                     isCompletedStage={true}
-                    headerBg="bg-emerald-50/50"
                   />
                 </motion.div>
               ))}
             </AnimatePresence>
+            {completedOrders.length === 0 && <EmptyState icon={PackageCheck} title="No Ready Orders" />}
           </div>
         </div>
 
@@ -194,55 +195,101 @@ export default function KitchenDisplay() {
   );
 }
 
-// Child Order Card Sub-component
-function OrderCard({ order, onTransition, onToggleItem, cardClass, btnClass, bulletClass, headerBg, isCompletedStage = false }) {
+// Reusable Empty State Component
+function EmptyState({ icon: Icon, title }) {
   return (
-    <div
-      className={`rounded-2xl shadow-sm transition-all duration-300 flex flex-col justify-between overflow-hidden ${cardClass}`}
-    >
-      {/* Card Header (Receipt Style) */}
-      <div className={`flex justify-between items-start border-b-2 border-dashed border-slate-200/80 p-5 ${headerBg}`}>
+    <div className="h-full flex flex-col items-center justify-center text-slate-500/50 opacity-60">
+      <Icon className="w-16 h-16 mb-4 stroke-1" />
+      <p className="font-bold tracking-widest uppercase text-sm">{title}</p>
+    </div>
+  );
+}
+
+// ── Premium Order Card Sub-component ──────────────────────────────────────
+function OrderCard({ order, onTransition, onToggleItem, cardTheme, isCompletedStage = false }) {
+  
+  // Theme dictionaries
+  const themes = {
+    rose: {
+      border: 'border-rose-500/30',
+      hoverBorder: 'hover:border-rose-500',
+      shadow: 'shadow-[0_10px_30px_rgba(244,63,94,0.1)]',
+      bg: 'bg-slate-900/80',
+      headerBg: 'bg-gradient-to-br from-rose-950/50 to-slate-900/80',
+      btn: 'bg-rose-600 hover:bg-rose-500 text-white shadow-[0_0_20px_rgba(244,63,94,0.3)]',
+      accent: 'text-rose-400'
+    },
+    amber: {
+      border: 'border-amber-500/40',
+      hoverBorder: 'hover:border-amber-400',
+      shadow: 'shadow-[0_10px_30px_rgba(245,158,11,0.1)]',
+      bg: 'bg-slate-900',
+      headerBg: 'bg-gradient-to-br from-amber-950/50 to-slate-900',
+      btn: 'bg-amber-500 hover:bg-amber-400 text-slate-900 shadow-[0_0_20px_rgba(245,158,11,0.4)]',
+      accent: 'text-amber-400'
+    },
+    emerald: {
+      border: 'border-emerald-500/20',
+      hoverBorder: 'hover:border-emerald-500/40',
+      shadow: 'shadow-none',
+      bg: 'bg-slate-900/40 opacity-80',
+      headerBg: 'bg-emerald-950/20',
+      btn: '',
+      accent: 'text-emerald-500'
+    }
+  };
+
+  const t = themes[cardTheme];
+
+  return (
+    <div className={`rounded-[1.5rem] transition-all duration-500 flex flex-col justify-between overflow-hidden border ${t.border} ${t.hoverBorder} ${t.shadow} ${t.bg}`}>
+      
+      {/* Card Header */}
+      <div className={`flex justify-between items-start border-b border-white/5 p-5 ${t.headerBg}`}>
         <div>
-          <span className="text-3xl font-black font-sans tracking-tighter text-slate-900">
+          <span className="text-4xl font-black font-sans tracking-tighter text-white">
             #{order.id}
           </span>
-          <div className="flex items-center gap-1.5 text-slate-600 text-xs font-black uppercase tracking-widest mt-1">
-            <Armchair size={13} className="text-slate-400" />
+          <div className={`flex items-center gap-1.5 text-xs font-black uppercase tracking-widest mt-1 ${t.accent}`}>
+            <Armchair size={13} />
             <span>{order.table || `Table ${order.table_id}`}</span>
           </div>
         </div>
-        <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-slate-600 bg-white shadow-sm border border-slate-100 px-3 py-1.5 rounded-xl">
-          <Clock size={12} className="text-slate-400" /> {order.time || order.timestamp || ''}
+        <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-slate-300 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
+          <Clock size={12} className={t.accent} /> {order.time || order.timestamp || ''}
         </div>
       </div>
 
       {/* Items list */}
-      <div className="space-y-2 p-5 flex-1 bg-white/50">
+      <div className="space-y-2 p-5 flex-1 relative z-10">
         {order.items.map((item) => (
           <div
             key={item.product_id}
             onClick={() => onToggleItem(order.id, item.product_id)}
-            className="flex items-center justify-between cursor-pointer py-3 px-4 rounded-xl bg-white border border-slate-100 hover:border-slate-200 shadow-sm hover:shadow transition-all select-none group"
+            className={`flex items-center justify-between cursor-pointer py-3.5 px-4 rounded-[1.25rem] border backdrop-blur-md transition-all select-none group ${
+              item.completed 
+                ? 'bg-slate-800/30 border-white/5' 
+                : 'bg-slate-800/80 border-white/10 hover:border-white/30 hover:bg-slate-700/80'
+            }`}
           >
-            <div className="flex items-center gap-3 max-w-[80%]">
+            <div className="flex items-center gap-4 max-w-[80%]">
               {item.completed ? (
                 <motion.div 
                   initial={{ scale: 0, rotate: -90 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-500 flex items-center justify-center shrink-0 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]"
+                  className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30"
                 >
                   <CheckCircle2 size={14} className="stroke-[3]" />
                 </motion.div>
               ) : (
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${bulletClass.replace('text-', 'border-').replace('400', '300')} bg-slate-50`}>
-                  <div className={`w-2 h-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${bulletClass.replace('text-', 'bg-')}`}></div>
+                <div className="w-6 h-6 rounded-full border-2 border-slate-600 flex items-center justify-center shrink-0 bg-slate-900/50 group-hover:border-slate-400 transition-colors">
+                  <div className={`w-2 h-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-slate-300`}></div>
                 </div>
               )}
               <div className="relative">
-                <span
-                  className={`text-base font-bold tracking-tight transition-colors duration-300 ${
-                    item.completed ? 'text-slate-400 italic' : 'text-slate-800 group-hover:text-slate-900'
+                <span className={`text-base font-bold tracking-tight transition-colors duration-300 ${
+                    item.completed ? 'text-slate-500 italic' : 'text-slate-100 group-hover:text-white'
                   }`}
                 >
                   {item.name}
@@ -252,16 +299,15 @@ function OrderCard({ order, onTransition, onToggleItem, cardClass, btnClass, bul
                     initial={{ width: 0 }}
                     animate={{ width: "100%" }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="absolute left-0 top-1/2 h-[2px] bg-slate-400 -translate-y-1/2 origin-left"
+                    className="absolute left-0 top-1/2 h-[2px] bg-slate-500 -translate-y-1/2 origin-left"
                   />
                 )}
               </div>
             </div>
-            <span
-              className={`font-sans text-sm px-3 py-1 rounded-xl font-black ${
+            <span className={`font-mono text-sm px-3 py-1 rounded-xl font-black border ${
                 item.completed
-                  ? 'bg-slate-50 text-slate-400 border border-slate-200/50'
-                  : 'bg-slate-100 text-slate-700 border border-slate-200'
+                  ? 'bg-slate-800/50 text-slate-500 border-white/5'
+                  : 'bg-white/10 text-white border-white/20'
               }`}
             >
               x{item.quantity}
@@ -270,19 +316,21 @@ function OrderCard({ order, onTransition, onToggleItem, cardClass, btnClass, bul
         ))}
       </div>
 
-      {/* Action to advance ticket */}
+      {/* Action Button */}
       {!isCompletedStage && (
-        <div className="p-5 pt-0 bg-white/50">
-          <button
+        <div className="p-5 pt-0">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => onTransition(order.id)}
-            className={`w-full py-4 rounded-xl text-sm font-black uppercase tracking-widest transition-all hover:scale-[1.02] shadow-lg cursor-pointer flex items-center justify-center gap-2 ${btnClass}`}
+            className={`w-full py-4 rounded-[1.25rem] text-sm font-black uppercase tracking-[0.2em] transition-all cursor-pointer flex items-center justify-center gap-3 ${t.btn}`}
           >
             {(order.status === 'To Cook' || order.status === 'sent') ? (
-              <>Start Preparing</>
+              <>Start Preparing <Flame className="w-4 h-4" /></>
             ) : (
-              <>Mark Completed</>
+              <>Mark Ready <PackageCheck className="w-4 h-4" /></>
             )}
-          </button>
+          </motion.button>
         </div>
       )}
     </div>

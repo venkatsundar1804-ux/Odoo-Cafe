@@ -40,10 +40,12 @@ export function useKdsSocket() {
               table: `T-${data.table_id || '?' }`,
               status: 'To Cook', // default stage
               paymentMethod: 'qr', // Assume auto-paid via QR/Card if received via WebSocket to KDS directly
+              total: data.total_amount || 0,
               items: data.items ? data.items.map((item) => ({
                 product_id: item.product_id,
                 name: item.product_name || item.name || `Item ${item.product_id}`,
                 quantity: item.quantity,
+                price: item.price || 0,
                 completed: false
               })) : [],
               timestamp: new Date().toLocaleTimeString(),
