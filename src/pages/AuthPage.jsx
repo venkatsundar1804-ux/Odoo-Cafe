@@ -11,6 +11,7 @@ const AuthPage = () => {
   // true = Sign Up active (Overlay on left)
   // false = Sign In active (Overlay on right)
   const [isRightPanelActive, setIsRightPanelActive] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   // Form states
   const [email, setEmail] = useState('');
@@ -18,11 +19,27 @@ const AuthPage = () => {
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+
+  const validatePassword = (pass) => {
+    if (pass.length < 8) return "Password must be at least 8 characters long.";
+    if (!/\d/.test(pass)) return "Password must contain at least one number.";
+    if (!/[^a-zA-Z0-9]/.test(pass)) return "Password must contain at least one special character.";
+    return null;
+  };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+    const passError = validatePassword(password);
+    if (passError) {
+      setError(passError);
+      setSuccessMsg('');
+      return;
+    }
+
     setIsSubmitting(true);
     setError('');
+    setSuccessMsg('');
     try {
       const role = await login(email, password);
       if (role === 'kds') {
@@ -41,8 +58,16 @@ const AuthPage = () => {
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
+    const passError = validatePassword(password);
+    if (passError) {
+      setError(passError);
+      setSuccessMsg('');
+      return;
+    }
+
     setIsSubmitting(true);
     setError('');
+    setSuccessMsg('');
     try {
       const role = await register({ name, email, password });
       if (role === 'kds') {
@@ -62,10 +87,45 @@ const AuthPage = () => {
   // Helper to switch modes and clear errors/forms
   const togglePanel = (isSignUp) => {
     setIsRightPanelActive(isSignUp);
+    setIsResettingPassword(false);
     setError('');
+    setSuccessMsg('');
     setEmail('');
     setPassword('');
     setName('');
+  };
+
+  const handleForgotPassword = () => {
+    setIsResettingPassword(true);
+    setError('');
+    setSuccessMsg('');
+    setPassword('');
+  };
+
+  const handleResetPasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (!email) {
+      setError("Please enter your email to reset the password.");
+      return;
+    }
+    const passError = validatePassword(password);
+    if (passError) {
+      setError(passError);
+      return;
+    }
+    setError('');
+    setIsSubmitting(true);
+    // Simulate API call for resetting password
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setSuccessMsg("Password successfully reset! You can now sign in.");
+    setIsSubmitting(false);
+    
+    // Auto return to sign-in after a delay
+    setTimeout(() => {
+      setIsResettingPassword(false);
+      setPassword('');
+      setSuccessMsg('');
+    }, 2500);
   };
 
   // Animation Variants
@@ -129,7 +189,7 @@ const AuthPage = () => {
         {/* --- LEFT FORM CONTAINER (Sign In) --- */}
         <div className="w-1/2 p-12 flex flex-col justify-center relative z-20">
           <AnimatePresence mode="wait">
-            {!isRightPanelActive && (
+            {!isRightPanelActive && !isResettingPassword && (
               <motion.div 
                 key="signin"
                 variants={formVariants}
@@ -147,6 +207,7 @@ const AuthPage = () => {
                 </motion.div>
 
                 {error && <motion.p variants={itemVariants} className="text-sm text-rose-500 bg-rose-50 border border-rose-200 p-3 rounded-xl mb-6">{error}</motion.p>}
+                {successMsg && <motion.p variants={itemVariants} className="text-sm text-emerald-600 bg-emerald-50 border border-emerald-200 p-3 rounded-xl mb-6">{successMsg}</motion.p>}
                 
                 <form className="space-y-4" onSubmit={handleLoginSubmit}>
                   <motion.div variants={itemVariants} className="relative">
@@ -173,7 +234,7 @@ const AuthPage = () => {
                   </motion.div>
                   
                   <motion.div variants={itemVariants} className="flex justify-end">
-                    <button type="button" className="text-sm text-indigo-600 hover:text-indigo-400 transition-colors font-medium">
+                    <button type="button" onClick={handleForgotPassword} className="text-sm text-indigo-600 hover:text-indigo-400 transition-colors font-medium">
                       Forgot password?
                     </button>
                   </motion.div>
@@ -187,6 +248,71 @@ const AuthPage = () => {
                     className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-[0_10px_20px_rgba(20,33,61,0.3)] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 mt-4"
                   >
                     {isSubmitting ? 'Authenticating...' : 'Sign In'}
+                    {!isSubmitting && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                  </motion.button>
+                </form>
+              </motion.div>
+            )}
+
+            {!isRightPanelActive && isResettingPassword && (
+              <motion.div 
+                key="reset"
+                variants={formVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="w-full max-w-sm mx-auto"
+              >
+                <motion.div variants={itemVariants} className="mb-8">
+                  <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4 border border-indigo-100 shadow-[0_0_15px_rgba(99,102,241,0.1)]">
+                    <Lock className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <h2 className="text-4xl font-black text-indigo-600 tracking-tight mb-2">Reset Password</h2>
+                  <p className="text-slate-500 font-medium">Create a new secure password for your account.</p>
+                </motion.div>
+
+                {error && <motion.p variants={itemVariants} className="text-sm text-rose-500 bg-rose-50 border border-rose-200 p-3 rounded-xl mb-6">{error}</motion.p>}
+                {successMsg && <motion.p variants={itemVariants} className="text-sm text-emerald-600 bg-emerald-50 border border-emerald-200 p-3 rounded-xl mb-6">{successMsg}</motion.p>}
+                
+                <form className="space-y-4" onSubmit={handleResetPasswordSubmit}>
+                  <motion.div variants={itemVariants} className="relative">
+                    <Mail className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                    <input 
+                      type="email" 
+                      placeholder="Email Address" 
+                      className="w-full bg-white/70 border border-slate-200/60 rounded-xl py-3.5 pl-12 pr-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-600 focus:bg-white transition-all font-medium shadow-sm" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required 
+                    />
+                  </motion.div>
+                  <motion.div variants={itemVariants} className="relative">
+                    <Lock className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                    <input 
+                      type="password" 
+                      placeholder="New Password" 
+                      className="w-full bg-white/70 border border-slate-200/60 rounded-xl py-3.5 pl-12 pr-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-600 focus:bg-white transition-all font-medium shadow-sm" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required 
+                    />
+                  </motion.div>
+                  
+                  <motion.div variants={itemVariants} className="flex justify-end">
+                    <button type="button" onClick={() => setIsResettingPassword(false)} className="text-sm text-indigo-600 hover:text-indigo-400 transition-colors font-medium">
+                      Back to Sign In
+                    </button>
+                  </motion.div>
+
+                  <motion.button 
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="submit" 
+                    disabled={isSubmitting} 
+                    className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-[0_10px_20px_rgba(20,33,61,0.3)] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 mt-4"
+                  >
+                    {isSubmitting ? 'Resetting...' : 'Set New Password'}
                     {!isSubmitting && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                   </motion.button>
                 </form>
@@ -216,6 +342,7 @@ const AuthPage = () => {
                 </motion.div>
 
                 {error && <motion.p variants={itemVariants} className="text-sm text-rose-500 bg-rose-50 border border-rose-200 p-3 rounded-xl mb-6">{error}</motion.p>}
+                {successMsg && <motion.p variants={itemVariants} className="text-sm text-emerald-600 bg-emerald-50 border border-emerald-200 p-3 rounded-xl mb-6">{successMsg}</motion.p>}
                 
                 <form className="space-y-4" onSubmit={handleRegisterSubmit}>
                   <motion.div variants={itemVariants} className="relative">
