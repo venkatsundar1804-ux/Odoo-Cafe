@@ -55,7 +55,7 @@ export const useTableStore = create(
             t.id === id ? { ...t, status: 'available', occupiedBy: null } : t
           );
           syncTables(newTables);
-          return { tables: newTables };
+          return { tables: newTables, currentTableId: state.currentTableId === id ? null : state.currentTableId };
         })
       };
     },

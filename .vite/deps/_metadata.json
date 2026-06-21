@@ -1,49 +1,61 @@
 {
-  "hash": "1cffeb4a",
+  "hash": "1979b5f9",
   "configHash": "e4b93900",
-  "lockfileHash": "a531c6d9",
-  "browserHash": "c9c7c9d1",
+  "lockfileHash": "69d3ad17",
+  "browserHash": "e2047a2b",
   "optimized": {
     "axios": {
       "src": "../../node_modules/axios/index.js",
       "file": "axios.js",
-      "fileHash": "dee10419",
+      "fileHash": "4dab1304",
+      "needsInterop": false
+    },
+    "framer-motion": {
+      "src": "../../node_modules/framer-motion/dist/es/index.mjs",
+      "file": "framer-motion.js",
+      "fileHash": "00873f48",
       "needsInterop": false
     },
     "lucide-react": {
       "src": "../../node_modules/lucide-react/dist/esm/lucide-react.mjs",
       "file": "lucide-react.js",
-      "fileHash": "d05dc8be",
+      "fileHash": "e054657c",
       "needsInterop": false
     },
     "react-dom/client": {
       "src": "../../node_modules/react-dom/client.js",
       "file": "react-dom_client.js",
-      "fileHash": "70ffaded",
+      "fileHash": "4ebf461a",
       "needsInterop": true
     },
     "react-router-dom": {
       "src": "../../node_modules/react-router-dom/dist/index.mjs",
       "file": "react-router-dom.js",
-      "fileHash": "efa83cc9",
+      "fileHash": "0409a56e",
       "needsInterop": false
     },
     "react": {
       "src": "../../node_modules/react/index.js",
       "file": "react.js",
-      "fileHash": "81ee15d4",
+      "fileHash": "a2b049ca",
       "needsInterop": true
     },
     "react/jsx-dev-runtime": {
       "src": "../../node_modules/react/jsx-dev-runtime.js",
       "file": "react_jsx-dev-runtime.js",
-      "fileHash": "243a269f",
+      "fileHash": "2bfbbb55",
       "needsInterop": true
     },
     "zustand": {
       "src": "../../node_modules/zustand/esm/index.mjs",
       "file": "zustand.js",
-      "fileHash": "23f8ff2a",
+      "fileHash": "b303342f",
+      "needsInterop": false
+    },
+    "zustand/middleware": {
+      "src": "../../node_modules/zustand/esm/middleware.mjs",
+      "file": "zustand_middleware.js",
+      "fileHash": "0f8e4dd8",
       "needsInterop": false
     }
   },

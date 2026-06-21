@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { tables, fetchTables, setTableId, freeTable } = useTableStore();
+  const { tables, fetchTables, setTableId, freeTable, currentTableId } = useTableStore();
   const { role, user, logout } = useAuthStore();
   const { promos, fetchPromos, setAutoAppliedPromo } = usePromoStore();
 
@@ -62,7 +62,7 @@ export default function LandingPage() {
   };
 
   const availableTables = tables.filter(t =>
-    t.status === 'available' || (user && t.occupiedBy === user.name)
+    t.status === 'available' || t.id === currentTableId || (user && t.occupiedBy === user.name)
   );
 
   const marqueeItems = [
@@ -337,7 +337,9 @@ export default function LandingPage() {
               className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6"
             >
               <AnimatePresence>
-                {availableTables.map((table) => (
+                {availableTables.map((table) => {
+                  const isMyTable = table.id === currentTableId || (user && table.occupiedBy === user.name);
+                  return (
                   <motion.div
                     key={table.id}
                     variants={itemVariants}
@@ -345,13 +347,13 @@ export default function LandingPage() {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleTableSelect(table)}
                     className={`relative overflow-hidden rounded-[2rem] p-6 cursor-pointer transition-all duration-300 flex flex-col justify-between h-52 group shadow-sm hover:shadow-xl border-2 ${
-                      table.occupiedBy === user?.name 
+                      isMyTable 
                       ? 'bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 text-white shadow-2xl' 
                       : 'bg-white border-slate-100 hover:border-amber-400 text-slate-900'
                     }`}
                   >
                     {/* Dark Card Shader */}
-                    {table.occupiedBy === user?.name && (
+                    {isMyTable && (
                       <>
                         <div className="absolute top-[-20%] right-[-10%] w-[80%] h-[80%] bg-amber-500/30 rounded-full blur-[50px] pointer-events-none"></div>
                         <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-500/20 rounded-full blur-[40px] pointer-events-none"></div>
@@ -362,7 +364,7 @@ export default function LandingPage() {
                       <span className="text-4xl font-black tracking-tighter">
                         {table.number}
                       </span>
-                      {table.occupiedBy === user?.name ? (
+                      {isMyTable ? (
                         <div className="bg-white/20 text-white p-2 rounded-full">
                           <User className="w-5 h-5" />
                         </div>
@@ -375,10 +377,10 @@ export default function LandingPage() {
 
                     <div className="relative z-10 mt-auto">
                       <div className="flex items-center justify-between">
-                        <div className={`text-sm font-bold ${table.occupiedBy === user?.name ? 'text-slate-300' : 'text-slate-500'}`}>
+                        <div className={`text-sm font-bold ${isMyTable ? 'text-slate-300' : 'text-slate-500'}`}>
                           {table.seats} Seats
                         </div>
-                        {table.occupiedBy === user?.name ? (
+                        {isMyTable ? (
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
@@ -397,7 +399,8 @@ export default function LandingPage() {
                       </div>
                     </div>
                   </motion.div>
-                ))}
+                  );
+                })}
               </AnimatePresence>
 
               {availableTables.length === 0 && (

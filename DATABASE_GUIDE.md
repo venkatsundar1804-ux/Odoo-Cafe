@@ -71,4 +71,55 @@ Once inside the `sqlite3>` prompt, you can run native SQL commands:
   UPDATE payment_methods SET is_active = 1 WHERE name = 'UPI Dynamic QR';
   ```
 
+### Advanced SQLite CLI Commands
+When inside the `sqlite3>` prompt, these dot-commands are incredibly useful for formatting and inspecting the database:
+
+- **`.tables`** : Lists all tables in the database.
+- **`.schema [table_name]`** : Shows the `CREATE TABLE` statement used to create a table.
+- **`.mode column`** : Changes the output format to neatly aligned columns (highly recommended).
+- **`.headers on`** : Displays the column names at the top of query results.
+- **`.dump [table_name]`** : Dumps the entire database (or a specific table) as SQL text.
+- **`.quit`** or **`.exit`** : Exits the sqlite3 prompt.
+- **`.clear`** : Clears the screen.
+- **`.databases`** : Lists names and files of attached databases.
+- **`.show`** : Displays the current settings for various formats.
+
+### Advanced SQL Queries for Odoo Cafe
+
+**1. View orders with their items:**
+```sql
+SELECT o.id as order_id, o.status, o.total_amount, i.product_name, i.quantity 
+FROM orders o 
+JOIN order_items i ON o.id = i.order_id;
+```
+
+**2. See total revenue grouped by payment method:**
+```sql
+SELECT payment_method, SUM(amount) as total_revenue, COUNT(*) as transaction_count 
+FROM transactions 
+WHERE status = 'Completed' 
+GROUP BY payment_method;
+```
+
+**3. Find the most popular menu items:**
+```sql
+SELECT product_name, SUM(quantity) as total_sold 
+FROM order_items 
+GROUP BY product_name 
+ORDER BY total_sold DESC 
+LIMIT 5;
+```
+
+**4. Check Employee Register Session details:**
+```sql
+SELECT id, employee_id, start_time, end_time, expected_cash, is_open 
+FROM pos_sessions;
+```
+
+**5. Delete a specific order (and cascade):**
+```sql
+DELETE FROM orders WHERE id = 12;
+-- (Note: you may need to delete associated order_items and transactions manually if cascade is not enabled)
+```
+
 *(To exit the sqlite prompt, type `.quit` or press `Ctrl+C`)*
