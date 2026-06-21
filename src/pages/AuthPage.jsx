@@ -140,9 +140,9 @@ const AuthPage = () => {
               >
                 <motion.div variants={itemVariants} className="mb-8">
                   <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4 border border-indigo-100 shadow-[0_0_15px_rgba(99,102,241,0.1)]">
-                    <LogIn className="w-6 h-6 text-[#8380C4]" />
+                    <LogIn className="w-6 h-6 text-indigo-600" />
                   </div>
-                  <h2 className="text-4xl font-black text-[#8380C4] tracking-tight mb-2">Welcome Back</h2>
+                  <h2 className="text-4xl font-black text-indigo-600 tracking-tight mb-2">Welcome Back</h2>
                   <p className="text-slate-500 font-medium">Enter your credentials to access your account.</p>
                 </motion.div>
 
@@ -154,7 +154,7 @@ const AuthPage = () => {
                     <input 
                       type="email" 
                       placeholder="Email Address" 
-                      className="w-full bg-white/70 border border-slate-200/60 rounded-xl py-3.5 pl-12 pr-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#8380C4] focus:bg-white transition-all font-medium shadow-sm" 
+                      className="w-full bg-white/70 border border-slate-200/60 rounded-xl py-3.5 pl-12 pr-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-600 focus:bg-white transition-all font-medium shadow-sm" 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required 
@@ -165,7 +165,7 @@ const AuthPage = () => {
                     <input 
                       type="password" 
                       placeholder="Password" 
-                      className="w-full bg-white/70 border border-slate-200/60 rounded-xl py-3.5 pl-12 pr-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#8380C4] focus:bg-white transition-all font-medium shadow-sm" 
+                      className="w-full bg-white/70 border border-slate-200/60 rounded-xl py-3.5 pl-12 pr-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-600 focus:bg-white transition-all font-medium shadow-sm" 
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required 
@@ -173,7 +173,7 @@ const AuthPage = () => {
                   </motion.div>
                   
                   <motion.div variants={itemVariants} className="flex justify-end">
-                    <button type="button" className="text-sm text-[#8380C4] hover:text-indigo-600 transition-colors font-medium">
+                    <button type="button" className="text-sm text-indigo-600 hover:text-indigo-400 transition-colors font-medium">
                       Forgot password?
                     </button>
                   </motion.div>
@@ -184,7 +184,7 @@ const AuthPage = () => {
                     whileTap={{ scale: 0.98 }}
                     type="submit" 
                     disabled={isSubmitting} 
-                    className="w-full bg-gradient-to-r from-[#8380C4] to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold py-4 rounded-xl shadow-[0_10px_20px_rgba(131,128,196,0.3)] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 mt-4"
+                    className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-[0_10px_20px_rgba(20,33,61,0.3)] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 mt-4"
                   >
                     {isSubmitting ? 'Authenticating...' : 'Sign In'}
                     {!isSubmitting && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
@@ -258,7 +258,7 @@ const AuthPage = () => {
                     whileTap={{ scale: 0.98 }}
                     type="submit" 
                     disabled={isSubmitting} 
-                    className="w-full bg-gradient-to-r from-rose-400 to-rose-500 hover:from-rose-500 hover:to-rose-600 text-white font-bold py-4 rounded-xl shadow-[0_10px_20px_rgba(244,63,94,0.2)] transition-all flex items-center justify-center gap-2 group mt-6 disabled:opacity-70"
+                    className="w-full bg-gradient-to-r from-rose-400 to-rose-500 hover:from-rose-500 hover:to-rose-600 text-slate-900 font-black py-4 rounded-xl shadow-[0_10px_20px_rgba(252,163,17,0.3)] transition-all flex items-center justify-center gap-2 group mt-6 disabled:opacity-70"
                   >
                     {isSubmitting ? 'Creating...' : 'Sign Up'}
                     {!isSubmitting && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
@@ -281,7 +281,7 @@ const AuthPage = () => {
             <motion.div 
               animate={{ x: isRightPanelActive ? "-50%" : "0%" }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute top-0 left-0 w-[200%] h-full bg-gradient-to-br from-[#8380C4] to-[#FFD4A6] flex"
+              className="absolute top-0 left-0 w-[200%] h-full bg-gradient-to-br from-indigo-600 to-amber-400 flex"
             >
               
               {/* Overlay Left Content (Hello Friend -> Sign Up) */}
