@@ -65,9 +65,9 @@ export default function CustomerDisplay() {
       
       {/* Upper Status Header */}
       <header className="h-14 bg-slate-900 border-b border-slate-800/80 px-6 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
-          <Coffee className="w-5 h-5 text-amber-500" />
-          <span className="font-extrabold tracking-tight text-sm text-slate-200">Odoo Cafe Monitor</span>
+        <div className="flex items-center gap-3">
+          <img src="/odoo_cafe_logo.jpg" alt="Logo" className="w-8 h-8 object-cover rounded-md shadow-sm" />
+          <span className="font-black text-lg tracking-tighter text-slate-100">Odoo Cafe Monitor</span>
         </div>
         <div className="flex items-center gap-4 text-xs font-semibold">
           <div className="bg-slate-950 px-3 py-1 rounded-lg border border-slate-800 flex items-center gap-1.5 text-slate-400">

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCartStore } from '../store/cartStore';
+import { usePromoStore } from '../store/promoStore';
 import { fetchProductsFromDB, fetchCategoriesFromDB } from '../data/dataProvider';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { resolveImage } from '../utils/imageResolver';
@@ -16,7 +17,8 @@ import {
   Plus,
   Home,
   SlidersHorizontal,
-  X
+  X,
+  Tag
 } from 'lucide-react';
 
 export default function POS() {
@@ -36,6 +38,9 @@ export default function POS() {
   const [isSearchOpen, setIsSearchOpen] = useState(Boolean(searchParams.get('search')));
   const [sortOrder, setSortOrder] = useState('default'); // 'default' | 'price_asc' | 'price_desc' | 'name_asc'
   const [isSortOpen, setIsSortOpen] = useState(false);
+
+  const { promos, fetchPromos, setAutoAppliedPromo } = usePromoStore();
+  const exclusiveOffers = promos.filter(p => p.product_id);
 
   // ── Cart Animation State ──────────────────────────────────────────
   const [flyingItems, setFlyingItems] = useState([]);
@@ -107,7 +112,22 @@ export default function POS() {
       setCategories(dbCategories.length > 0 ? dbCategories : []);
     };
     loadData();
+    fetchPromos();
   }, []);
+
+  const handleOfferClick = (promo) => {
+    setAutoAppliedPromo(promo);
+    setSelectedCategory('All');
+    setSearchQuery('');
+    setSortOrder('default');
+    setViewMode('cinematic');
+    
+    // Small delay to allow state flushes so the products list resets
+    setTimeout(() => {
+      const index = products.findIndex(p => Number(p.id) === Number(promo.product_id));
+      if (index !== -1) setActiveIndex(index);
+    }, 50);
+  };
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -138,6 +158,19 @@ export default function POS() {
   useEffect(() => {
     setActiveIndex(0);
   }, [selectedCategory, searchQuery, sortOrder]);
+
+  // Navigate to specific product from Landing Page promo
+  useEffect(() => {
+    const promoProductId = searchParams.get('promo_product_id');
+    if (promoProductId && sortedAndFilteredProducts.length > 0) {
+      const idx = sortedAndFilteredProducts.findIndex(p => Number(p.id) === Number(promoProductId));
+      if (idx !== -1) {
+        // Small delay to let the zeroing useEffect run first
+        const t = setTimeout(() => setActiveIndex(idx), 50);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [sortedAndFilteredProducts, searchParams]);
 
   const activeProduct = sortedAndFilteredProducts[activeIndex] || null;
 
@@ -398,6 +431,36 @@ export default function POS() {
             </div>
           </div>
         </header>
+
+        {/* Exclusive Offers Ribbon */}
+        {exclusiveOffers.length > 0 && (
+          <div className="flex gap-3 overflow-x-auto custom-scrollbar px-8 pb-4 relative z-30">
+            <div className="flex items-center gap-2 shrink-0 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-2 rounded-xl font-bold shadow-md">
+              <Tag className="w-4 h-4" /> Exclusive Offers
+            </div>
+            {exclusiveOffers.map(promo => {
+              const targetProduct = products.find(p => Number(p.id) === Number(promo.product_id));
+              if (!targetProduct) return null;
+              const label = promo.discount_type === 'percentage' ? `${promo.value}% OFF` : `₹${promo.value} OFF`;
+              
+              return (
+                <button
+                  key={promo.code}
+                  onClick={() => handleOfferClick(promo)}
+                  className="shrink-0 flex items-center gap-3 bg-white border border-emerald-100 hover:border-emerald-300 hover:shadow-md px-4 py-2 rounded-xl transition-all group cursor-pointer shadow-sm"
+                >
+                  <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-slate-50">
+                    <img src={resolveImage(targetProduct.name)} alt={targetProduct.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">{targetProduct.name}</p>
+                    <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">{label} - Code: {promo.code}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Dynamic Content Area (Cinematic vs Grid) */}
         <div className="flex-1 overflow-hidden relative z-10 flex flex-col">

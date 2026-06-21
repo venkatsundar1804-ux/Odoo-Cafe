@@ -13,13 +13,20 @@ import { usePromoStore } from '../store/promoStore';
 export default function Checkout() {
   const navigate = useNavigate();
   const { cart, addToCart, removeFromCart, getTotals, clearCart } = useCartStore();
-  const { promos, fetchPromos } = usePromoStore();
+  const { promos, fetchPromos, autoAppliedPromo, setAutoAppliedPromo } = usePromoStore();
+
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState(null);
 
   useEffect(() => {
     fetchPromos();
+    // Auto-apply promo logic
+    if (autoAppliedPromo) {
+      setAppliedPromo(autoAppliedPromo);
+      setPromoCode(autoAppliedPromo.code);
+      setAutoAppliedPromo(null); // Clear it so it doesn't persist inappropriately
+    }
   }, []);
-  const [promoCode, setPromoCode] = useState('');
-  const [appliedPromo, setAppliedPromo] = useState(null);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [currentOrderId, setCurrentOrderId] = useState(null);
   
@@ -309,12 +316,14 @@ export default function Checkout() {
         isOpen={isPaymentOpen}
         onClose={() => {
           setIsPaymentOpen(false);
+          clearCart();
           navigate('/floor');
         }}
         totalAmount={total}
         orderId={currentOrderId}
         appliedPromo={appliedPromo}
         discountAmount={discountAmount}
+        items={cart}
         onPaymentSuccess={async (paymentMethod) => {
           // Send payment confirmation to backend
           await ordersService.payOrder(currentOrderId, paymentMethod, {});
@@ -330,8 +339,6 @@ export default function Checkout() {
             status: paymentMethod === 'cash' ? 'pending' : 'sent',
             paymentMethod: paymentMethod === 'upi' ? 'qr' : paymentMethod
           });
-
-          clearCart();
         }}
       />
     </div>

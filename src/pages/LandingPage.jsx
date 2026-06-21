@@ -3,22 +3,44 @@ import { useNavigate } from 'react-router-dom';
 import { Armchair, Coffee, Settings, LogIn, LogOut, User, MapPin, Tag, Star, ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
 import { useTableStore } from '../store/tableStore';
 import { useAuthStore } from '../store/authStore';
+import { usePromoStore } from '../store/promoStore';
 import { resolveImage } from '../utils/imageResolver';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { tables, fetchTables, setTableId } = useTableStore();
+  const { tables, fetchTables, setTableId, freeTable } = useTableStore();
   const { role, user, logout } = useAuthStore();
+  const { promos, fetchPromos, setAutoAppliedPromo } = usePromoStore();
 
   const [showTables, setShowTables] = useState(false);
   const tablesRef = useRef(null);
 
   useEffect(() => {
     fetchTables();
-  }, [fetchTables]);
+    fetchPromos();
+  }, [fetchTables, fetchPromos]);
+
+  const exclusiveOffers = promos.filter(p => p.is_active !== false).slice(0, 3);
+
+  const handleOfferClick = (promo) => {
+    // Save to global state so POS picks it up instantly
+    setAutoAppliedPromo(promo);
+    
+    // Auto-select a generic guest table (Table 1) and route to POS with query param
+    setTableId(1, user?.name || 'Guest');
+    if (promo.product_id) {
+      navigate(`/pos?table_id=1&promo_product_id=${promo.product_id}`);
+    } else {
+      navigate(`/pos?table_id=1`);
+    }
+  };
 
   const handleTableSelect = (table) => {
+    if (user?.name && table.occupiedBy === user.name) {
+      freeTable(table.id);
+      return;
+    }
     setTableId(table.id, user?.name || 'Guest');
     navigate(`/pos?table_id=${table.id}`);
   };
@@ -74,9 +96,7 @@ export default function LandingPage() {
         className="fixed top-0 left-0 w-full z-50 px-6 py-5 md:px-12 flex justify-between items-center bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm"
       >
         <div className="flex items-center gap-3">
-          <div className="bg-amber-600 p-2 rounded-xl text-white shadow-md">
-            <Coffee className="w-5 h-5" />
-          </div>
+          <img src="/odoo_cafe_logo.jpg" alt="Odoo Cafe Logo" className="w-12 h-12 object-cover rounded-xl shadow-md" />
           <span className="font-black tracking-tight text-xl text-slate-800">Odoo<span className="text-amber-600">Cafe</span></span>
         </div>
 
@@ -242,6 +262,47 @@ export default function LandingPage() {
               </div>
             </div>
 
+            {/* Dynamic Exclusive Offers Row */}
+            {exclusiveOffers.length > 0 && (
+              <div className="mb-16">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <Tag className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <h3 className="text-3xl font-black text-slate-900 tracking-tight">Claim Your Offers</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {exclusiveOffers.map(promo => {
+                    const label = promo.discount_type === 'percentage' ? `${promo.value}% OFF` : `₹${promo.value} OFF`;
+                    // If it has a specific product, use its name for the image. Otherwise use a generic coffee image.
+                    const imageName = promo.product_id ? promo.code : 'Cappuccino';
+                    return (
+                      <motion.button
+                        key={promo.code}
+                        whileHover={{ scale: 1.02, y: -4 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleOfferClick(promo)}
+                        className="group flex flex-col text-left bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-emerald-300 transition-all p-3 cursor-pointer overflow-hidden"
+                      >
+                        <div className="w-full h-40 bg-slate-100 rounded-2xl mb-4 overflow-hidden relative">
+                           <img src={resolveImage(imageName)} alt="Offer" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                           <div className="absolute top-3 left-3 bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                             {label}
+                           </div>
+                        </div>
+                        <div className="px-3 pb-3">
+                          <p className="text-slate-400 text-xs font-black tracking-widest uppercase mb-1">Code: {promo.code}</p>
+                          <h4 className="text-lg font-black text-slate-900 group-hover:text-emerald-600 transition-colors">
+                            {promo.product_id ? 'Click to order & auto-apply' : 'Store-wide discount! Click to apply.'}
+                          </h4>
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Smart Promotions Banner */}
             <div className="bg-gradient-to-r from-amber-100 to-amber-50 rounded-[2.5rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 border border-amber-200/50 shadow-sm">
               <div className="flex-1">
@@ -289,11 +350,19 @@ export default function LandingPage() {
                     onClick={() => handleTableSelect(table)}
                     className={`relative overflow-hidden rounded-[2rem] p-6 cursor-pointer transition-all duration-300 flex flex-col justify-between h-52 group shadow-sm hover:shadow-xl border-2 ${
                       table.occupiedBy === user?.name 
-                      ? 'bg-slate-900 border-slate-900 text-white' 
+                      ? 'bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 text-white shadow-2xl' 
                       : 'bg-white border-slate-100 hover:border-amber-400 text-slate-900'
                     }`}
                   >
-                    <div className="flex justify-between items-start">
+                    {/* Dark Card Shader */}
+                    {table.occupiedBy === user?.name && (
+                      <>
+                        <div className="absolute top-[-20%] right-[-10%] w-[80%] h-[80%] bg-amber-500/30 rounded-full blur-[50px] pointer-events-none"></div>
+                        <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-500/20 rounded-full blur-[40px] pointer-events-none"></div>
+                      </>
+                    )}
+                    
+                    <div className="relative z-10 flex justify-between items-start">
                       <span className="text-4xl font-black tracking-tighter">
                         {table.number}
                       </span>
@@ -308,14 +377,15 @@ export default function LandingPage() {
                       )}
                     </div>
 
-                    <div className="mt-auto">
+                    <div className="relative z-10 mt-auto">
                       <div className="flex items-center justify-between">
                         <div className={`text-sm font-bold ${table.occupiedBy === user?.name ? 'text-slate-300' : 'text-slate-500'}`}>
                           {table.seats} Seats
                         </div>
                         {table.occupiedBy === user?.name ? (
-                          <div className="bg-white text-slate-900 px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest">
-                            Your Table
+                          <div className="bg-white group-hover:bg-rose-500 group-hover:text-white text-slate-900 px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest transition-colors duration-300 shadow-sm group-hover:shadow-rose-500/30">
+                            <span className="block group-hover:hidden">Your Table</span>
+                            <span className="hidden group-hover:block">Unselect</span>
                           </div>
                         ) : (
                           <div className="bg-amber-100 text-amber-700 opacity-0 group-hover:opacity-100 px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest transition-opacity">

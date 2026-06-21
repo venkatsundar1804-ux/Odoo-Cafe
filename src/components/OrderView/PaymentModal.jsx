@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { ShieldCheck, CreditCard, Smartphone, Building2, X, Loader2, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, CreditCard, Smartphone, Building2, X, Loader2, CheckCircle2, Download } from 'lucide-react';
 import { ordersService } from '../../services/ordersService';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, customer, onPaymentSuccess, appliedPromo, discountAmount }) {
+export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, customer, onPaymentSuccess, appliedPromo, discountAmount, items = [] }) {
   const [step, setStep] = useState('methods'); // 'methods', 'processing', 'success'
   const [selectedMethod, setSelectedMethod] = useState('');
 
@@ -32,6 +32,76 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
     onClose();
   };
 
+  const downloadInvoice = () => {
+    // Dynamically load html2pdf from CDN
+    if (!window.html2pdf) {
+      const script = document.createElement('script');
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+      script.onload = () => generatePDF();
+      document.head.appendChild(script);
+    } else {
+      generatePDF();
+    }
+  };
+
+  const generatePDF = () => {
+    const element = document.createElement('div');
+    element.innerHTML = `
+      <div style="padding: 40px; color: #1e293b; max-width: 800px; margin: 0 auto; font-family: system-ui, -apple-system, sans-serif; background: white;">
+        <div style="border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between;">
+          <div>
+            <img src="/odoo_cafe_logo.jpg" alt="Odoo Cafe Logo" style="height: 48px; border-radius: 8px; margin-bottom: 8px;" />
+            <h1 style="margin: 0; color: #2563eb; font-size: 20px;">Odoo Cafe</h1>
+            <p style="margin: 5px 0 0 0; color: #64748b;">Receipt for Order #${orderId || 'N/A'}</p>
+          </div>
+          <div style="text-align: right;">
+            <p style="margin: 0; font-weight: bold;">Date: ${new Date().toLocaleDateString()}</p>
+            <p style="margin: 5px 0 0 0; text-transform: uppercase;">Payment: ${selectedMethod}</p>
+          </div>
+        </div>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+          <thead>
+            <tr>
+              <th style="text-align: left; padding: 10px; border-bottom: 2px solid #e2e8f0; color: #64748b;">Item</th>
+              <th style="text-align: left; padding: 10px; border-bottom: 2px solid #e2e8f0; color: #64748b;">Qty</th>
+              <th style="text-align: right; padding: 10px; border-bottom: 2px solid #e2e8f0; color: #64748b;">Price</th>
+              <th style="text-align: right; padding: 10px; border-bottom: 2px solid #e2e8f0; color: #64748b;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map(item => `
+              <tr>
+                <td style="padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-weight: 500;">${item.name}</td>
+                <td style="padding: 12px 10px; border-bottom: 1px solid #f1f5f9;">${item.quantity}</td>
+                <td style="padding: 12px 10px; border-bottom: 1px solid #f1f5f9; text-align: right;">₹${item.price.toFixed(2)}</td>
+                <td style="padding: 12px 10px; border-bottom: 1px solid #f1f5f9; text-align: right; font-weight: bold;">₹${(item.price * item.quantity).toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div style="margin-bottom: 10px; text-align: right; color: #64748b;">
+           ${appliedPromo ? `<p><strong>Discount Applied:</strong> ${appliedPromo.code} (-₹${discountAmount?.toFixed(2)})</p>` : ''}
+        </div>
+        <div style="font-size: 24px; font-weight: bold; margin-top: 20px; text-align: right; border-top: 2px solid #e2e8f0; padding-top: 20px;">
+          Total Paid: ₹${totalAmount?.toFixed(2)}
+        </div>
+        <p style="text-align: center; color: #94a3b8; margin-top: 50px; font-size: 14px;">Thank you for your business!</p>
+      </div>
+    `;
+
+    const opt = {
+      margin:       10,
+      filename:     `OdooCafe_Invoice_${orderId || 'New'}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    window.html2pdf().set(opt).from(element).save();
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -57,9 +127,7 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
             </button>
           )}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-600 font-bold text-xl shadow-inner">
-              O
-            </div>
+            <img src="/odoo_cafe_logo.jpg" alt="Logo" className="w-10 h-10 object-cover rounded-full shadow-inner border border-white/50" />
             <div>
               <h2 className="font-bold text-lg leading-tight">Odoo Cafe</h2>
               <p className="text-blue-200 text-xs font-medium tracking-wide">Order #{orderId}</p>
@@ -173,14 +241,25 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
                 </motion.div>
                 <h3 className="text-2xl font-bold text-slate-800">Payment Successful</h3>
                 <p className="text-slate-500 text-sm mt-2 mb-8 font-medium">Your transaction has been processed securely.</p>
-                <motion.button 
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleClose}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-8 rounded-xl transition-colors cursor-pointer w-full shadow-lg"
-                >
-                  Close & Return
-                </motion.button>
+                <div className="flex w-full gap-3 mt-2">
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={downloadInvoice}
+                    className="flex-[1.2] bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold py-3 px-2 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-sm"
+                  >
+                    <Download className="w-4 h-4" />
+                    Invoice
+                  </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleClose}
+                    className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer shadow-md text-sm"
+                  >
+                    Close & Return
+                  </motion.button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

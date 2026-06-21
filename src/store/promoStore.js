@@ -30,6 +30,9 @@ export const usePromoStore = create((set, get) => {
   return {
     promos: [],
     isLoading: false,
+    autoAppliedPromo: null,
+
+    setAutoAppliedPromo: (promo) => set({ autoAppliedPromo: promo }),
 
     fetchPromos: async () => {
       set({ isLoading: true });

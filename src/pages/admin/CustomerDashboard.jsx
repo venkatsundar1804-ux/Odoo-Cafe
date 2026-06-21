@@ -7,7 +7,7 @@ import api from '../../api';
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
-  const { promos } = usePromoStore();
+  const { promos, fetchPromos } = usePromoStore();
 
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,6 +82,7 @@ export default function CustomerDashboard() {
   // Initial fetch
   useEffect(() => {
     fetchOrdersFromDB(true);
+    fetchPromos();
   }, []);
 
   // Poll backend every 3 seconds for real-time status updates
@@ -227,17 +228,20 @@ export default function CustomerDashboard() {
         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
         className="grid grid-cols-3 gap-4"
       >
-        <div className="bg-white/70 backdrop-blur border border-slate-200/50 rounded-2xl p-5 text-center shadow-sm">
-          <p className="text-3xl font-black text-slate-800 font-mono">{orders.length}</p>
-          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Total Orders</p>
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 rounded-2xl p-5 text-center shadow-xl">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/30 rounded-full blur-2xl"></div>
+          <p className="text-3xl font-black text-white font-mono relative z-10">{orders.length}</p>
+          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1 relative z-10">Total Orders</p>
         </div>
-        <div className="bg-white/70 backdrop-blur border border-slate-200/50 rounded-2xl p-5 text-center shadow-sm">
-          <p className="text-3xl font-black text-emerald-600 font-mono">{deliveredCount}</p>
-          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Completed</p>
+        <div className="relative overflow-hidden bg-gradient-to-br from-emerald-900 to-emerald-800 border border-emerald-700 rounded-2xl p-5 text-center shadow-xl">
+          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-emerald-400/30 rounded-full blur-2xl"></div>
+          <p className="text-3xl font-black text-emerald-400 font-mono relative z-10">{deliveredCount}</p>
+          <p className="text-xs text-emerald-200/60 font-bold uppercase tracking-wider mt-1 relative z-10">Completed</p>
         </div>
-        <div className="bg-white/70 backdrop-blur border border-slate-200/50 rounded-2xl p-5 text-center shadow-sm">
-          <p className="text-3xl font-black text-amber-600 font-mono">₹{totalSpent.toFixed(0)}</p>
-          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Total Spent</p>
+        <div className="relative overflow-hidden bg-gradient-to-br from-amber-900 to-amber-800 border border-amber-700 rounded-2xl p-5 text-center shadow-xl">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-400/30 rounded-full blur-2xl"></div>
+          <p className="text-3xl font-black text-amber-400 font-mono relative z-10">₹{totalSpent.toFixed(0)}</p>
+          <p className="text-xs text-amber-200/60 font-bold uppercase tracking-wider mt-1 relative z-10">Total Spent</p>
         </div>
       </motion.div>
 
@@ -292,7 +296,10 @@ export default function CustomerDashboard() {
           )}
 
           {/* All Orders History */}
-          <div className="bg-white/70 backdrop-blur-[40px] border border-white rounded-[2.5rem] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.03)]">
+          <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 rounded-[2.5rem] p-8 shadow-xl">
+            <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-300/30 rounded-full blur-[80px] pointer-events-none"></div>
+            <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-amber-300/20 rounded-full blur-[80px] pointer-events-none"></div>
+            <div className="relative z-10">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
                 <div className="bg-slate-900 p-2.5 rounded-xl text-white shadow-md">
@@ -351,6 +358,7 @@ export default function CustomerDashboard() {
               )}
             </div>
           </div>
+          </div>
         </motion.div>
 
         {/* Right Column: Payments & Coupons */}
@@ -359,7 +367,9 @@ export default function CustomerDashboard() {
 
 
           {/* Coupons */}
-          <motion.div variants={itemVariants} className="bg-white/70 backdrop-blur-[40px] border border-white rounded-[2.5rem] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.03)]">
+          <motion.div variants={itemVariants} className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-2 border-emerald-200 rounded-[2.5rem] p-8 shadow-xl">
+            <div className="absolute top-[-20%] right-[-10%] w-[80%] h-[80%] bg-emerald-400/30 rounded-full blur-[80px] pointer-events-none"></div>
+            <div className="relative z-10">
             <div className="flex items-center gap-3 mb-6">
               <div className="bg-emerald-500 p-2.5 rounded-xl text-white shadow-md">
                 <Tag className="w-5 h-5" />
@@ -368,29 +378,41 @@ export default function CustomerDashboard() {
             </div>
             
             <div className="space-y-4">
-              {promos.map(promo => (
-                <motion.div 
-                  whileHover={{ scale: 1.02 }}
-                  key={promo.code} 
-                  className="relative overflow-hidden border border-emerald-100 bg-gradient-to-r from-emerald-50 to-white p-5 rounded-[1.5rem] flex items-center justify-between shadow-sm cursor-pointer"
-                >
-                  {/* Decorative dashed line */}
-                  <div className="absolute left-0 top-0 bottom-0 w-2 border-r-2 border-dashed border-emerald-200"></div>
-                  
-                  <div className="pl-4">
-                    <p className="font-black text-emerald-600 text-lg">{promo.discountPercent}% OFF</p>
-                    <p className="text-[10px] text-slate-500 uppercase font-bold mt-1 tracking-wider">{promo.description}</p>
-                  </div>
-                  <div className="bg-emerald-600 text-white font-mono font-bold text-xs px-3 py-1.5 rounded-lg shadow-md tracking-wider">
-                    {promo.code}
-                  </div>
-                </motion.div>
-              ))}
-              {promos.length === 0 && (
+              {promos.filter(p => p.is_active !== false).map(promo => {
+                const label = promo.discount_type === 'percentage' ? `${promo.value}% OFF` : `₹${promo.value} OFF`;
+                const description = promo.product_id ? 'Special Item Discount' : 'Store-Wide Discount';
+                
+                return (
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    key={promo.code} 
+                    onClick={() => {
+                      navigator.clipboard.writeText(promo.code);
+                      setNotification(`Coupon ${promo.code} copied to clipboard!`);
+                      setTimeout(() => setNotification(null), 3000);
+                    }}
+                    className="relative overflow-hidden border border-emerald-100 bg-gradient-to-r from-emerald-50 to-white p-5 rounded-[1.5rem] flex items-center justify-between shadow-sm cursor-pointer group"
+                    title="Click to copy code"
+                  >
+                    {/* Decorative dashed line */}
+                    <div className="absolute left-0 top-0 bottom-0 w-2 border-r-2 border-dashed border-emerald-200"></div>
+                    
+                    <div className="pl-4">
+                      <p className="font-black text-emerald-600 text-lg">{label}</p>
+                      <p className="text-[10px] text-slate-500 uppercase font-bold mt-1 tracking-wider">{description}</p>
+                    </div>
+                    <div className="bg-emerald-600 text-white font-mono font-bold text-xs px-3 py-1.5 rounded-lg shadow-md tracking-wider group-hover:bg-emerald-500 transition-colors">
+                      {promo.code}
+                    </div>
+                  </motion.div>
+                );
+              })}
+              {promos.filter(p => p.is_active !== false).length === 0 && (
                 <div className="text-center text-slate-400 py-6 font-semibold border-2 border-dashed border-slate-200 rounded-2xl">
                   No active promotions.
                 </div>
               )}
+            </div>
             </div>
           </motion.div>
 

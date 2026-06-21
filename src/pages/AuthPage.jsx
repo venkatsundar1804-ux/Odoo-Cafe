@@ -30,10 +30,9 @@ const AuthPage = () => {
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    const passError = validatePassword(password);
-    if (passError) {
-      setError(passError);
-      setSuccessMsg('');
+    
+    if (!password) {
+      setError("Please enter your password.");
       return;
     }
 
