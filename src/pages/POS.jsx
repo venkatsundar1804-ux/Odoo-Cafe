@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCartStore } from '../store/cartStore';
-import { mockCategories } from '../data/mockCategories';
-import { mockProducts } from '../data/mockProducts';
 import { fetchProductsFromDB, fetchCategoriesFromDB } from '../data/dataProvider';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { resolveImage } from '../utils/imageResolver';
@@ -105,8 +103,8 @@ export default function POS() {
         fetchProductsFromDB(),
         fetchCategoriesFromDB()
       ]);
-      setProducts(dbProducts.length > 0 ? dbProducts : mockProducts);
-      setCategories(dbCategories.length > 0 ? dbCategories : mockCategories);
+      setProducts(dbProducts.length > 0 ? dbProducts : []);
+      setCategories(dbCategories.length > 0 ? dbCategories : []);
     };
     loadData();
   }, []);

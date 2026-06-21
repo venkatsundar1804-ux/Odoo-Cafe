@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Plus, FolderTree, RefreshCw, ShoppingBag } from 'lucide-react';
 import Modal from '../../components/Modal';
 import { useAdminStore } from '../../store/adminStore';
-import { mockCategoryItems } from '../../data/mockCategoryItems';
 
 export default function Products() {
   // Zustand Admin Store for Categories and Products

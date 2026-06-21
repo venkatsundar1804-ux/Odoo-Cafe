@@ -1,23 +1,9 @@
-import categoriesData from './categories.json';
-import itemsData from './items.json';
 import api from '../api';
 
 // ── Static fallbacks (used as defaults before API data loads) ──────
-let productIdCounter = 1;
-
-export const mockCategories = categoriesData;
-
-export const mockProducts = itemsData.flatMap(categoryGroup => {
-  if (categoryGroup.itemTypes && Array.isArray(categoryGroup.itemTypes)) {
-    return categoryGroup.itemTypes.map(itemName => ({
-      id: productIdCounter++,
-      name: itemName,
-      price: 80 + (itemName.length * 5),
-      categoryId: categoryGroup.categoryId
-    }));
-  }
-  return [];
-});
+// Removed unused mock arrays to prevent build bloat
+export const mockCategories = [];
+export const mockProducts = [];
 
 // ── Live API fetchers ──────────────────────────────────────────────
 
@@ -35,8 +21,8 @@ export async function fetchProductsFromDB() {
       description: p.description
     }));
   } catch (error) {
-    console.warn("Failed to fetch products from DB, using local fallback", error);
-    return mockProducts;
+    console.warn("Failed to fetch products from DB, returning empty", error);
+    return [];
   }
 }
 
@@ -48,9 +34,9 @@ export async function fetchCategoriesFromDB() {
       name: c.name,
       color: c.color
     }));
-  } catch (error) {
-    console.warn("Failed to fetch categories from DB, using local fallback", error);
-    return mockCategories;
+    } catch (error) {
+    console.warn("Failed to fetch categories from DB, returning empty", error);
+    return [];
   }
 }
 

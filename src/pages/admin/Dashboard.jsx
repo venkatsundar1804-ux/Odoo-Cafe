@@ -18,11 +18,7 @@ import api from '../../api';
 
 export default function Dashboard() {
   const { 
-    summary, 
-    aiSummary, 
-    isLoading, 
-    fetchDashboardSummary, 
-    fetchAiSummary,
+    isLoading,
     products,
     fetchProducts
   } = useAdminStore();
@@ -63,9 +59,6 @@ export default function Dashboard() {
       start_date: period === 'Custom' ? startDate : '',
       end_date: period === 'Custom' ? endDate : ''
     };
-    
-    fetchDashboardSummary(filters);
-    fetchAiSummary();
     
     // Merge real-time local sync orders with historical database orders
     const combinedOrders = [...dbOrders, ...orders.filter(o => !dbOrders.some(dbO => dbO.id === o.id))];
@@ -124,7 +117,7 @@ export default function Dashboard() {
     });
 
     generateMockDataForFilters(period, filteredOrders);
-  }, [period, employee, session, selectedProduct, startDate, endDate, fetchDashboardSummary, fetchAiSummary, orders, dbOrders]);
+  }, [period, employee, session, selectedProduct, startDate, endDate, orders, dbOrders]);
 
   const generateMockDataForFilters = (selectedPeriod, sourceOrders = []) => {
     const getOrderTotal = (o) => {
