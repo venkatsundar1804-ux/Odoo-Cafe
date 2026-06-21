@@ -76,31 +76,6 @@ export default function AdminLayout() {
             </div>
           </div>
 
-          {/* Center: Action Buttons */}
-          {currentRole !== 'customer' && (
-            <div className="flex items-center gap-3">
-              <button className="p-2.5 bg-white/60 hover:bg-white text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors shadow-sm cursor-pointer" title="Cash Register">
-                <Calculator className="w-4 h-4" />
-              </button>
-              
-              <button className="p-2.5 bg-white/60 hover:bg-white text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors shadow-sm cursor-pointer" title="Edit Session">
-                <Pencil className="w-4 h-4" />
-              </button>
-              
-              <button className="p-2.5 bg-white/60 hover:bg-white text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200/50 transition-colors shadow-sm cursor-pointer" title="Add Item">
-                <PlusSquare className="w-4 h-4" />
-              </button>
-
-              <button 
-                onClick={() => navigate('/floor')}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white/60 hover:bg-white text-slate-700 hover:text-slate-900 font-bold rounded-xl border border-slate-200/50 text-xs transition-colors shadow-sm cursor-pointer ml-2" 
-                title="Return to POS"
-              >
-                <ChevronLeft className="w-4 h-4 text-amber-600" />
-                <span>Back to POS</span>
-              </button>
-            </div>
-          )}
 
           {/* Right Side: Profile & Sidebar Toggle */}
           <div className="flex items-center gap-3">

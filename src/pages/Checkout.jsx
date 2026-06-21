@@ -336,7 +336,7 @@ export default function Checkout() {
             total: total,
             time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
             date: new Date().toLocaleDateString(),
-            status: paymentMethod === 'cash' ? 'pending' : 'sent',
+            status: 'pending',
             paymentMethod: paymentMethod === 'upi' ? 'qr' : paymentMethod
           });
         }}

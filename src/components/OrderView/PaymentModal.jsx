@@ -2,14 +2,19 @@ import { useState, useEffect } from 'react';
 import { ShieldCheck, CreditCard, Smartphone, Building2, X, Loader2, CheckCircle2, Download } from 'lucide-react';
 import { ordersService } from '../../services/ordersService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePaymentStore } from '../../store/paymentStore';
 
 export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, customer, onPaymentSuccess, appliedPromo, discountAmount, items = [] }) {
+  const { methods, fetchMethods } = usePaymentStore();
   const [step, setStep] = useState('methods'); // 'methods', 'processing', 'success'
   const [selectedMethod, setSelectedMethod] = useState('');
 
   useEffect(() => {
-    if (isOpen) setStep('methods');
-  }, [isOpen]);
+    if (isOpen) {
+      setStep('methods');
+      fetchMethods();
+    }
+  }, [isOpen, fetchMethods]);
 
   const handlePay = (method) => {
     setSelectedMethod(method);
@@ -173,37 +178,45 @@ export default function PaymentModal({ isOpen, onClose, orderId, totalAmount, cu
                 </div>
                 
                 <div className="p-2 space-y-1 overflow-y-auto flex-1 custom-scrollbar">
-                  <button onClick={() => handlePay('upi')} className="w-full flex items-center gap-4 p-3 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors group">
-                    <div className="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-white group-hover:border-blue-200 group-hover:shadow-sm transition-all shrink-0">
-                      <Smartphone className="w-5 h-5 text-slate-600 group-hover:text-blue-600" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-bold text-slate-800 text-sm">UPI / QR</h3>
-                      <p className="text-xs text-slate-500">Google Pay, PhonePe, Paytm</p>
-                    </div>
-                  </button>
+                  {methods.find(m => m.name.toLowerCase().includes('upi') && m.is_active) && (
+                    <button onClick={() => handlePay('upi')} className="w-full flex items-center gap-4 p-3 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors group">
+                      <div className="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-white group-hover:border-blue-200 group-hover:shadow-sm transition-all shrink-0">
+                        <Smartphone className="w-5 h-5 text-slate-600 group-hover:text-blue-600" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-bold text-slate-800 text-sm">UPI / QR</h3>
+                        <p className="text-xs text-slate-500">Google Pay, PhonePe, Paytm</p>
+                      </div>
+                    </button>
+                  )}
                   
-                  <button onClick={() => handlePay('card')} className="w-full flex items-center gap-4 p-3 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors group">
-                    <div className="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-white group-hover:border-blue-200 group-hover:shadow-sm transition-all shrink-0">
-                      <CreditCard className="w-5 h-5 text-slate-600 group-hover:text-blue-600" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-bold text-slate-800 text-sm">Card</h3>
-                      <p className="text-xs text-slate-500">Visa, MasterCard, RuPay & More</p>
-                    </div>
-                  </button>
+                  {methods.find(m => m.name.toLowerCase().includes('card') && m.is_active) && (
+                    <button onClick={() => handlePay('card')} className="w-full flex items-center gap-4 p-3 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors group">
+                      <div className="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-white group-hover:border-blue-200 group-hover:shadow-sm transition-all shrink-0">
+                        <CreditCard className="w-5 h-5 text-slate-600 group-hover:text-blue-600" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-bold text-slate-800 text-sm">Card</h3>
+                        <p className="text-xs text-slate-500">Visa, MasterCard, RuPay & More</p>
+                      </div>
+                    </button>
+                  )}
 
-                  <button onClick={() => handlePay('netbanking')} className="w-full flex items-center gap-4 p-3 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors group">
-                    <div className="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-white group-hover:border-blue-200 group-hover:shadow-sm transition-all shrink-0">
-                      <Building2 className="w-5 h-5 text-slate-600 group-hover:text-blue-600" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-bold text-slate-800 text-sm">Netbanking</h3>
-                      <p className="text-xs text-slate-500">All Indian Banks</p>
-                    </div>
-                  </button>
-
-
+                  {methods.find(m => m.name.toLowerCase().includes('netbanking') && m.is_active) && (
+                    <button onClick={() => handlePay('netbanking')} className="w-full flex items-center gap-4 p-3 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors group">
+                      <div className="w-10 h-10 rounded border border-slate-200 flex items-center justify-center bg-white group-hover:border-blue-200 group-hover:shadow-sm transition-all shrink-0">
+                        <Building2 className="w-5 h-5 text-slate-600 group-hover:text-blue-600" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-bold text-slate-800 text-sm">Netbanking</h3>
+                        <p className="text-xs text-slate-500">All Indian Banks</p>
+                      </div>
+                    </button>
+                  )}
+                  
+                  {!methods.some(m => m.is_active && (m.name.toLowerCase().includes('upi') || m.name.toLowerCase().includes('card') || m.name.toLowerCase().includes('netbanking'))) && (
+                     <div className="p-4 text-center text-slate-500 text-sm font-medium">No online payment methods currently available. Please contact staff.</div>
+                  )}
                 </div>
               </motion.div>
             )}

@@ -37,10 +37,6 @@ export default function LandingPage() {
   };
 
   const handleTableSelect = (table) => {
-    if (user?.name && table.occupiedBy === user.name) {
-      freeTable(table.id);
-      return;
-    }
     setTableId(table.id, user?.name || 'Guest');
     navigate(`/pos?table_id=${table.id}`);
   };
@@ -383,10 +379,16 @@ export default function LandingPage() {
                           {table.seats} Seats
                         </div>
                         {table.occupiedBy === user?.name ? (
-                          <div className="bg-white group-hover:bg-rose-500 group-hover:text-white text-slate-900 px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest transition-colors duration-300 shadow-sm group-hover:shadow-rose-500/30">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              freeTable(table.id);
+                            }}
+                            className="bg-white group-hover:bg-rose-500 group-hover:text-white text-slate-900 px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest transition-colors duration-300 shadow-sm group-hover:shadow-rose-500/30 cursor-pointer border-none"
+                          >
                             <span className="block group-hover:hidden">Your Table</span>
                             <span className="hidden group-hover:block">Unselect</span>
-                          </div>
+                          </button>
                         ) : (
                           <div className="bg-amber-100 text-amber-700 opacity-0 group-hover:opacity-100 px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest transition-opacity">
                             Select

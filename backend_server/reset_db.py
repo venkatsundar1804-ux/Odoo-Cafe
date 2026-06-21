@@ -76,6 +76,7 @@ payment_methods = [
     models.PaymentMethod(name="Cash", is_active=True),
     models.PaymentMethod(name="Digital/Card Terminal", is_active=True),
     models.PaymentMethod(name="UPI Dynamic QR", is_active=True),
+    models.PaymentMethod(name="Netbanking", is_active=True),
 ]
 db.add_all(payment_methods)
 db.commit()

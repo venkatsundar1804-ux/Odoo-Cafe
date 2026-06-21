@@ -6,6 +6,7 @@ import { useOrderSyncStore } from '../../store/orderSyncStore';
 import { usePromoStore } from '../../store/promoStore';
 import { useTableStore } from '../../store/tableStore';
 import { useAuthStore } from '../../store/authStore';
+import { usePaymentStore } from '../../store/paymentStore';
 import { useKdsSocket } from '../../hooks/useKdsSocket';
 
 export default function EmployeeDashboard() {
@@ -14,10 +15,12 @@ export default function EmployeeDashboard() {
   const { orders, dispatchOrderToKds, markDelivered, fetchOrders } = useOrderSyncStore();
   const { promos, addPromo, removePromo } = usePromoStore();
   const { resetTables } = useTableStore();
+  const { methods, fetchMethods, toggleMethod } = usePaymentStore();
   
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]);
+    fetchMethods();
+  }, [fetchOrders, fetchMethods]);
 
   const [notification, setNotification] = useState(null);
   const prevOrdersRef = useRef({});
@@ -246,7 +249,7 @@ export default function EmployeeDashboard() {
               >
                 <CheckCircle2 className="w-12 h-12 mb-3 text-slate-300" />
                 <p className="font-bold text-lg text-slate-500">All caught up!</p>
-                <p className="text-sm font-medium">No pending cash orders to dispatch.</p>
+                <p className="text-sm font-medium">No pending orders to dispatch.</p>
               </motion.div>
             )}
           </motion.div>
@@ -449,6 +452,46 @@ export default function EmployeeDashboard() {
               )}
             </div>
           </div>
+        </div>
+      </motion.div>
+
+      {/* Payment Method Management Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+        className="mt-8 bg-white/70 backdrop-blur-[40px] border border-white rounded-[2.5rem] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.03)]"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="bg-emerald-500 p-2.5 rounded-xl text-white shadow-md">
+            <CreditCard className="w-5 h-5" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-900">Payment Methods</h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {methods.map(method => (
+            <div key={method.id} className="bg-white border border-slate-200 rounded-[1.5rem] p-5 flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${method.is_active ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                  {method.name.toLowerCase().includes('upi') ? <QrCode className="w-5 h-5" /> : method.name.toLowerCase().includes('card') ? <CreditCard className="w-5 h-5" /> : <Banknote className="w-5 h-5" />}
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-800 uppercase tracking-wide text-xs">{method.name}</h4>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    {method.is_active ? 'Active' : 'Disabled'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => toggleMethod(method.id)}
+                className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition ${method.is_active ? 'bg-rose-50 text-rose-600 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+              >
+                {method.is_active ? 'Deactivate' : 'Activate'}
+              </button>
+            </div>
+          ))}
+          {methods.length === 0 && (
+            <div className="col-span-full text-slate-500">Loading payment methods...</div>
+          )}
         </div>
       </motion.div>
 
